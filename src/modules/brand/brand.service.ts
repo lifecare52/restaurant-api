@@ -1,0 +1,28 @@
+import { Types } from 'mongoose';
+
+import BrandEntity from './brand.model';
+
+import type { BrandCreateDTO, BrandUpdateDTO } from './brand.types';
+
+export const createBrand = async (ownerId: string, dto: BrandCreateDTO) => {
+  const brand = await BrandEntity.create({
+    name: dto.name,
+    ownerId: new Types.ObjectId(ownerId),
+    plan: dto.plan,
+  });
+  return brand;
+};
+
+export const getBrandById = async (brandId: string) => {
+  return BrandEntity.findById(brandId);
+};
+
+export const updateBrand = async (brandId: string, dto: BrandUpdateDTO) => {
+  return BrandEntity.findByIdAndUpdate(brandId, { $set: dto }, { new: true });
+};
+
+export default {
+  createBrand,
+  getBrandById,
+  updateBrand,
+};

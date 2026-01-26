@@ -1,0 +1,231 @@
+{
+  "info": {
+    "name": "Restaurant Management Backend",
+    "description": "Postman collection for Users, Brands, and Outlets APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "brandId", "value": "" },
+    { "key": "outletId", "value": "" },
+    { "key": "ownerId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users/login",
+            "description": "Authenticates user (email+password) and returns JWT token."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "try {",
+                  "  const jsonData = pm.response.json();",
+                  "  const token = jsonData && jsonData.data && jsonData.data.token;",
+                  "  if (token) {",
+                  "    pm.collectionVariables.set('token', token);",
+                  "    console.log('Token saved to collection variables');",
+                  "  }",
+                  "} catch (e) {",
+                  "  console.warn('Cannot parse token from response');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Admin (Bootstrap - no auth, first admin only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Name\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users/admins/bootstrap",
+            "description": "Creates the FIRST ADMIN when none exists. Returns 403 if admin already present."
+          }
+        },
+        {
+          "name": "Create Admin (ADMIN only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Name\",\n  \"email\": \"admin2@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users/admins",
+            "description": "Creates another ADMIN. Requires existing ADMIN authentication."
+          }
+        },
+        {
+          "name": "Create Owner (ADMIN only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Owner Name\",\n  \"email\": \"owner@example.com\",\n  \"password\": \"password123\",\n  \"brandName\": \"My Brand\",\n  \"plan\": { \"name\": \"Pro\", \"outletLimit\": 10 }\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users/owners",
+            "description": "Creates an OWNER user and auto-creates Brand + Default Outlet. Requires ADMIN role."
+          }
+        },
+        {
+          "name": "Create Partner (USER_MANAGEMENT required)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Partner Name\",\n  \"email\": \"partner@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"PARTNER\",\n  \"brandId\": \"{{brandId}}\",\n  \"outlets\": [\"{{outletId}}\"],\n  \"permissions\": [\"USER_MANAGEMENT\", \"BRAND_MANAGEMENT\", \"OUTLET_MANAGEMENT\"]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users",
+            "description": "Creates a PARTNER under a brand. Requires USER_MANAGEMENT permission and brand access."
+          }
+        },
+        {
+          "name": "Create Staff (USER_MANAGEMENT required)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Staff Name\",\n  \"email\": \"staff@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"STAFF\",\n  \"brandId\": \"{{brandId}}\",\n  \"outlets\": [\"{{outletId}}\"]\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/users",
+            "description": "Creates a STAFF under a brand. Must include non-empty outlets. Requires USER_MANAGEMENT permission and brand access."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Brands",
+      "item": [
+        {
+          "name": "Create Brand (ADMIN only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ownerId\": \"{{ownerId}}\",\n  \"name\": \"Brand Name\",\n  \"plan\": { \"name\": \"Pro\", \"outletLimit\": 10 }\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/brands",
+            "description": "Creates a brand for a specific owner. Requires ADMIN role."
+          }
+        },
+        {
+          "name": "Get Brand (brand access required)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/api/v1/brands/{{brandId}}",
+            "description": "Fetches a brand by id. Requires brand access (ADMIN bypasses)."
+          }
+        },
+        {
+          "name": "Update Brand (OWNER/PARTNER/ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Brand\",\n  \"plan\": { \"name\": \"Enterprise\", \"outletLimit\": 20 }\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/brands/{{brandId}}",
+            "description": "Updates a brand. Requires BRAND_MANAGEMENT permission and brand access."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Outlets",
+      "item": [
+        {
+          "name": "Create Outlet (ADMIN/OWNER)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"basicInfo\": {\n    \"name\": \"Spice Garden\",\n    \"logo\": \"https://example.com/logo.jpg\",\n    \"cuisineType\": [\"Indian\", \"Italian\"],\n    \"outletType\": \"bakery\"\n  },\n  \"contact\": {\n    \"email\": \"contact@spicegarden.com\",\n    \"phone\": \"1234567890\",\n    \"country\": \"USA\",\n    \"state\": \"California\",\n    \"city\": \"Anytown\",\n    \"address\": \"123 Main St, Anytown, USA\"\n  },\n  \"settings\": {\n    \"gstNo\": \"123456789012345\",\n    \"currency\": \"USD\",\n    \"CGST\": 10,\n    \"SGST\": 10\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/brands/{{brandId}}/outlets",
+            "description": "Creates an outlet for a brand. Requires OUTLET_MANAGEMENT permission and brand access. Enforces plan outlet limit."
+          }
+        },
+        {
+          "name": "List Brand Outlets",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
+            ],
+            "url": "{{baseUrl}}/api/v1/brands/{{brandId}}/outlets",
+            "description": "Lists outlets for a brand. Requires brand access."
+          }
+        },
+        {
+          "name": "Update Outlet (ADMIN/OWNER)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"basicInfo\": {\n    \"name\": \"Spice Garden - Updated\",\n    \"cuisineType\": [\"Indian\", \"Chinese\"],\n    \"outletType\": \"restaurant\"\n  },\n  \"contact\": {\n    \"phone\": \"9876543210\",\n    \"city\": \"Newtown\"\n  },\n  \"settings\": {\n    \"currency\": \"USD\",\n    \"CGST\": 12,\n    \"SGST\": 12\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/brands/{{brandId}}/outlets/{{outletId}}",
+            "description": "Updates an outlet. Requires OUTLET_MANAGEMENT permission and outlet access."
+          }
+        }
+      ]
+    }
+  ]
+}

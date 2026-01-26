@@ -1,0 +1,25 @@
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
+import type Joi from 'joi';
+
+export const validateRequest =
+  (schema: Joi.ObjectSchema, property: 'body' | 'query' | 'params' = 'body'): RequestHandler =>
+  (req: Request, res: Response, next: NextFunction) => {
+    const options = { abortEarly: false, allowUnknown: false, stripUnknown: true };
+    const source = property === 'body' ? req.body : property === 'query' ? req.query : req.params;
+    const { error, value } = schema.validate(source, options);
+    if (error) {
+      const messages = error.details.map(d => d.message);
+      return next({
+        status: 422,
+        code: 'VALIDATION_FAILED',
+        message: 'Validation failed',
+        validationMessages: messages,
+      });
+    }
+    if (property === 'body') req.body = value as unknown as typeof req.body;
+    else if (property === 'query') req.query = value as unknown as typeof req.query;
+    else req.params = value as unknown as typeof req.params;
+    next();
+  };
+
+export default validateRequest;
