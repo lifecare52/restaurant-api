@@ -132,6 +132,20 @@
       ]
     },
     {
+      "name": "Meta",
+      "item": [
+        {
+          "name": "Get Outlet & Cuisine Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/api/v1/meta/types",
+            "description": "Returns outletTypes and cuisineTypes for UI selections."
+          }
+        }
+      ]
+    },
+    {
       "name": "Brands",
       "item": [
         {
@@ -157,7 +171,7 @@
             "header": [
               { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
             ],
-            "url": "{{baseUrl}}/api/v1/brands/{{brandId}}",
+            "url": "{{baseUrl}}/api/v1/brands?brandId={{brandId}}",
             "description": "Fetches a brand by id. Requires brand access (ADMIN bypasses)."
           }
         },
@@ -173,7 +187,7 @@
               "mode": "raw",
               "raw": "{\n  \"name\": \"Updated Brand\",\n  \"plan\": { \"name\": \"Enterprise\", \"outletLimit\": 20 }\n}"
             },
-            "url": "{{baseUrl}}/api/v1/brands/{{brandId}}",
+            "url": "{{baseUrl}}/api/v1/brands?brandId={{brandId}}",
             "description": "Updates a brand. Requires BRAND_MANAGEMENT permission and brand access."
           }
         }
@@ -194,7 +208,7 @@
               "mode": "raw",
               "raw": "{\n  \"basicInfo\": {\n    \"name\": \"Spice Garden\",\n    \"logo\": \"https://example.com/logo.jpg\",\n    \"cuisineType\": [\"Indian\", \"Italian\"],\n    \"outletType\": \"bakery\"\n  },\n  \"contact\": {\n    \"email\": \"contact@spicegarden.com\",\n    \"phone\": \"1234567890\",\n    \"country\": \"USA\",\n    \"state\": \"California\",\n    \"city\": \"Anytown\",\n    \"address\": \"123 Main St, Anytown, USA\"\n  },\n  \"settings\": {\n    \"gstNo\": \"123456789012345\",\n    \"currency\": \"USD\",\n    \"CGST\": 10,\n    \"SGST\": 10\n  }\n}"
             },
-            "url": "{{baseUrl}}/api/v1/brands/{{brandId}}/outlets",
+            "url": "{{baseUrl}}/api/v1/brands/outlets?brandId={{brandId}}",
             "description": "Creates an outlet for a brand. Requires OUTLET_MANAGEMENT permission and brand access. Enforces plan outlet limit."
           }
         },
@@ -205,7 +219,7 @@
             "header": [
               { "key": "Authorization", "value": "Bearer {{token}}", "type": "text" }
             ],
-            "url": "{{baseUrl}}/api/v1/brands/{{brandId}}/outlets",
+            "url": "{{baseUrl}}/api/v1/brands/outlets?brandId={{brandId}}",
             "description": "Lists outlets for a brand. Requires brand access."
           }
         },
@@ -221,7 +235,7 @@
               "mode": "raw",
               "raw": "{\n  \"basicInfo\": {\n    \"name\": \"Spice Garden - Updated\",\n    \"cuisineType\": [\"Indian\", \"Chinese\"],\n    \"outletType\": \"restaurant\"\n  },\n  \"contact\": {\n    \"phone\": \"9876543210\",\n    \"city\": \"Newtown\"\n  },\n  \"settings\": {\n    \"currency\": \"USD\",\n    \"CGST\": 12,\n    \"SGST\": 12\n  }\n}"
             },
-            "url": "{{baseUrl}}/api/v1/brands/{{brandId}}/outlets/{{outletId}}",
+            "url": "{{baseUrl}}/api/v1/brands/outlets?brandId={{brandId}}&outletId={{outletId}}",
             "description": "Updates an outlet. Requires OUTLET_MANAGEMENT permission and outlet access."
           }
         }

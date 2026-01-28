@@ -16,3 +16,7 @@ export const updateBrandSchema = Joi.object({
     outletLimit: Joi.number().integer().min(1),
   }),
 });
+
+export const brandIdQuerySchema = Joi.object({
+  brandId: Joi.string().required(),
+});

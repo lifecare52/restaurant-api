@@ -435,13 +435,13 @@ export const getOpenApiSpec = () => {
             },
           },
         },
-      },
-      '/api/v1/brands/{brandId}': {
         get: {
           tags: ['Brands'],
           summary: 'Get brand by id',
           security: [{ bearerAuth: [] }],
-          parameters: [{ name: 'brandId', in: 'path', required: true, schema: { type: 'string' } }],
+          parameters: [
+            { name: 'brandId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
           responses: {
             200: {
               description: 'OK',
@@ -467,7 +467,9 @@ export const getOpenApiSpec = () => {
           tags: ['Brands'],
           summary: 'Update brand',
           security: [{ bearerAuth: [] }],
-          parameters: [{ name: 'brandId', in: 'path', required: true, schema: { type: 'string' } }],
+          parameters: [
+            { name: 'brandId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
           requestBody: {
             required: true,
             content: {
@@ -496,12 +498,14 @@ export const getOpenApiSpec = () => {
           },
         },
       },
-      '/api/v1/brands/{brandId}/outlets': {
+      '/api/v1/brands/outlets': {
         post: {
           tags: ['Outlets'],
           summary: 'Create outlet',
           security: [{ bearerAuth: [] }],
-          parameters: [{ name: 'brandId', in: 'path', required: true, schema: { type: 'string' } }],
+          parameters: [
+            { name: 'brandId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
           requestBody: {
             required: true,
             content: {
@@ -539,7 +543,9 @@ export const getOpenApiSpec = () => {
           tags: ['Outlets'],
           summary: 'List brand outlets',
           security: [{ bearerAuth: [] }],
-          parameters: [{ name: 'brandId', in: 'path', required: true, schema: { type: 'string' } }],
+          parameters: [
+            { name: 'brandId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
           responses: {
             200: {
               description: 'OK',
@@ -555,15 +561,13 @@ export const getOpenApiSpec = () => {
             },
           },
         },
-      },
-      '/api/v1/brands/{brandId}/outlets/{outletId}': {
         patch: {
           tags: ['Outlets'],
           summary: 'Update outlet',
           security: [{ bearerAuth: [] }],
           parameters: [
-            { name: 'brandId', in: 'path', required: true, schema: { type: 'string' } },
-            { name: 'outletId', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'brandId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'outletId', in: 'query', required: true, schema: { type: 'string' } },
           ],
           requestBody: {
             required: true,

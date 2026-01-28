@@ -16,13 +16,19 @@ import {
   listOutletsController,
   updateOutletController,
 } from './outlet.controller';
-import { createOutletSchema, updateOutletSchema } from './outlet.validator';
+import {
+  createOutletSchema,
+  updateOutletSchema,
+  outletBrandQuerySchema,
+  outletUpdateQuerySchema,
+} from './outlet.validator';
 
 const router = Router({ mergeParams: true });
 
 router.post(
-  '/:brandId/outlets',
+  '/outlets',
   auth,
+  validateRequest(outletBrandQuerySchema, 'query'),
   requireBrandAccess,
   requireRole([ROLES.ADMIN, ROLES.OWNER]),
   requirePermissionsOrAdmin([PERMISSIONS.OUTLET_MANAGEMENT]),
@@ -30,11 +36,18 @@ router.post(
   createOutletController,
 );
 
-router.get('/:brandId/outlets', auth, requireBrandAccess, listOutletsController);
+router.get(
+  '/outlets',
+  auth,
+  validateRequest(outletBrandQuerySchema, 'query'),
+  requireBrandAccess,
+  listOutletsController,
+);
 
 router.patch(
-  '/:brandId/outlets/:outletId',
+  '/outlets',
   auth,
+  validateRequest(outletUpdateQuerySchema, 'query'),
   requireBrandAccess,
   requireOutletAccess,
   requireRole([ROLES.ADMIN, ROLES.OWNER]),

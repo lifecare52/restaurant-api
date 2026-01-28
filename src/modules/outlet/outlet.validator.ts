@@ -51,3 +51,12 @@ export const updateOutletSchema = Joi.object({
     SGST: Joi.number().integer().min(0).max(100),
   }),
 });
+
+export const outletBrandQuerySchema = Joi.object({
+  brandId: Joi.string().required(),
+});
+
+export const outletUpdateQuerySchema = Joi.object({
+  brandId: Joi.string().required(),
+  outletId: Joi.string().required(),
+});

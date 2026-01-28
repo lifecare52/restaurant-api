@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 export const createOutletController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId = req.params.brandId;
+    const brandId = (req.query as { brandId: string }).brandId;
     const outlet = await createOutlet(brandId, req.body);
     if (!outlet) {
       res.locals.response = {
@@ -27,7 +27,7 @@ export const createOutletController = async (req: Request, res: Response, next: 
 
 export const listOutletsController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId = req.params.brandId;
+    const brandId = (req.query as { brandId: string }).brandId;
     const outlets = await listOutlets(brandId);
     res.locals.response = {
       status: true,
@@ -42,8 +42,7 @@ export const listOutletsController = async (req: Request, res: Response, next: N
 
 export const updateOutletController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId = req.params.brandId;
-    const outletId = req.params.outletId;
+    const { brandId, outletId } = req.query as { brandId: string; outletId: string };
     const outlet = await updateOutlet(brandId, outletId, req.body);
     if (!outlet) {
       res.locals.response = {

@@ -11,7 +11,7 @@ import {
   getBrandController,
   updateBrandController,
 } from './brand.controller';
-import { createBrandSchema, updateBrandSchema } from './brand.validator';
+import { createBrandSchema, updateBrandSchema, brandIdQuerySchema } from './brand.validator';
 
 const router = Router();
 
@@ -23,11 +23,18 @@ router.post(
   createBrandController,
 );
 
-router.get('/:brandId', auth, requireBrandAccess, getBrandController);
+router.get(
+  '/',
+  auth,
+  validateRequest(brandIdQuerySchema, 'query'),
+  requireBrandAccess,
+  getBrandController,
+);
 
 router.patch(
-  '/:brandId',
+  '/',
   auth,
+  validateRequest(brandIdQuerySchema, 'query'),
   requireBrandAccess,
   requireRole([ROLES.OWNER, ROLES.PARTNER, ROLES.ADMIN]),
   requirePermissions([PERMISSIONS.BRAND_MANAGEMENT]),

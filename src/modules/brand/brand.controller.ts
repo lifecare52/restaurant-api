@@ -23,7 +23,8 @@ export const createBrandController = async (req: Request, res: Response, next: N
 
 export const getBrandController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brand = await getBrandById(req.params.brandId);
+    const brandId = (req.query as { brandId: string }).brandId;
+    const brand = await getBrandById(brandId);
     if (!brand) {
       res.locals.response = { status: false, code: 404, message: 'Not Found' };
       next();
@@ -45,12 +46,13 @@ export const updateBrandController = async (req: Request, res: Response, next: N
       next();
       return;
     }
-    if (role !== ROLES.ADMIN && userBrandId !== req.params.brandId) {
+    const brandId = (req.query as { brandId: string }).brandId;
+    if (role !== ROLES.ADMIN && userBrandId !== brandId) {
       res.locals.response = { status: false, code: 403, message: 'Forbidden' };
       next();
       return;
     }
-    const brand = await updateBrand(req.params.brandId, req.body);
+    const brand = await updateBrand(brandId, req.body);
     res.locals.response = { status: true, code: 200, data: brand };
     next();
   } catch (err) {
