@@ -5,6 +5,7 @@ import { notFoundHandler, errorHandler } from '@middlewares/error.middleware';
 import responseMiddleware from '@middlewares/response.middleware';
 
 import brandRoutes from '@modules/brand/brand.route';
+import metaRoutes from '@modules/meta/meta.route';
 import outletRoutes from '@modules/outlet/outlet.route';
 import userRoutes from '@modules/user/user.route';
 
@@ -22,6 +23,7 @@ export const createApp = (): express.Express => {
   app.get('/api-docs.json', (_req, res) => res.json(getOpenApiSpec()));
   app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(getOpenApiSpec()));
   app.use('/api/v1/brands', brandRoutes);
+  app.use('/api/v1/meta', metaRoutes);
   app.use('/api/v1/brands', outletRoutes);
   app.use('/api/v1/users', userRoutes);
   app.use(responseMiddleware);

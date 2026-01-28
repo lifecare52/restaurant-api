@@ -44,6 +44,20 @@ export const getOpenApiSpec = () => {
           },
           required: ['status', 'code'],
         },
+        MetaTypesResponse: {
+          type: 'object',
+          properties: {
+            outletTypes: {
+              type: 'array',
+              items: { type: 'string', enum: ['bakery', 'restaurant', 'cafe'] },
+            },
+            cuisineTypes: {
+              type: 'array',
+              items: { type: 'string', enum: ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai'] },
+            },
+          },
+          required: ['outletTypes', 'cuisineTypes'],
+        },
         LoginRequest: {
           type: 'object',
           properties: {
@@ -204,8 +218,46 @@ export const getOpenApiSpec = () => {
         },
       },
     },
-    tags: [{ name: 'Users' }, { name: 'Brands' }, { name: 'Outlets' }],
+    tags: [{ name: 'Users' }, { name: 'Brands' }, { name: 'Outlets' }, { name: 'Meta' }],
     paths: {
+      '/api/v1/meta/types': {
+        get: {
+          tags: ['Meta'],
+          summary: 'Get outlet and cuisine types',
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/MetaTypesResponse' },
+                        },
+                      },
+                    ],
+                  },
+                  examples: {
+                    success: {
+                      value: {
+                        status: true,
+                        code: 200,
+                        data: {
+                          outletTypes: ['bakery', 'restaurant', 'cafe'],
+                          cuisineTypes: ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai'],
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       '/api/v1/users/login': {
         post: {
           tags: ['Users'],
