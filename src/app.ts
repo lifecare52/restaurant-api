@@ -1,6 +1,7 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
+import corsMiddleware from '@middlewares/cors.middleware';
 import { notFoundHandler, errorHandler } from '@middlewares/error.middleware';
 import responseMiddleware from '@middlewares/response.middleware';
 
@@ -19,6 +20,7 @@ import { getOpenApiSpec } from '@shared/docs/openapi';
 export const createApp = (): express.Express => {
   const app = express();
   // TODO: Add body parsers, CORS, logging, etc. when needed.
+  app.use(corsMiddleware);
   app.use(express.json());
   app.get('/api-docs.json', (_req, res) => res.json(getOpenApiSpec()));
   app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(getOpenApiSpec()));
