@@ -216,9 +216,50 @@ export const getOpenApiSpec = () => {
             },
           },
         },
+        Category: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            name: { type: 'string' },
+            onlineName: { type: 'string' },
+            logo: { type: 'string', format: 'uri' },
+            isActive: { type: 'boolean' },
+            isDelete: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+          required: ['_id', 'brandId', 'outletId', 'name', 'isActive', 'isDelete'],
+        },
+        CreateCategoryRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            onlineName: { type: 'string', minLength: 2 },
+            logo: { type: 'string', format: 'uri' },
+            isActive: { type: 'boolean', default: true },
+          },
+          required: ['name'],
+        },
+        UpdateCategoryRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            onlineName: { type: 'string', minLength: 2 },
+            logo: { type: 'string', format: 'uri' },
+            isActive: { type: 'boolean' },
+          },
+        },
       },
     },
-    tags: [{ name: 'Users' }, { name: 'Brands' }, { name: 'Outlets' }, { name: 'Meta' }],
+    tags: [
+      { name: 'Users' },
+      { name: 'Brands' },
+      { name: 'Outlets' },
+      { name: 'Meta' },
+      { name: 'Menu' },
+    ],
     paths: {
       '/api/v1/meta/types': {
         get: {
@@ -272,7 +313,19 @@ export const getOpenApiSpec = () => {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/Category' },
+                        },
+                      },
+                    ],
+                  },
+                },
               },
             },
             401: {
@@ -298,7 +351,39 @@ export const getOpenApiSpec = () => {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/Category' },
+                        },
+                      },
+                    ],
+                  },
+                  examples: {
+                    success: {
+                      value: {
+                        status: true,
+                        code: 201,
+                        data: {
+                          _id: 'c123',
+                          brandId: 'b123',
+                          outletId: 'o123',
+                          name: 'Main Course',
+                          onlineName: 'Main Course',
+                          logo: 'https://cdn.example.com/logo.png',
+                          isActive: true,
+                          isDelete: false,
+                          createdAt: '2026-02-03T10:00:00.000Z',
+                          updatedAt: '2026-02-03T10:00:00.000Z',
+                        },
+                      },
+                    },
+                  },
+                },
               },
             },
             403: {
@@ -446,7 +531,42 @@ export const getOpenApiSpec = () => {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/Category' },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                  examples: {
+                    success: {
+                      value: {
+                        status: true,
+                        code: 200,
+                        data: [
+                          {
+                            _id: 'c123',
+                            brandId: 'b123',
+                            outletId: 'o123',
+                            name: 'Main Course',
+                            onlineName: 'Main Course',
+                            logo: 'https://cdn.example.com/logo.png',
+                            isActive: true,
+                            isDelete: false,
+                          },
+                        ],
+                      },
+                    },
+                  },
+                },
               },
             },
             404: {
@@ -480,7 +600,19 @@ export const getOpenApiSpec = () => {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/Category' },
+                        },
+                      },
+                    ],
+                  },
+                },
               },
             },
             403: {
@@ -550,7 +682,22 @@ export const getOpenApiSpec = () => {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'object',
+                            properties: { deleted: { type: 'boolean' } },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
               },
             },
             403: {
@@ -566,8 +713,8 @@ export const getOpenApiSpec = () => {
           summary: 'Update outlet',
           security: [{ bearerAuth: [] }],
           parameters: [
-            { name: 'brandId', in: 'query', required: true, schema: { type: 'string' } },
-            { name: 'outletId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'x-brand-id', in: 'header', required: true, schema: { type: 'string' } },
+            { name: 'x-outlet-id', in: 'header', required: true, schema: { type: 'string' } },
           ],
           requestBody: {
             required: true,
@@ -596,6 +743,211 @@ export const getOpenApiSpec = () => {
             },
             422: {
               description: 'Validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/menu/categories': {
+        post: {
+          tags: ['Menu'],
+          summary: 'Create category',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'brandId', in: 'header', required: true, schema: { type: 'string' } },
+            { name: 'outletId', in: 'header', required: true, schema: { type: 'string' } },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/CreateCategoryRequest' },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Created',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            400: {
+              description: 'Brand or outlet not found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            422: {
+              description: 'Validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        get: {
+          tags: ['Menu'],
+          summary: 'List categories',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'brandId', in: 'header', required: true, schema: { type: 'string' } },
+            { name: 'outletId', in: 'header', required: true, schema: { type: 'string' } },
+            {
+              name: 'page',
+              in: 'query',
+              required: false,
+              schema: { type: 'number', minimum: 1, default: 1 },
+            },
+            {
+              name: 'limit',
+              in: 'query',
+              required: false,
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+            },
+            {
+              name: 'searchText',
+              in: 'query',
+              required: false,
+              schema: { type: 'string', minLength: 1, maxLength: 100 },
+            },
+            {
+              name: 'column',
+              in: 'query',
+              required: false,
+              schema: {
+                type: 'string',
+                enum: ['name', 'onlineName', 'createdAt', 'updatedAt'],
+                default: 'name',
+              },
+            },
+            {
+              name: 'order',
+              in: 'query',
+              required: false,
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        patch: {
+          tags: ['Menu'],
+          summary: 'Update category',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'brandId', in: 'header', required: true, schema: { type: 'string' } },
+            { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateCategoryRequest' },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            422: {
+              description: 'Validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        delete: {
+          tags: ['Menu'],
+          summary: 'Delete category',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'brandId', in: 'header', required: true, schema: { type: 'string' } },
+            { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/menu/categories/detail': {
+        get: {
+          tags: ['Menu'],
+          summary: 'Get category by id',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'brandId', in: 'header', required: true, schema: { type: 'string' } },
+            { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
               },

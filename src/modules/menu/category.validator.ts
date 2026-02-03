@@ -1,0 +1,43 @@
+import Joi from 'joi';
+
+export const createCategorySchema = Joi.object({
+  name: Joi.string().trim().min(2).required(),
+  onlineName: Joi.string().trim().min(2).optional(),
+  logo: Joi.string().uri().optional(),
+  isActive: Joi.boolean().default(true),
+});
+
+export const updateCategorySchema = Joi.object({
+  name: Joi.string().trim().min(2),
+  onlineName: Joi.string().trim().min(2),
+  logo: Joi.string().uri(),
+  isActive: Joi.boolean(),
+});
+
+export const categoryListHeaderSchema = Joi.object({
+  brandid: Joi.string().required(),
+  outletid: Joi.string().required(),
+});
+
+export const categoryListQuerySchema = Joi.object({
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(20),
+  searchText: Joi.string().trim().min(1).max(100).optional(),
+  column: Joi.string()
+    .valid('name', 'onlineName', 'createdAt', 'updatedAt')
+    .optional()
+    .default('name'),
+  order: Joi.string().valid('ASC', 'DESC').optional().default('ASC'),
+});
+
+export const categoryGetQuerySchema = Joi.object({
+  categoryId: Joi.string().required(),
+});
+
+export const categoryModifyQuerySchema = Joi.object({
+  categoryId: Joi.string().required(),
+});
+
+export const categoryBrandHeaderSchema = Joi.object({
+  brandid: Joi.string().required(),
+});

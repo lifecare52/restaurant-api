@@ -6,6 +6,7 @@ import { notFoundHandler, errorHandler } from '@middlewares/error.middleware';
 import responseMiddleware from '@middlewares/response.middleware';
 
 import brandRoutes from '@modules/brand/brand.route';
+import menuRoutes from '@modules/menu/menu.route';
 import metaRoutes from '@modules/meta/meta.route';
 import outletRoutes from '@modules/outlet/outlet.route';
 import userRoutes from '@modules/user/user.route';
@@ -28,6 +29,7 @@ export const createApp = (): express.Express => {
   app.use('/api/v1/meta', metaRoutes);
   app.use('/api/v1/brands', outletRoutes);
   app.use('/api/v1/users', userRoutes);
+  app.use('/api/v1/menu', menuRoutes);
   app.use(responseMiddleware);
   app.use(notFoundHandler);
   app.use(errorHandler);

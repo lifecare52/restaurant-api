@@ -45,7 +45,10 @@ export const requireBrandAccess: RequestHandler = (req, res, next) => {
   const brandIdParam =
     (req.params as Record<string, string>).brandId ||
     (req.query as Record<string, string>).brandId ||
-    (req.body as { brandId?: string }).brandId;
+    (req.body as { brandId?: string }).brandId ||
+    (req.headers['brandid'] as string | undefined) ||
+    (req.headers['brand-id'] as string | undefined) ||
+    (req.headers['x-brand-id'] as string | undefined);
   const user = req.user;
   if (!brandIdParam) {
     next({ status: 400, code: 'BAD_REQUEST', message: 'brandId required' });
@@ -66,7 +69,10 @@ export const requireOutletAccess: RequestHandler = (req, res, next) => {
   const outletIdParam =
     (req.params as Record<string, string>).outletId ||
     (req.query as Record<string, string>).outletId ||
-    (req.body as { outletId?: string }).outletId;
+    (req.body as { outletId?: string }).outletId ||
+    (req.headers['outletid'] as string | undefined) ||
+    (req.headers['outlet-id'] as string | undefined) ||
+    (req.headers['x-outlet-id'] as string | undefined);
   const user = req.user;
   if (!outletIdParam) {
     next({ status: 400, code: 'BAD_REQUEST', message: 'outletId required' });

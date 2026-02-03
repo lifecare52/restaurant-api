@@ -24,6 +24,13 @@ export const listOutlets = async (brandId: string) => {
   return OutletEntity.find({ brandId: new Types.ObjectId(brandId) });
 };
 
+export const getOutletById = async (brandId: string, outletId: string) => {
+  return OutletEntity.findOne({
+    _id: new Types.ObjectId(outletId),
+    brandId: new Types.ObjectId(brandId),
+  });
+};
+
 export const updateOutlet = async (brandId: string, outletId: string, dto: OutletUpdateDTO) => {
   return OutletEntity.findOneAndUpdate(
     { _id: new Types.ObjectId(outletId), brandId: new Types.ObjectId(brandId) },
@@ -35,5 +42,6 @@ export const updateOutlet = async (brandId: string, outletId: string, dto: Outle
 export default {
   createOutlet,
   listOutlets,
+  getOutletById,
   updateOutlet,
 };
