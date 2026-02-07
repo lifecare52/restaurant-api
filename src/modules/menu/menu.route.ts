@@ -6,6 +6,7 @@ import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.midd
 import { validateRequest } from '@shared/utils/validateRequest';
 
 import menuItemsRouter from './menu-items/menu-item.route';
+import variationsRouter from './variations/variation.route';
 import {
   createCategoryController,
   listCategoriesController,
@@ -26,6 +27,7 @@ import {
 const router = Router();
 
 router.use(menuItemsRouter);
+router.use(variationsRouter);
 
 router.post(
   '/categories',

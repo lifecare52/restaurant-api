@@ -319,6 +319,47 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
           },
         },
+        Variation: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            name: { type: 'string' },
+            department: {
+              type: 'string',
+              enum: ['SIZE', 'PORTION', 'QUANTITY', 'WEIGHT', 'VOLUME', 'PACK', 'FLAVOR', 'TOPPING', 'STYLE', 'CUSTOM'],
+            },
+            isActive: { type: 'boolean' },
+            isDelete: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+          required: ['_id', 'brandId', 'outletId', 'name', 'department', 'isActive', 'isDelete'],
+        },
+        CreateVariationRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            department: {
+              type: 'string',
+              enum: ['SIZE', 'PORTION', 'QUANTITY', 'WEIGHT', 'VOLUME', 'PACK', 'FLAVOR', 'TOPPING', 'STYLE', 'CUSTOM'],
+            },
+            isActive: { type: 'boolean', default: true },
+          },
+          required: ['name', 'department'],
+        },
+        UpdateVariationRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            department: {
+              type: 'string',
+              enum: ['SIZE', 'PORTION', 'QUANTITY', 'WEIGHT', 'VOLUME', 'PACK', 'FLAVOR', 'TOPPING', 'STYLE', 'CUSTOM'],
+            },
+            isActive: { type: 'boolean' },
+          },
+        },
       },
     },
     tags: [
@@ -328,6 +369,7 @@ export const getOpenApiSpec = () => {
       { name: 'Meta' },
       { name: 'Categorys', description: 'Requires brand-id for detail/update/delete; brand-id and outlet-id for create/list.' },
       { name: 'Menu-Items', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
+      { name: 'Variations', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
     ],
     paths: {
       '/api/v1/meta/types': {
@@ -1201,6 +1243,124 @@ export const getOpenApiSpec = () => {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
               },
             },
+          },
+        },
+      },
+      '/api/v1/menu/variations': {
+        post: {
+          tags: ['Variations'],
+          summary: 'Create variation',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string', minLength: 2 },
+                    department: {
+                      type: 'string',
+                      enum: ['SIZE', 'PORTION', 'QUANTITY', 'WEIGHT', 'VOLUME', 'PACK', 'FLAVOR', 'TOPPING', 'STYLE', 'CUSTOM'],
+                    },
+                    isActive: { type: 'boolean', default: true },
+                  },
+                  required: ['name', 'department'],
+                },
+              },
+            },
+          },
+          responses: {
+            201: { description: 'Created', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            409: { description: 'Duplicate variation', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            422: { description: 'Validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        get: {
+          tags: ['Variations'],
+          summary: 'List variations',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'page', in: 'query', required: false, schema: { type: 'number', minimum: 1, default: 1 } },
+            { name: 'limit', in: 'query', required: false, schema: { type: 'number', minimum: 1, maximum: 100, default: 20 } },
+            { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
+            {
+              name: 'department',
+              in: 'query',
+              required: false,
+              schema: {
+                type: 'string',
+                enum: ['SIZE', 'PORTION', 'QUANTITY', 'WEIGHT', 'VOLUME', 'PACK', 'FLAVOR', 'TOPPING', 'STYLE', 'CUSTOM'],
+              },
+            },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['name', 'department', 'createdAt', 'updatedAt'], default: 'name' } },
+            { name: 'order', in: 'query', required: false, schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' } },
+          ],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        patch: {
+          tags: ['Variations'],
+          summary: 'Update variation',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'variationId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    name: { type: 'string', minLength: 2 },
+                    department: {
+                      type: 'string',
+                      enum: ['SIZE', 'PORTION', 'QUANTITY', 'WEIGHT', 'VOLUME', 'PACK', 'FLAVOR', 'TOPPING', 'STYLE', 'CUSTOM'],
+                    },
+                    isActive: { type: 'boolean' },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            409: { description: 'Duplicate variation', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            422: { description: 'Validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        delete: {
+          tags: ['Variations'],
+          summary: 'Delete variation',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'variationId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+      },
+      '/api/v1/menu/variations/detail': {
+        get: {
+          tags: ['Variations'],
+          summary: 'Get variation by id',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'variationId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
           },
         },
       },

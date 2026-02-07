@@ -22,4 +22,8 @@ export const API_MESSAGES = {
   MENU_ITEM_UPDATED: 'Menu item updated successfully',
   MENU_ITEM_NOT_FOUND: 'Menu item not found',
   MENU_ITEM_DELETED: 'Menu item deleted successfully',
+  VARIATION_CREATED: 'Variation created successfully',
+  VARIATION_UPDATED: 'Variation updated successfully',
+  VARIATION_NOT_FOUND: 'Variation not found',
+  VARIATION_DELETED: 'Variation deleted successfully',
 } as const;
