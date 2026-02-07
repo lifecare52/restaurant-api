@@ -10,16 +10,8 @@ import type { Request, Response, NextFunction } from 'express';
 
 export const createCategoryController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId =
-      (req.headers['brandid'] as string | undefined) ||
-      (req.headers['brand-id'] as string | undefined) ||
-      (req.headers['x-brand-id'] as string | undefined) ||
-      '';
-    const outletId =
-      (req.headers['outletid'] as string | undefined) ||
-      (req.headers['outlet-id'] as string | undefined) ||
-      (req.headers['x-outlet-id'] as string | undefined) ||
-      '';
+    const brandId = (req.headers['brand-id'] as string | undefined) || '';
+    const outletId = (req.headers['outlet-id'] as string | undefined) || '';
     const category = await createCategory(brandId, outletId, req.body);
     if (!category) {
       res.locals.response = { status: false, code: 400, message: 'Brand or outlet not found' };
@@ -34,16 +26,8 @@ export const createCategoryController = async (req: Request, res: Response, next
 
 export const listCategoriesController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId =
-      (req.headers['brandid'] as string | undefined) ||
-      (req.headers['brand-id'] as string | undefined) ||
-      (req.headers['x-brand-id'] as string | undefined) ||
-      '';
-    const outletId =
-      (req.headers['outletid'] as string | undefined) ||
-      (req.headers['outlet-id'] as string | undefined) ||
-      (req.headers['x-outlet-id'] as string | undefined) ||
-      '';
+    const brandId = (req.headers['brand-id'] as string | undefined) || '';
+    const outletId = (req.headers['outlet-id'] as string | undefined) || '';
     const { page, limit, searchText, column, order } = req.query as {
       page?: number;
       limit?: number;
@@ -67,11 +51,7 @@ export const listCategoriesController = async (req: Request, res: Response, next
 
 export const getCategoryController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId =
-      (req.headers['brandid'] as string | undefined) ||
-      (req.headers['brand-id'] as string | undefined) ||
-      (req.headers['x-brand-id'] as string | undefined) ||
-      '';
+    const brandId = (req.headers['brand-id'] as string | undefined) || '';
     const { categoryId } = req.query as { categoryId: string };
     const category = await getCategory(brandId, categoryId);
     if (!category) {
@@ -87,11 +67,7 @@ export const getCategoryController = async (req: Request, res: Response, next: N
 
 export const updateCategoryController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId =
-      (req.headers['brandid'] as string | undefined) ||
-      (req.headers['brand-id'] as string | undefined) ||
-      (req.headers['x-brand-id'] as string | undefined) ||
-      '';
+    const brandId = (req.headers['brand-id'] as string | undefined) || '';
     const { categoryId } = req.query as { categoryId: string };
     const category = await updateCategory(brandId, categoryId, req.body);
     if (!category) {
@@ -107,11 +83,7 @@ export const updateCategoryController = async (req: Request, res: Response, next
 
 export const deleteCategoryController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId =
-      (req.headers['brandid'] as string | undefined) ||
-      (req.headers['brand-id'] as string | undefined) ||
-      (req.headers['x-brand-id'] as string | undefined) ||
-      '';
+    const brandId = (req.headers['brand-id'] as string | undefined) || '';
     const { categoryId } = req.query as { categoryId: string };
     const category = await deleteCategory(brandId, categoryId);
     if (!category) {

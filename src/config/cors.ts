@@ -21,7 +21,10 @@ export const getCorsConfig = (): CorsConfig => {
     process.env.CORS_ALLOWED_METHODS,
     'GET,POST,PATCH,PUT,DELETE,OPTIONS',
   );
-  const allowedHeaders = toList(process.env.CORS_ALLOWED_HEADERS, 'Content-Type, Authorization');
+  const allowedHeaders = toList(
+    process.env.CORS_ALLOWED_HEADERS,
+    'Content-Type, Authorization, brand-id, outlet-id',
+  );
   const exposedHeaders = toList(process.env.CORS_EXPOSED_HEADERS, '');
   return { allowedOrigins, allowCredentials, allowedMethods, allowedHeaders, exposedHeaders };
 };

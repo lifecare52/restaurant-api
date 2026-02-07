@@ -15,6 +15,8 @@ export const getOpenApiSpec = () => {
           scheme: 'bearer',
           bearerFormat: 'JWT',
         },
+        brandIdHeader: { type: 'apiKey', in: 'header', name: 'brand-id' },
+        outletIdHeader: { type: 'apiKey', in: 'header', name: 'outlet-id' },
       },
       schemas: {
         ApiError: {
@@ -251,6 +253,72 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
           },
         },
+        MenuItem: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            name: { type: 'string' },
+            shortCodes: { type: 'array', items: { type: 'string' }, maxItems: 2, uniqueItems: true, description: 'Up to 2 codes; unique per brand+outlet (case-insensitive)' },
+            categoryId: { type: 'string' },
+            dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
+            basePrice: { type: 'number', nullable: true },
+            costPrice: { type: 'number' },
+            profitPercentage: { type: 'number' },
+            hasVariation: { type: 'boolean' },
+            variationGroupIds: { type: 'array', items: { type: 'string' } },
+            addonGroupIds: { type: 'array', items: { type: 'string' } },
+            isActive: { type: 'boolean' },
+            isDelete: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+          required: [
+            '_id',
+            'brandId',
+            'outletId',
+            'name',
+            'categoryId',
+            'dietary',
+            'hasVariation',
+            'isActive',
+            'isDelete',
+          ],
+        },
+        CreateMenuItemRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            shortCodes: { type: 'array', items: { type: 'string' }, maxItems: 2, uniqueItems: true, description: 'Up to 2 codes; unique per brand+outlet (case-insensitive)' },
+            categoryId: { type: 'string' },
+            dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
+            basePrice: { type: 'number', nullable: true },
+            costPrice: { type: 'number' },
+            profitPercentage: { type: 'number' },
+            hasVariation: { type: 'boolean', default: false },
+            variationGroupIds: { type: 'array', items: { type: 'string' } },
+            addonGroupIds: { type: 'array', items: { type: 'string' } },
+            isActive: { type: 'boolean', default: true },
+          },
+          required: ['name', 'categoryId', 'dietary'],
+        },
+        UpdateMenuItemRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            shortCodes: { type: 'array', items: { type: 'string' }, maxItems: 2, uniqueItems: true, description: 'Up to 2 codes; unique per brand+outlet (case-insensitive)' },
+            categoryId: { type: 'string' },
+            dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
+            basePrice: { type: 'number', nullable: true },
+            costPrice: { type: 'number' },
+            profitPercentage: { type: 'number' },
+            hasVariation: { type: 'boolean' },
+            variationGroupIds: { type: 'array', items: { type: 'string' } },
+            addonGroupIds: { type: 'array', items: { type: 'string' } },
+            isActive: { type: 'boolean' },
+          },
+        },
       },
     },
     tags: [
@@ -258,7 +326,8 @@ export const getOpenApiSpec = () => {
       { name: 'Brands' },
       { name: 'Outlets' },
       { name: 'Meta' },
-      { name: 'Menu' },
+      { name: 'Categorys', description: 'Requires brand-id for detail/update/delete; brand-id and outlet-id for create/list.' },
+      { name: 'Menu-Items', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
     ],
     paths: {
       '/api/v1/meta/types': {
@@ -711,10 +780,10 @@ export const getOpenApiSpec = () => {
         patch: {
           tags: ['Outlets'],
           summary: 'Update outlet',
-          security: [{ bearerAuth: [] }],
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'x-brand-id', in: 'header', required: true, schema: { type: 'string' } },
-            { name: 'x-outlet-id', in: 'header', required: true, schema: { type: 'string' } },
+            { name: 'brand-id', in: 'header', required: true, schema: { type: 'string' } },
+            { name: 'outlet-id', in: 'header', required: true, schema: { type: 'string' } },
           ],
           requestBody: {
             required: true,
@@ -752,13 +821,10 @@ export const getOpenApiSpec = () => {
       },
       '/api/v1/menu/categories': {
         post: {
-          tags: ['Menu'],
+          tags: ['Categorys'],
           summary: 'Create category',
-          security: [{ bearerAuth: [] }],
-          parameters: [
-            { name: 'brandId', in: 'header', required: true, schema: { type: 'string' } },
-            { name: 'outletId', in: 'header', required: true, schema: { type: 'string' } },
-          ],
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
             content: {
@@ -795,12 +861,11 @@ export const getOpenApiSpec = () => {
           },
         },
         get: {
-          tags: ['Menu'],
+          tags: ['Categorys'],
           summary: 'List categories',
-          security: [{ bearerAuth: [] }],
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'brandId', in: 'header', required: true, schema: { type: 'string' } },
-            { name: 'outletId', in: 'header', required: true, schema: { type: 'string' } },
             {
               name: 'page',
               in: 'query',
@@ -852,11 +917,11 @@ export const getOpenApiSpec = () => {
           },
         },
         patch: {
-          tags: ['Menu'],
+          tags: ['Categorys'],
           summary: 'Update category',
-          security: [{ bearerAuth: [] }],
+          description: 'Mandatory header: brand-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
           parameters: [
-            { name: 'brandId', in: 'header', required: true, schema: { type: 'string' } },
             { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } },
           ],
           requestBody: {
@@ -895,11 +960,11 @@ export const getOpenApiSpec = () => {
           },
         },
         delete: {
-          tags: ['Menu'],
+          tags: ['Categorys'],
           summary: 'Delete category',
-          security: [{ bearerAuth: [] }],
+          description: 'Mandatory header: brand-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
           parameters: [
-            { name: 'brandId', in: 'header', required: true, schema: { type: 'string' } },
             { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } },
           ],
           responses: {
@@ -926,11 +991,11 @@ export const getOpenApiSpec = () => {
       },
       '/api/v1/menu/categories/detail': {
         get: {
-          tags: ['Menu'],
+          tags: ['Categorys'],
           summary: 'Get category by id',
-          security: [{ bearerAuth: [] }],
+          description: 'Mandatory header: brand-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'brandId', in: 'header', required: true, schema: { type: 'string' } },
             { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } },
           ],
           responses: {
@@ -948,6 +1013,190 @@ export const getOpenApiSpec = () => {
             },
             403: {
               description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/menu/menu-items': {
+        post: {
+          tags: ['Menu-Items'],
+          summary: 'Create menu item',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/CreateMenuItemRequest' },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Created',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            400: {
+              description: 'Brand or outlet not found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            422: {
+              description: 'Validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        get: {
+          tags: ['Menu-Items'],
+          summary: 'List menu items',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'page', in: 'query', required: false, schema: { type: 'number', minimum: 1, default: 1 } },
+            { name: 'limit', in: 'query', required: false, schema: { type: 'number', minimum: 1, maximum: 100, default: 20 } },
+            { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['name', 'createdAt', 'updatedAt'], default: 'name' } },
+            { name: 'order', in: 'query', required: false, schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' } },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        patch: {
+          tags: ['Menu-Items'],
+          summary: 'Update menu item',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'menuItemId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateMenuItemRequest' },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            422: {
+              description: 'Validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        delete: {
+          tags: ['Menu-Items'],
+          summary: 'Delete menu item',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'menuItemId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            422: {
+              description: 'Validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/menu/menu-items/detail': {
+        get: {
+          tags: ['Menu-Items'],
+          summary: 'Get menu item by id',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'menuItemId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            422: {
+              description: 'Validation failed',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
               },

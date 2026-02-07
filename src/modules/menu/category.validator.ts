@@ -15,8 +15,8 @@ export const updateCategorySchema = Joi.object({
 });
 
 export const categoryListHeaderSchema = Joi.object({
-  brandid: Joi.string().required(),
-  outletid: Joi.string().required(),
+  'brand-id': Joi.string().required(),
+  'outlet-id': Joi.string().required(),
 });
 
 export const categoryListQuerySchema = Joi.object({
@@ -39,5 +39,5 @@ export const categoryModifyQuerySchema = Joi.object({
 });
 
 export const categoryBrandHeaderSchema = Joi.object({
-  brandid: Joi.string().required(),
+  'brand-id': Joi.string().required(),
 });
