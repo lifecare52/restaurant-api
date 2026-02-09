@@ -360,6 +360,51 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
           },
         },
+        MenuItemVariant: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            menuItemId: { type: 'string' },
+            variationId: { type: 'string' },
+            price: { type: 'number', minimum: 0 },
+            isActive: { type: 'boolean' },
+            isDefault: { type: 'boolean' },
+            isDelete: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+          required: [
+            '_id',
+            'brandId',
+            'outletId',
+            'menuItemId',
+            'variationId',
+            'price',
+            'isActive',
+            'isDelete',
+          ],
+        },
+        CreateMenuItemVariantRequest: {
+          type: 'object',
+          properties: {
+            menuItemId: { type: 'string' },
+            variationId: { type: 'string' },
+            price: { type: 'number', minimum: 0 },
+            isActive: { type: 'boolean', default: true },
+            isDefault: { type: 'boolean', default: false },
+          },
+          required: ['menuItemId', 'variationId', 'price'],
+        },
+        UpdateMenuItemVariantRequest: {
+          type: 'object',
+          properties: {
+            price: { type: 'number', minimum: 0 },
+            isActive: { type: 'boolean' },
+            isDefault: { type: 'boolean' },
+          },
+        },
       },
     },
     tags: [
@@ -370,6 +415,7 @@ export const getOpenApiSpec = () => {
       { name: 'Categorys', description: 'Requires brand-id for detail/update/delete; brand-id and outlet-id for create/list.' },
       { name: 'Menu-Items', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
       { name: 'Variations', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
+      { name: 'Menu-Item-Variants', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
     ],
     paths: {
       '/api/v1/meta/types': {
@@ -1357,6 +1403,91 @@ export const getOpenApiSpec = () => {
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
             { name: 'variationId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+      },
+      '/api/v1/menu/menu-item-variants': {
+        post: {
+          tags: ['Menu-Item-Variants'],
+          summary: 'Attach variation to menu item with price',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CreateMenuItemVariantRequest' } },
+            },
+          },
+          responses: {
+            201: { description: 'Created', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            400: { description: 'Brand, outlet, item or variation not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            409: { description: 'Duplicate mapping', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            422: { description: 'Validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        get: {
+          tags: ['Menu-Item-Variants'],
+          summary: 'List menu item variants',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'page', in: 'query', required: false, schema: { type: 'number', minimum: 1, default: 1 } },
+            { name: 'limit', in: 'query', required: false, schema: { type: 'number', minimum: 1, maximum: 100, default: 20 } },
+            { name: 'menuItemId', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'variationId', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['price', 'createdAt', 'updatedAt'], default: 'createdAt' } },
+            { name: 'order', in: 'query', required: false, schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' } },
+          ],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        patch: {
+          tags: ['Menu-Item-Variants'],
+          summary: 'Update menu item variant price or status',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'menuItemVariantId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateMenuItemVariantRequest' } },
+            },
+          },
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            422: { description: 'Validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        delete: {
+          tags: ['Menu-Item-Variants'],
+          summary: 'Delete menu item variant mapping',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'menuItemVariantId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+      },
+      '/api/v1/menu/menu-item-variants/detail': {
+        get: {
+          tags: ['Menu-Item-Variants'],
+          summary: 'Get menu item variant by id',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'menuItemVariantId', in: 'query', required: true, schema: { type: 'string' } },
           ],
           responses: {
             200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
