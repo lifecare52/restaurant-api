@@ -2,6 +2,11 @@ import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
 import { getOutletById } from '@modules/outlet/outlet.service';
+import { listMenuItemVariants } from '@modules/menu/menu-item-variants/menu-item-variant.service';
+import { listMenuItemAddons } from '@modules/menu/menu-item-addons/menu-item-addon.service';
+import { getVariation } from '@modules/menu/variations/variation.service';
+import { getAddon } from '@modules/menu/addons/addon.service';
+import type { MenuItem } from './menu-item.model';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
@@ -88,6 +93,92 @@ export const listMenuItems = async (
   return { items, total };
 };
 
+const buildMenuItemNested = async (
+  brandId: string,
+  outletId: string,
+  item: (MenuItem & { _id: Types.ObjectId; outletId: Types.ObjectId; toObject?: () => any }),
+) => {
+  const variantsResult = await listMenuItemVariants(brandId, outletId, {
+    page: 1,
+    limit: 1000,
+    menuItemId: String(item?._id),
+    column: 'createdAt',
+    order: 'ASC',
+  } as any);
+
+  const hasVariants = (variantsResult.items || []).length > 0;
+
+  const variations = await Promise.all(
+    (variantsResult.items || [])
+      .filter(v => v.isActive)
+      .map(async v => {
+        const variation = await getVariation(brandId, outletId, String(v.variationId));
+        const addonsResult = await listMenuItemAddons(
+          brandId,
+          outletId,
+          { page: 1, limit: 1000, column: 'createdAt', order: 'ASC' } as any,
+          { menuItemId: String(item?._id), menuItemVariantId: String(v._id) },
+        );
+        const addons = await Promise.all(
+          (addonsResult.items || [])
+            .filter(a => a.isActive)
+            .map(async a => {
+              const addonDoc = await getAddon(brandId, outletId, String(a.addonId));
+              return { name: addonDoc?.name ?? '', items: a.allowedItems ?? [] };
+            }),
+        );
+        return { name: variation?.name ?? '', addons };
+      }),
+  );
+
+  let topLevelAddons: Array<{ name: string; items: unknown[] }> | undefined;
+  if (!hasVariants) {
+    const itemAddonsResult = await listMenuItemAddons(
+      brandId,
+      outletId,
+      { page: 1, limit: 1000, column: 'createdAt', order: 'ASC' } as any,
+      { menuItemId: String(item?._id) },
+    );
+    const itemLevelActive = (itemAddonsResult.items || [])
+      .filter(a => !a.menuItemVariantId)
+      .filter(a => a.isActive);
+    topLevelAddons = await Promise.all(
+      itemLevelActive.map(async a => {
+        const addonDoc = await getAddon(brandId, outletId, String(a.addonId));
+        return { name: addonDoc?.name ?? '', items: a.allowedItems ?? [] };
+      }),
+    );
+  }
+
+  const base = item?.toObject ? item.toObject() : (item as any);
+  if (hasVariants) {
+    return { ...base, variations };
+  }
+  return { ...base, variations: [], addons: topLevelAddons ?? [] };
+};
+
+export const listMenuItemsWithNested = async (
+  brandId: string,
+  outletId: string,
+  pagination: PaginationQuery,
+) => {
+  const result = await listMenuItems(brandId, outletId, pagination);
+  const enriched = await Promise.all(
+    result.items.map(i => buildMenuItemNested(brandId, outletId, i as unknown as MenuItem & { _id: Types.ObjectId; outletId: Types.ObjectId; toObject?: () => any })),
+  );
+  return { items: enriched, total: result.total };
+};
+
+export const getMenuItemWithNested = async (brandId: string, outletId: string, menuItemId: string) => {
+  const item = await getMenuItem(brandId, menuItemId);
+  if (!item || String(item.outletId) !== String(outletId)) return null;
+  return buildMenuItemNested(
+    brandId,
+    outletId,
+    item as unknown as MenuItem & { _id: Types.ObjectId; outletId: Types.ObjectId; toObject?: () => any },
+  );
+};
+
 export const getMenuItem = async (brandId: string, menuItemId: string) => {
   return MenuItemEntity.findOne({
     _id: new Types.ObjectId(menuItemId),
@@ -136,7 +227,9 @@ export const deleteMenuItem = async (brandId: string, menuItemId: string) => {
 export default {
   createMenuItem,
   listMenuItems,
+  listMenuItemsWithNested,
   getMenuItem,
+  getMenuItemWithNested,
   updateMenuItem,
   deleteMenuItem,
 };

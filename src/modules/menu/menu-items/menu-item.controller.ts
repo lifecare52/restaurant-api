@@ -2,8 +2,8 @@ import type { Request, Response, NextFunction } from 'express';
 
 import {
   createMenuItem,
-  listMenuItems,
-  getMenuItem,
+  listMenuItemsWithNested,
+  getMenuItemWithNested,
   updateMenuItem,
   deleteMenuItem,
 } from './menu-item.service';
@@ -50,7 +50,7 @@ export const listMenuItemsController = async (
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
-    const result = await listMenuItems(brandId, outletId, req.query as any);
+    const result = await listMenuItemsWithNested(brandId, outletId, req.query as any);
 
     res.locals.response = {
       status: true,
@@ -70,10 +70,10 @@ export const getMenuItemController = async (
   next: NextFunction,
 ) => {
   try {
-    const { brandId } = getTenant(req);
+    const { brandId, outletId } = getTenant(req);
     const { menuItemId } = req.query as { menuItemId: string };
 
-    const item = await getMenuItem(brandId, menuItemId);
+    const item = await getMenuItemWithNested(brandId, outletId, menuItemId);
 
     if (!item) {
       res.locals.response = { status: false, code: 404, message: 'Not Found' };

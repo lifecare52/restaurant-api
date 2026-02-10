@@ -286,6 +286,46 @@ export const getOpenApiSpec = () => {
             'isDelete',
           ],
         },
+        AddonItemSimple: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            name: { type: 'string' },
+            price: { type: 'number', minimum: 0 },
+            sapCode: { type: 'string' },
+            dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
+            available: { type: 'boolean' },
+          },
+          required: ['_id', 'name', 'price', 'available'],
+        },
+        AddonGroupSimple: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            items: { type: 'array', items: { $ref: '#/components/schemas/AddonItemSimple' } },
+          },
+          required: ['name', 'items'],
+        },
+        VariationWithAddonsSimple: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            addons: { type: 'array', items: { $ref: '#/components/schemas/AddonGroupSimple' } },
+          },
+          required: ['name', 'addons'],
+        },
+        MenuItemWithNested: {
+          allOf: [
+            { $ref: '#/components/schemas/MenuItem' },
+            {
+              type: 'object',
+              properties: {
+                variations: { type: 'array', items: { $ref: '#/components/schemas/VariationWithAddonsSimple' } },
+                addons: { type: 'array', items: { $ref: '#/components/schemas/AddonGroupSimple' } },
+              },
+            },
+          ],
+        },
         CreateMenuItemRequest: {
           type: 'object',
           properties: {
@@ -1296,7 +1336,22 @@ export const getOpenApiSpec = () => {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/MenuItemWithNested' },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
               },
             },
             403: {
@@ -1399,7 +1454,19 @@ export const getOpenApiSpec = () => {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/MenuItemWithNested' },
+                        },
+                      },
+                    ],
+                  },
+                },
               },
             },
             404: {
