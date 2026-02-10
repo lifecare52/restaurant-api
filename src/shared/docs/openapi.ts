@@ -405,6 +405,137 @@ export const getOpenApiSpec = () => {
             isDefault: { type: 'boolean' },
           },
         },
+        Addon: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            name: { type: 'string' },
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  _id: { type: 'string' },
+                  name: { type: 'string' },
+                  price: { type: 'number', minimum: 0 },
+                  sapCode: { type: 'string' },
+                  dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
+                  available: { type: 'boolean' },
+                },
+                required: ['name', 'price'],
+              },
+            },
+            isActive: { type: 'boolean' },
+            isDelete: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+          required: ['_id', 'brandId', 'outletId', 'name', 'items', 'isActive', 'isDelete'],
+        },
+        CreateAddonRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string', minLength: 1 },
+                  price: { type: 'number', minimum: 0 },
+                  sapCode: { type: 'string' },
+                  dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
+                  available: { type: 'boolean' },
+                },
+                required: ['name', 'price'],
+              },
+            },
+            isActive: { type: 'boolean', default: true },
+          },
+          required: ['name', 'items'],
+        },
+        UpdateAddonRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string', minLength: 1 },
+                  price: { type: 'number', minimum: 0 },
+                  sapCode: { type: 'string' },
+                  dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
+                  available: { type: 'boolean' },
+                },
+                required: ['name', 'price'],
+              },
+            },
+            isActive: { type: 'boolean' },
+          },
+        },
+        MenuItemAddon: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            menuItemId: { type: 'string' },
+            addonId: { type: 'string' },
+            menuItemVariantId: { type: 'string', nullable: true },
+            allowedItemIds: { type: 'array', items: { type: 'string' } },
+            isSingleSelect: { type: 'boolean' },
+            min: { type: 'number', minimum: 0 },
+            max: { type: 'number', minimum: 1 },
+            allowedItems: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  _id: { type: 'string' },
+                  name: { type: 'string' },
+                  price: { type: 'number', minimum: 0 },
+                  sapCode: { type: 'string' },
+                  dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
+                  available: { type: 'boolean' },
+                },
+                required: ['_id', 'name', 'price'],
+              },
+            },
+            isActive: { type: 'boolean' },
+            isDelete: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+          required: ['_id', 'brandId', 'outletId', 'menuItemId', 'addonId', 'isActive', 'isDelete'],
+        },
+        CreateMenuItemAddonRequest: {
+          type: 'object',
+          properties: {
+            menuItemId: { type: 'string' },
+            addonId: { type: 'string' },
+            menuItemVariantId: { type: 'string' },
+            allowedItemIds: { type: 'array', items: { type: 'string' } },
+            isSingleSelect: { type: 'boolean' },
+            min: { type: 'number', minimum: 0 },
+            max: { type: 'number', minimum: 1 },
+            isActive: { type: 'boolean', default: true },
+          },
+          required: ['menuItemId', 'addonId'],
+        },
+        UpdateMenuItemAddonRequest: {
+          type: 'object',
+          properties: {
+            allowedItemIds: { type: 'array', items: { type: 'string' } },
+            isSingleSelect: { type: 'boolean' },
+            min: { type: 'number', minimum: 0 },
+            max: { type: 'number', minimum: 1 },
+            isActive: { type: 'boolean' },
+          },
+        },
       },
     },
     tags: [
@@ -1438,8 +1569,8 @@ export const getOpenApiSpec = () => {
             { name: 'page', in: 'query', required: false, schema: { type: 'number', minimum: 1, default: 1 } },
             { name: 'limit', in: 'query', required: false, schema: { type: 'number', minimum: 1, maximum: 100, default: 20 } },
             { name: 'menuItemId', in: 'query', required: false, schema: { type: 'string' } },
-            { name: 'variationId', in: 'query', required: false, schema: { type: 'string' } },
-            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['price', 'createdAt', 'updatedAt'], default: 'createdAt' } },
+            { name: 'menuItemVariantId', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['createdAt', 'updatedAt'], default: 'createdAt' } },
             { name: 'order', in: 'query', required: false, schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' } },
           ],
           responses: {
@@ -1495,7 +1626,157 @@ export const getOpenApiSpec = () => {
           },
         },
       },
-    },
+      '/api/v1/menu/addons': {
+        post: {
+          tags: ['Addons'],
+          summary: 'Create addon',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateAddonRequest' } } },
+          },
+          responses: {
+            201: { description: 'Created', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            409: { description: 'Duplicate addon', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            422: { description: 'Validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        get: {
+          tags: ['Addons'],
+          summary: 'List addons',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'page', in: 'query', required: false, schema: { type: 'number', minimum: 1, default: 1 } },
+            { name: 'limit', in: 'query', required: false, schema: { type: 'number', minimum: 1, maximum: 100, default: 20 } },
+            { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['name', 'createdAt', 'updatedAt', 'isActive'], default: 'name' } },
+            { name: 'order', in: 'query', required: false, schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' } },
+          ],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        patch: {
+          tags: ['Addons'],
+          summary: 'Update addon',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'addonId', in: 'query', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateAddonRequest' } } },
+          },
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            409: { description: 'Duplicate addon', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            422: { description: 'Validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        delete: {
+          tags: ['Addons'],
+          summary: 'Delete addon',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'addonId', in: 'query', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+      },
+      '/api/v1/menu/addons/detail': {
+        get: {
+          tags: ['Addons'],
+          summary: 'Get addon by id',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'addonId', in: 'query', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+      },
+      '/api/v1/menu/menu-item-addons': {
+        post: {
+          tags: ['Menu-Item-Addons'],
+          summary: 'Attach addon to menu item (optionally per menu item variant)',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateMenuItemAddonRequest' } } },
+          },
+          responses: {
+            201: { description: 'Created', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            400: { description: 'Brand, outlet, item, addon or variant not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            409: { description: 'Duplicate mapping', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            422: { description: 'Validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        get: {
+          tags: ['Menu-Item-Addons'],
+          summary: 'List menu item addons',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'page', in: 'query', required: false, schema: { type: 'number', minimum: 1, default: 1 } },
+            { name: 'limit', in: 'query', required: false, schema: { type: 'number', minimum: 1, maximum: 100, default: 20 } },
+            { name: 'menuItemId', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'addonId', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'menuItemVariantId', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['createdAt', 'updatedAt'], default: 'createdAt' } },
+            { name: 'order', in: 'query', required: false, schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' } },
+          ],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        patch: {
+          tags: ['Menu-Item-Addons'],
+          summary: 'Update menu item addon allowed item IDs or status',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'menuItemAddonId', in: 'query', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateMenuItemAddonRequest' } } },
+          },
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            422: { description: 'Validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+        delete: {
+          tags: ['Menu-Item-Addons'],
+          summary: 'Delete menu item addon mapping',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'menuItemAddonId', in: 'query', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+      },
+      '/api/v1/menu/menu-item-addons/detail': {
+        get: {
+          tags: ['Menu-Item-Addons'],
+          summary: 'Get menu item addon by id',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'menuItemAddonId', in: 'query', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: { description: 'OK', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
+          },
+        },
+      },
+    }
   };
   return spec;
 };

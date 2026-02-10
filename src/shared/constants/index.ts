@@ -30,4 +30,12 @@ export const API_MESSAGES = {
   MENU_ITEM_VARIANT_UPDATED: 'Menu item variant updated successfully',
   MENU_ITEM_VARIANT_NOT_FOUND: 'Menu item variant not found',
   MENU_ITEM_VARIANT_DELETED: 'Menu item variant deleted successfully',
+  ADDON_CREATED: 'Addon created successfully',
+  ADDON_UPDATED: 'Addon updated successfully',
+  ADDON_NOT_FOUND: 'Addon not found',
+  ADDON_DELETED: 'Addon deleted successfully',
+  MENU_ITEM_ADDON_CREATED: 'Menu item addon created successfully',
+  MENU_ITEM_ADDON_UPDATED: 'Menu item addon updated successfully',
+  MENU_ITEM_ADDON_NOT_FOUND: 'Menu item addon not found',
+  MENU_ITEM_ADDON_DELETED: 'Menu item addon deleted successfully',
 } as const;
