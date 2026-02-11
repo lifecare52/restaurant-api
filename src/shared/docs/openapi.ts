@@ -310,9 +310,10 @@ export const getOpenApiSpec = () => {
           type: 'object',
           properties: {
             name: { type: 'string' },
+            price: { type: 'number', minimum: 0 },
             addons: { type: 'array', items: { $ref: '#/components/schemas/AddonGroupSimple' } },
           },
-          required: ['name', 'addons'],
+          required: ['name', 'price', 'addons'],
         },
         MenuItemWithNested: {
           allOf: [

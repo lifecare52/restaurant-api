@@ -127,7 +127,7 @@ const buildMenuItemNested = async (
               return { name: addonDoc?.name ?? '', items: a.allowedItems ?? [] };
             }),
         );
-        return { name: variation?.name ?? '', addons };
+        return { name: variation?.name ?? '', price: v.price, addons };
       }),
   );
 
