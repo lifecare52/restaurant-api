@@ -1,17 +1,16 @@
 export interface CreateOwnerDTO {
   name: string;
-  email: string;
+  username: string;
+  email?: string;
   password: string;
-  brandName: string;
-  plan?: {
-    name: string;
-    outletLimit: number;
-  };
+  brandId: string;
+  outlets: string[];
 }
 
 export interface CreateUserDTO {
   name: string;
-  email: string;
+  username: string;
+  email?: string;
   password: string;
   role: 'PARTNER' | 'STAFF';
   brandId: string;
@@ -21,6 +20,7 @@ export interface CreateUserDTO {
 
 export interface CreateAdminDTO {
   name: string;
+  username: string;
   email: string;
   password: string;
 }

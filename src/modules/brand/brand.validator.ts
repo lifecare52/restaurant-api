@@ -1,7 +1,6 @@
 import Joi from 'joi';
 
 export const createBrandSchema = Joi.object({
-  ownerId: Joi.string().required(),
   name: Joi.string().trim().min(2).required(),
   plan: Joi.object({
     name: Joi.string().trim(),

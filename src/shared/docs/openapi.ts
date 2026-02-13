@@ -63,41 +63,52 @@ export const getOpenApiSpec = () => {
         LoginRequest: {
           type: 'object',
           properties: {
-            email: { type: 'string', format: 'email' },
+            username: { type: 'string', minLength: 3 },
             password: { type: 'string', minLength: 6 },
           },
-          required: ['email', 'password'],
+          required: ['username', 'password'],
+        },
+        LoginResponse: {
+          type: 'object',
+          properties: {
+            token: { type: 'string' },
+            brandId: { type: 'string', nullable: true },
+            outletId: { type: 'string', nullable: true, description: 'First outlet assigned (if any)' },
+          },
+          required: ['token'],
         },
         CreateAdminRequest: {
           type: 'object',
           properties: {
             name: { type: 'string', minLength: 2 },
+            username: { type: 'string', minLength: 3 },
             email: { type: 'string', format: 'email' },
-            password: { type: 'string', minLength: 6 },
+            password: {
+              type: 'string',
+              minLength: 6,
+              description:
+                'At least 6 chars with uppercase, lowercase, number and special character',
+            },
           },
-          required: ['name', 'email', 'password'],
+          required: ['name', 'username', 'email', 'password'],
         },
         CreateOwnerRequest: {
           type: 'object',
           properties: {
             name: { type: 'string', minLength: 2 },
+            username: { type: 'string', minLength: 3 },
             email: { type: 'string', format: 'email' },
             password: { type: 'string', minLength: 6 },
-            brandName: { type: 'string', minLength: 2 },
-            plan: {
-              type: 'object',
-              properties: {
-                name: { type: 'string' },
-                outletLimit: { type: 'number', minimum: 1, default: 10 },
-              },
-            },
+            brandId: { type: 'string' },
+            outlets: { type: 'array', items: { type: 'string' }, minItems: 1 },
           },
-          required: ['name', 'email', 'password', 'brandName'],
+          required: ['name', 'username', 'password', 'brandId', 'outlets'],
         },
         CreateUserRequest: {
           type: 'object',
           properties: {
             name: { type: 'string', minLength: 2 },
+            username: { type: 'string', minLength: 3 },
             email: { type: 'string', format: 'email' },
             password: { type: 'string', minLength: 6 },
             role: { type: 'string', enum: ['PARTNER', 'STAFF'] },
@@ -105,12 +116,11 @@ export const getOpenApiSpec = () => {
             outlets: { type: 'array', items: { type: 'string' }, default: [] },
             permissions: { type: 'array', items: { type: 'string' }, default: [] },
           },
-          required: ['name', 'email', 'password', 'role', 'brandId'],
+          required: ['name', 'username', 'password', 'role', 'brandId'],
         },
         CreateBrandRequest: {
           type: 'object',
           properties: {
-            ownerId: { type: 'string' },
             name: { type: 'string', minLength: 2 },
             plan: {
               type: 'object',
@@ -120,7 +130,7 @@ export const getOpenApiSpec = () => {
               },
             },
           },
-          required: ['ownerId', 'name'],
+          required: ['name'],
         },
         UpdateBrandRequest: {
           type: 'object',
@@ -649,7 +659,45 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/Category' },
+                          data: { $ref: '#/components/schemas/LoginResponse' },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            401: {
+              description: 'Invalid credentials',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/users/admins/login': {
+        post: {
+          tags: ['Users'],
+          summary: 'Admin login',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } },
+            },
+          },
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/LoginResponse' },
                         },
                       },
                     ],

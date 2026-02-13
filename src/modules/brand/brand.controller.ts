@@ -12,8 +12,7 @@ export const createBrandController = async (req: Request, res: Response, next: N
       next();
       return;
     }
-    const ownerId = (req.body as { ownerId: string }).ownerId;
-    const brand = await createBrand(ownerId, req.body);
+    const brand = await createBrand(req.body);
     res.locals.response = { status: true, code: 201, data: brand };
     next();
   } catch (err) {

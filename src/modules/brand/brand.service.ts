@@ -1,13 +1,10 @@
-import { Types } from 'mongoose';
-
 import BrandEntity from './brand.model';
 
 import type { BrandCreateDTO, BrandUpdateDTO } from './brand.types';
 
-export const createBrand = async (ownerId: string, dto: BrandCreateDTO) => {
+export const createBrand = async (dto: BrandCreateDTO) => {
   const brand = await BrandEntity.create({
     name: dto.name,
-    ownerId: new Types.ObjectId(ownerId),
     plan: dto.plan,
   });
   return brand;

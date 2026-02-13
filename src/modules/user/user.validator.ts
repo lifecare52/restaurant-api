@@ -2,18 +2,17 @@ import Joi from 'joi';
 
 export const createOwnerSchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
-  email: Joi.string().email().required(),
+  username: Joi.string().trim().min(3).required(),
+  email: Joi.string().email(),
   password: Joi.string().min(6).required(),
-  brandName: Joi.string().trim().min(2).required(),
-  plan: Joi.object({
-    name: Joi.string().trim(),
-    outletLimit: Joi.number().integer().min(1).default(10),
-  }).optional(),
+  brandId: Joi.string().required(),
+  outlets: Joi.array().items(Joi.string()).min(1).required(),
 });
 
 export const createUserSchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
-  email: Joi.string().email().required(),
+  username: Joi.string().trim().min(3).required(),
+  email: Joi.string().email(),
   password: Joi.string().min(6).required(),
   role: Joi.string().valid('PARTNER', 'STAFF').required(),
   brandId: Joi.string().required(),
@@ -23,11 +22,20 @@ export const createUserSchema = Joi.object({
 
 export const createAdminSchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
+  username: Joi.string().trim().min(3).required(),
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required(),
+  password: Joi.string()
+    .min(6)
+    .pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).+$/)
+    .required()
+    .messages({
+      'string.min': 'Password must be at least 6 characters long',
+      'string.pattern.base':
+        'Password must include uppercase, lowercase, number, and special character',
+    }),
 });
 
 export const loginSchema = Joi.object({
-  email: Joi.string().email().required(),
+  username: Joi.string().trim().min(3).required(),
   password: Joi.string().min(6).required(),
 });

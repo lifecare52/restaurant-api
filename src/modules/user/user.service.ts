@@ -1,8 +1,5 @@
 import { Types } from 'mongoose';
 
-import { createBrand } from '@modules/brand/brand.service';
-// removed default outlet creation on owner creation
-
 import { ROLES, PERMISSIONS } from '@shared/constants';
 import { signToken } from '@shared/utils/jwt';
 
@@ -13,16 +10,15 @@ import type { CreateAdminDTO, CreateOwnerDTO, CreateUserDTO } from './user.types
 export const createOwner = async (adminId: string, dto: CreateOwnerDTO) => {
   const owner = await UserEntity.create({
     name: dto.name,
+    username: dto.username,
     email: dto.email,
     password: dto.password,
     role: ROLES.OWNER,
+    brandId: new Types.ObjectId(dto.brandId),
     permissions: Object.values(PERMISSIONS),
-    outlets: [],
+    outlets: (dto.outlets || []).map(id => new Types.ObjectId(id)),
   });
-  const brand = await createBrand(owner._id.toString(), { name: dto.brandName, plan: dto.plan });
-  owner.brandId = new Types.ObjectId(brand._id);
-  await owner.save();
-  return { owner, brand };
+  return owner;
 };
 
 export const createUser = async (
@@ -34,6 +30,7 @@ export const createUser = async (
   if (dto.role === ROLES.PARTNER) {
     const user = await UserEntity.create({
       name: dto.name,
+      username: dto.username,
       email: dto.email,
       password: dto.password,
       role: ROLES.PARTNER,
@@ -48,6 +45,7 @@ export const createUser = async (
     if (outlets.length === 0) return null;
     const user = await UserEntity.create({
       name: dto.name,
+      username: dto.username,
       email: dto.email,
       password: dto.password,
       role: ROLES.STAFF,
@@ -60,16 +58,32 @@ export const createUser = async (
   return null;
 };
 
-export const login = async (email: string, password: string) => {
-  const user = await UserEntity.findOne({ email });
+export const login = async (username: string, password: string) => {
+  const user = await UserEntity.findOne({ username: (username || '').trim().toLowerCase() });
   if (!user) return null;
+  const ok = await user.comparePassword(password);
+  if (!ok) return null;
+  const brandId = user.brandId?.toString();
+  const outlets = (user.outlets || []).map(o => o.toString());
+  const outletId = outlets.length > 0 ? outlets[0] : undefined;
+  const token = signToken({
+    id: user._id.toString(),
+    role: user.role,
+    brandId,
+    outlets,
+    permissions: user.permissions || [],
+  });
+  return { token, brandId, outletId };
+};
+
+export const loginAdmin = async (username: string, password: string) => {
+  const user = await UserEntity.findOne({ username: (username || '').trim().toLowerCase() });
+  if (!user || user.role !== ROLES.ADMIN) return null;
   const ok = await user.comparePassword(password);
   if (!ok) return null;
   const token = signToken({
     id: user._id.toString(),
     role: user.role,
-    brandId: user.brandId?.toString(),
-    outlets: (user.outlets || []).map(o => o.toString()),
     permissions: user.permissions || [],
   });
   return { token };
@@ -80,6 +94,7 @@ export const createAdminBootstrap = async (dto: CreateAdminDTO) => {
   if (hasAdmin) return null;
   const admin = await UserEntity.create({
     name: dto.name,
+    username: dto.username,
     email: dto.email,
     password: dto.password,
     role: ROLES.ADMIN,
@@ -93,6 +108,7 @@ export const createAdmin = async (creatorRole: string, dto: CreateAdminDTO) => {
   if (creatorRole !== ROLES.ADMIN) return null;
   const admin = await UserEntity.create({
     name: dto.name,
+    username: dto.username,
     email: dto.email,
     password: dto.password,
     role: ROLES.ADMIN,
@@ -107,4 +123,5 @@ export default {
   createUser,
   createAdminBootstrap,
   createAdmin,
+  loginAdmin,
 };

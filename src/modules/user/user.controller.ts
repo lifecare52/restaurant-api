@@ -1,6 +1,13 @@
 import { ROLES } from '@shared/constants';
 
-import { createAdmin, createAdminBootstrap, createOwner, createUser, login } from './user.service';
+import {
+  createAdmin,
+  createAdminBootstrap,
+  createOwner,
+  createUser,
+  login,
+  loginAdmin,
+} from './user.service';
 
 import type { Request, Response, NextFunction } from 'express';
 
@@ -77,8 +84,24 @@ export const createAdminController = async (req: Request, res: Response, next: N
 
 export const loginController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { email, password } = req.body as { email: string; password: string };
-    const result = await login(email, password);
+    const { username, password } = req.body as { username: string; password: string };
+    const result = await login(username, password);
+    if (!result) {
+      res.locals.response = { status: false, code: 401, message: 'Invalid credentials' };
+      next();
+      return;
+    }
+    res.locals.response = { status: true, code: 200, data: result };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const adminLoginController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { username, password } = req.body as { username: string; password: string };
+    const result = await loginAdmin(username, password);
     if (!result) {
       res.locals.response = { status: false, code: 401, message: 'Invalid credentials' };
       next();

@@ -10,6 +10,7 @@ import {
   createAdminBootstrapController,
   createAdminController,
   loginController,
+  adminLoginController,
   createOwnerController,
   createUserController,
 } from './user.controller';
@@ -23,6 +24,8 @@ import {
 const router = Router();
 
 router.post('/login', validateRequest(loginSchema), loginController);
+
+router.post('/admins/login', validateRequest(loginSchema), adminLoginController);
 
 router.post(
   '/admins/bootstrap',
