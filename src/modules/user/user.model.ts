@@ -56,7 +56,5 @@ UserSchema.methods.comparePassword = async function (candidate: string): Promise
   return bcrypt.compare(candidate, this.password);
 };
 
-UserSchema.index({ username: 1 }, { unique: true });
-
 export const UserEntity = model<User, UserModel>('User', UserSchema);
 export default UserEntity;
