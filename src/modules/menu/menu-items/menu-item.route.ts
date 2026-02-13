@@ -25,7 +25,7 @@ import {
 const router = Router();
 
 router.post(
-    '/menu-items',
+    '/',
     auth,
     validateRequest(menuItemHeaderSchema, 'headers'),
     requireBrandAccess,
@@ -35,7 +35,7 @@ router.post(
 );
 
 router.get(
-    '/menu-items',
+    '/',
     auth,
     validateRequest(menuItemHeaderSchema, 'headers'),
     requireBrandAccess,
@@ -45,7 +45,7 @@ router.get(
 );
 
 router.get(
-    '/menu-items/detail',
+    '/detail',
     auth,
     validateRequest(menuItemHeaderSchema, 'headers'),
     requireBrandAccess,
@@ -55,7 +55,7 @@ router.get(
 );
 
 router.patch(
-    '/menu-items',
+    '/',
     auth,
     validateRequest(menuItemHeaderSchema, 'headers'),
     requireBrandAccess,
@@ -66,7 +66,7 @@ router.patch(
 );
 
 router.delete(
-    '/menu-items',
+    '/',
     auth,
     validateRequest(menuItemHeaderSchema, 'headers'),
     requireBrandAccess,
