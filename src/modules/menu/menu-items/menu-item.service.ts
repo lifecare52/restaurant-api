@@ -2,8 +2,8 @@ import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
 import { getOutletById } from '@modules/outlet/outlet.service';
-import { listMenuItemVariants } from '@modules/menu/menu-item-variants/menu-item-variant.service';
-import { listMenuItemAddons } from '@modules/menu/menu-item-addons/menu-item-addon.service';
+import { listMenuItemVariants, createMenuItemVariant } from '@modules/menu/menu-item-variants/menu-item-variant.service';
+import { listMenuItemAddons, createMenuItemAddon, updateMenuItemAddon } from '@modules/menu/menu-item-addons/menu-item-addon.service';
 import { getVariation } from '@modules/menu/variations/variation.service';
 import { getAddon } from '@modules/menu/addons/addon.service';
 import type { MenuItem } from './menu-item.model';
@@ -21,12 +21,54 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
   const outlet = await getOutletById(brandId, outletId);
   if (!outlet) return null;
 
-  if (dto.hasVariation && dto.basePrice) {
-    throw new Error('Base price is not allowed when variations exist');
-  }
-
   try {
-    return await MenuItemEntity.create({
+    const normalizeAddonCreate = (arr: Array<{ addonId: string; isSingleSelect?: boolean; min?: number; max?: number }> | undefined) => {
+      return (arr || []).map(a => ({
+        addonId: a.addonId,
+        isSingleSelect: a.isSingleSelect,
+        min: a.min,
+        max: a.max,
+      }));
+    };
+    const variationsInput = (dto.variations || []).map(v => ({
+      variationId: v.variationId,
+      price: v.price,
+      addons: normalizeAddonCreate(v.addons),
+    }));
+    const topLevelAddons = normalizeAddonCreate(dto.addons);
+    if (variationsInput.length > 0) {
+      const ids = new Set<string>();
+      for (const v of variationsInput) {
+        if (ids.has(v.variationId)) {
+          throw { status: 400, code: 'DUPLICATE_VARIATION', message: 'Duplicate variationId in input' };
+        }
+        ids.add(v.variationId);
+        const exists = await getVariation(brandId, outletId, v.variationId);
+        if (!exists) {
+          throw { status: 404, code: 'VARIATION_NOT_FOUND', message: 'Variation not found' };
+        }
+        for (const addon of v.addons || []) {
+          const addonDoc = await getAddon(brandId, outletId, addon.addonId);
+          if (!addonDoc) {
+            throw { status: 404, code: 'ADDON_NOT_FOUND', message: 'Addon not found' };
+          }
+        }
+      }
+    }
+    if (variationsInput.length === 0 && topLevelAddons.length > 0) {
+      const ids = new Set<string>();
+      for (const a of topLevelAddons) {
+        if (ids.has(a.addonId)) {
+          throw { status: 400, code: 'DUPLICATE_ADDON', message: 'Duplicate addonId in input' };
+        }
+        ids.add(a.addonId);
+        const addonDoc = await getAddon(brandId, outletId, a.addonId);
+        if (!addonDoc) {
+          throw { status: 404, code: 'ADDON_NOT_FOUND', message: 'Addon not found' };
+        }
+      }
+    }
+    const created = await MenuItemEntity.create({
       brandId: new Types.ObjectId(brandId),
       outletId: new Types.ObjectId(outletId),
 
@@ -38,15 +80,58 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
 
       basePrice: dto.basePrice ?? null,
       costPrice: dto.costPrice ?? 0,
-      profitPercentage: dto.profitPercentage ?? 0,
-
-      hasVariation: dto.hasVariation ?? false,
-      variationGroupIds: dto.variationGroupIds?.map(id => new Types.ObjectId(id)),
-      addonGroupIds: dto.addonGroupIds?.map(id => new Types.ObjectId(id)),
 
       isActive: dto.isActive ?? true,
       isDelete: false,
     });
+    if (variationsInput.length > 0) {
+      const createdVariants = await Promise.all(
+        variationsInput.map(v =>
+          createMenuItemVariant(brandId, outletId, {
+            menuItemId: String(created._id),
+            variationId: v.variationId,
+            price: v.price,
+            isActive: true,
+            isDefault: false,
+          }),
+        ),
+      );
+      const byVariationId = new Map<string, Types.ObjectId>();
+      createdVariants.forEach((doc, idx) => {
+        if (doc) {
+          byVariationId.set(variationsInput[idx].variationId, doc._id as unknown as Types.ObjectId);
+        }
+      });
+      for (const v of variationsInput) {
+        const variantDocId = byVariationId.get(v.variationId);
+        if (!variantDocId) continue;
+        for (const addon of v.addons || []) {
+          await createMenuItemAddon(brandId, outletId, {
+            menuItemId: String(created._id),
+            addonId: addon.addonId,
+            menuItemVariantId: String(variantDocId),
+            isSingleSelect: addon.isSingleSelect,
+            min: addon.min,
+            max: addon.max,
+            isActive: true,
+          });
+        }
+      }
+    } else if (topLevelAddons.length > 0) {
+      await Promise.all(
+        topLevelAddons.map(addon =>
+          createMenuItemAddon(brandId, outletId, {
+            menuItemId: String(created._id),
+            addonId: addon.addonId,
+            isSingleSelect: addon.isSingleSelect,
+            min: addon.min,
+            max: addon.max,
+            isActive: true,
+          }),
+        ),
+      );
+    }
+    return created;
   } catch (err) {
     const e = err as { code?: number };
     if (e?.code === 11000) {
@@ -124,7 +209,13 @@ const buildMenuItemNested = async (
             .filter(a => a.isActive)
             .map(async a => {
               const addonDoc = await getAddon(brandId, outletId, String(a.addonId));
-              return { name: addonDoc?.name ?? '', items: a.allowedItems ?? [] };
+              return {
+                name: addonDoc?.name ?? '',
+                items: a.allowedItems ?? [],
+                isSingleSelect: a.isSingleSelect ?? false,
+                min: a.min ?? undefined,
+                max: a.max ?? undefined,
+              };
             }),
         );
         return { name: variation?.name ?? '', price: v.price, addons };
@@ -145,7 +236,13 @@ const buildMenuItemNested = async (
     topLevelAddons = await Promise.all(
       itemLevelActive.map(async a => {
         const addonDoc = await getAddon(brandId, outletId, String(a.addonId));
-        return { name: addonDoc?.name ?? '', items: a.allowedItems ?? [] };
+        return {
+          name: addonDoc?.name ?? '',
+          items: a.allowedItems ?? [],
+          isSingleSelect: a.isSingleSelect ?? false,
+          min: a.min ?? undefined,
+          max: a.max ?? undefined,
+        };
       }),
     );
   }
@@ -193,7 +290,7 @@ export const updateMenuItem = async (
   dto: MenuItemUpdateDTO,
 ) => {
   try {
-    return await MenuItemEntity.findOneAndUpdate(
+    const updated = await MenuItemEntity.findOneAndUpdate(
       { _id: new Types.ObjectId(menuItemId), brandId: new Types.ObjectId(brandId) },
       {
         $set: {
@@ -203,6 +300,102 @@ export const updateMenuItem = async (
       },
       { new: true },
     );
+    if (!updated) return updated;
+
+    // If addons/variations provided, upsert menu_item_addons accordingly
+    const outletId = String(updated.outletId);
+    const normalizeAddonUpdate = (arr: Array<{ addonId: string; allowedItems?: string[]; isSingleSelect?: boolean; min?: number; max?: number }> | undefined) => {
+      return (arr || []).map(a => ({
+        addonId: a.addonId,
+        allowedItemIds: (a.allowedItems || []).map(s => s),
+        isSingleSelect: a.isSingleSelect,
+        min: a.min,
+        max: a.max,
+      }));
+    };
+
+    if (dto.variations && dto.variations.length > 0) {
+      const variants = await listMenuItemVariants(brandId, outletId, {
+        page: 1,
+        limit: 1000,
+        menuItemId,
+        column: 'createdAt',
+        order: 'ASC',
+      } as any);
+      const byVariationId = new Map<string, string>();
+      (variants.items || []).forEach(v => byVariationId.set(String(v.variationId), String(v._id)));
+
+      for (const v of dto.variations) {
+        const variantDocId = byVariationId.get(v.variationId);
+        if (!variantDocId) continue;
+        const addons = normalizeAddonUpdate(v.addons);
+        for (const a of addons) {
+          // Try find existing attachment
+          const existing = await listMenuItemAddons(
+            brandId,
+            outletId,
+            { page: 1, limit: 1, column: 'createdAt', order: 'ASC' } as any,
+            { menuItemId, addonId: a.addonId, menuItemVariantId: variantDocId },
+          );
+          if (existing.items && existing.items.length > 0) {
+            await updateMenuItemAddon(brandId, outletId, String(existing.items[0]._id), {
+              allowedItemIds: a.allowedItemIds,
+              isSingleSelect: a.isSingleSelect,
+              min: a.min,
+              max: a.max,
+            });
+          } else {
+            const created = await createMenuItemAddon(brandId, outletId, {
+              menuItemId,
+              addonId: a.addonId,
+              menuItemVariantId: variantDocId,
+              isSingleSelect: a.isSingleSelect,
+              min: a.min,
+              max: a.max,
+              isActive: true,
+            });
+            if (created && a.allowedItemIds && a.allowedItemIds.length > 0) {
+              await updateMenuItemAddon(brandId, outletId, String(created._id), {
+                allowedItemIds: a.allowedItemIds,
+              });
+            }
+          }
+        }
+      }
+    } else if (dto.addons && dto.addons.length > 0) {
+      const addons = normalizeAddonUpdate(dto.addons);
+      for (const a of addons) {
+        const existing = await listMenuItemAddons(
+          brandId,
+          outletId,
+          { page: 1, limit: 1, column: 'createdAt', order: 'ASC' } as any,
+          { menuItemId, addonId: a.addonId },
+        );
+        if (existing.items && existing.items.length > 0) {
+          await updateMenuItemAddon(brandId, outletId, String(existing.items[0]._id), {
+            allowedItemIds: a.allowedItemIds,
+            isSingleSelect: a.isSingleSelect,
+            min: a.min,
+            max: a.max,
+          });
+        } else {
+          const createdAddon = await createMenuItemAddon(brandId, outletId, {
+            menuItemId,
+            addonId: a.addonId,
+            isSingleSelect: a.isSingleSelect,
+            min: a.min,
+            max: a.max,
+            isActive: true,
+          });
+          if (createdAddon && a.allowedItemIds && a.allowedItemIds.length > 0) {
+            await updateMenuItemAddon(brandId, outletId, String(createdAddon._id), {
+              allowedItemIds: a.allowedItemIds,
+            });
+          }
+        }
+      }
+    }
+    return updated;
   } catch (err) {
     const e = err as { code?: number };
     if (e?.code === 11000) {

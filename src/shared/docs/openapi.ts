@@ -275,10 +275,6 @@ export const getOpenApiSpec = () => {
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
             basePrice: { type: 'number', nullable: true },
             costPrice: { type: 'number' },
-            profitPercentage: { type: 'number' },
-            hasVariation: { type: 'boolean' },
-            variationGroupIds: { type: 'array', items: { type: 'string' } },
-            addonGroupIds: { type: 'array', items: { type: 'string' } },
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
@@ -291,7 +287,6 @@ export const getOpenApiSpec = () => {
             'name',
             'categoryId',
             'dietary',
-            'hasVariation',
             'isActive',
             'isDelete',
           ],
@@ -313,6 +308,9 @@ export const getOpenApiSpec = () => {
           properties: {
             name: { type: 'string' },
             items: { type: 'array', items: { $ref: '#/components/schemas/AddonItemSimple' } },
+            isSingleSelect: { type: 'boolean' },
+            min: { type: 'number', nullable: true },
+            max: { type: 'number', nullable: true },
           },
           required: ['name', 'items'],
         },
@@ -337,6 +335,29 @@ export const getOpenApiSpec = () => {
             },
           ],
         },
+        AddonInputCreate: {
+          type: 'object',
+          description: 'Addon input for create; allowedItems ignored at create time',
+          properties: {
+            addonId: { type: 'string' },
+            isSingleSelect: { type: 'boolean' },
+            min: { type: 'number', minimum: 0 },
+            max: { type: 'number', minimum: 0 },
+          },
+          required: ['addonId'],
+        },
+        AddonInputUpdate: {
+          type: 'object',
+          description: 'Addon input for update; supports allowedItems',
+          properties: {
+            addonId: { type: 'string' },
+            allowedItems: { type: 'array', items: { type: 'string' } },
+            isSingleSelect: { type: 'boolean' },
+            min: { type: 'number', minimum: 0 },
+            max: { type: 'number', minimum: 0 },
+          },
+          required: ['addonId'],
+        },
         CreateMenuItemRequest: {
           type: 'object',
           properties: {
@@ -346,10 +367,30 @@ export const getOpenApiSpec = () => {
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
             basePrice: { type: 'number', nullable: true },
             costPrice: { type: 'number' },
-            profitPercentage: { type: 'number' },
-            hasVariation: { type: 'boolean', default: false },
-            variationGroupIds: { type: 'array', items: { type: 'string' } },
-            addonGroupIds: { type: 'array', items: { type: 'string' } },
+            variations: {
+              type: 'array',
+              description: 'If provided, creates per-variation prices and per-variation addons',
+              items: {
+                type: 'object',
+                properties: {
+                  variationId: { type: 'string' },
+                  price: { type: 'number', minimum: 0 },
+                  addons: {
+                    type: 'array',
+                    items: {
+                $ref: '#/components/schemas/AddonInputCreate',
+                    },
+              description: 'Objects with addonId, selection rules; allowedItems is ignored on create',
+                  },
+                },
+                required: ['variationId', 'price'],
+              },
+            },
+            addons: {
+              type: 'array',
+        items: { $ref: '#/components/schemas/AddonInputCreate' },
+              description: 'Item-level addons (used only when variations are not provided); allowedItems is ignored on create',
+            },
             isActive: { type: 'boolean', default: true },
           },
           required: ['name', 'categoryId', 'dietary'],
@@ -363,10 +404,26 @@ export const getOpenApiSpec = () => {
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
             basePrice: { type: 'number', nullable: true },
             costPrice: { type: 'number' },
-            profitPercentage: { type: 'number' },
-            hasVariation: { type: 'boolean' },
-            variationGroupIds: { type: 'array', items: { type: 'string' } },
-            addonGroupIds: { type: 'array', items: { type: 'string' } },
+            variations: {
+              type: 'array',
+              description: 'Optional: provide variation-level addon updates',
+              items: {
+                type: 'object',
+                properties: {
+                  variationId: { type: 'string' },
+                  addons: {
+                    type: 'array',
+                items: { $ref: '#/components/schemas/AddonInputUpdate' },
+                  },
+                },
+                required: ['variationId'],
+              },
+            },
+            addons: {
+              type: 'array',
+              description: 'Optional: item-level addon updates (used when variations are not provided)',
+          items: { $ref: '#/components/schemas/AddonInputUpdate' },
+            },
             isActive: { type: 'boolean' },
           },
         },
@@ -598,6 +655,7 @@ export const getOpenApiSpec = () => {
       { name: 'Menu-Items', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
       { name: 'Variations', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
       { name: 'Menu-Item-Variants', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
+      { name: 'Menu-Item-Addons', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
     ],
     paths: {
       '/api/v1/meta/types': {
