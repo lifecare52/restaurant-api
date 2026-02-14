@@ -15,19 +15,39 @@ export const createMenuItemSchema = Joi.object({
 
     dietary: Joi.string().valid('VEG', 'NON_VEG', 'EGG').required(),
 
-    basePrice: Joi.alternatives().conditional('hasVariation', {
-        is: true,
-        then: Joi.valid(null).messages({
-            'any.only': 'basePrice must be null when hasVariation is true',
-        }),
-        otherwise: Joi.number().min(0),
-    }),
+    basePrice: Joi.number().min(0).allow(null).optional(),
     costPrice: Joi.number().min(0).optional(),
-    profitPercentage: Joi.number().min(0).max(100).optional(),
 
-    hasVariation: Joi.boolean().default(false),
-    variationGroupIds: Joi.array().items(objectId).optional(),
-    addonGroupIds: Joi.array().items(objectId).optional(),
+    variations: Joi.array()
+        .items(
+            Joi.object({
+                variationId: objectId.required(),
+                price: Joi.number().min(0).required(),
+                addons: Joi.array()
+                    .items(
+                        Joi.object({
+                            addonId: objectId.required(),
+                            isSingleSelect: Joi.boolean().optional(),
+                            min: Joi.number().integer().min(0).optional(),
+                            max: Joi.number().integer().min(0).optional(),
+                            allowedItems: Joi.any().forbidden(),
+                        }),
+                    )
+                    .optional(),
+            }),
+        )
+        .optional(),
+    addons: Joi.array()
+        .items(
+            Joi.object({
+                addonId: objectId.required(),
+                isSingleSelect: Joi.boolean().optional(),
+                min: Joi.number().integer().min(0).optional(),
+                max: Joi.number().integer().min(0).optional(),
+                allowedItems: Joi.any().forbidden(),
+            }),
+        )
+        .optional(),
 
     isActive: Joi.boolean().default(true),
 });
@@ -46,11 +66,32 @@ export const updateMenuItemSchema = Joi.object({
 
     basePrice: Joi.number().min(0).allow(null),
     costPrice: Joi.number().min(0),
-    profitPercentage: Joi.number().min(0).max(100),
 
-    hasVariation: Joi.boolean(),
-    variationGroupIds: Joi.array().items(objectId),
-    addonGroupIds: Joi.array().items(objectId),
+    variations: Joi.array()
+        .items(
+            Joi.object({
+                variationId: objectId.required(),
+                addons: Joi.array()
+                    .items(Joi.object({
+                        addonId: objectId.required(),
+                        allowedItems: Joi.array().items(objectId).optional(),
+                        isSingleSelect: Joi.boolean().optional(),
+                        min: Joi.number().integer().min(0).optional(),
+                        max: Joi.number().integer().min(0).optional(),
+                    }))
+                    .optional(),
+            }),
+        )
+        .optional(),
+    addons: Joi.array()
+        .items(Joi.object({
+            addonId: objectId.required(),
+            allowedItems: Joi.array().items(objectId).optional(),
+            isSingleSelect: Joi.boolean().optional(),
+            min: Joi.number().integer().min(0).optional(),
+            max: Joi.number().integer().min(0).optional(),
+        }))
+        .optional(),
 
     isActive: Joi.boolean(),
 });

@@ -12,11 +12,6 @@ export interface MenuItem {
 
   basePrice?: number | null;
   costPrice?: number;
-  profitPercentage?: number;
-
-  hasVariation: boolean;
-  variationGroupIds?: Types.ObjectId[];
-  addonGroupIds?: Types.ObjectId[];
 
   isActive: boolean;
   isDelete: boolean;
@@ -56,11 +51,6 @@ const MenuItemSchema = new Schema<MenuItem>(
 
     basePrice: { type: Number, default: null },
     costPrice: { type: Number, default: 0 },
-    profitPercentage: { type: Number, default: 0 },
-
-    hasVariation: { type: Boolean, default: false },
-    variationGroupIds: [{ type: Schema.Types.ObjectId, ref: 'VariationGroup' }],
-    addonGroupIds: [{ type: Schema.Types.ObjectId, ref: 'AddonGroup' }],
 
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },

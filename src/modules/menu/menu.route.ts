@@ -29,7 +29,7 @@ import {
 
 const router = Router();
 
-router.use(menuItemsRouter);
+router.use('/menu-items', menuItemsRouter);
 router.use(variationsRouter);
 router.use(menuItemVariantsRouter);
 router.use(addonsRouter);
