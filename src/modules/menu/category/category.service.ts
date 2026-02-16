@@ -32,12 +32,14 @@ export const createCategory = async (brandId: string, outletId: string, dto: Cat
           },
         },
         { new: true },
-      );
+      )
+        .select('name onlineName logo isActive createdAt updatedAt')
+        .lean();
     }
     throw { status: 409, code: 'DUPLICATE_CATEGORY', message: 'Category already exists' };
   }
   try {
-    return await CategoryEntity.create({
+    const created = await CategoryEntity.create({
       brandId: new Types.ObjectId(brandId),
       outletId: new Types.ObjectId(outletId),
       name: dto.name,
@@ -46,6 +48,9 @@ export const createCategory = async (brandId: string, outletId: string, dto: Cat
       isActive: dto.isActive ?? true,
       isDelete: false,
     });
+    return CategoryEntity.findById(created._id)
+      .select('name onlineName logo isActive createdAt updatedAt')
+      .lean();
   } catch (err) {
     const e = err as { code?: number };
     if (e?.code === 11000) {
@@ -70,7 +75,7 @@ export const listCategories = async (
   };
   if (pagination.searchText) {
     const regex = new RegExp(pagination.searchText, 'i');
-    if (pagination.column) {
+    if (pagination.column === 'name' || pagination.column === 'onlineName') {
       filter[pagination.column] = { $regex: regex };
     } else {
       Object.assign(filter, {
@@ -112,7 +117,9 @@ export const updateCategory = async (
       { _id: new Types.ObjectId(categoryId), brandId: new Types.ObjectId(brandId) },
       { $set: dto },
       { new: true },
-    );
+    )
+      .select('name onlineName logo isActive createdAt updatedAt')
+      .lean();
   } catch (err) {
     const e = err as { code?: number };
     if (e?.code === 11000) {

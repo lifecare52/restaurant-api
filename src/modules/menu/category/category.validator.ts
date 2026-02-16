@@ -24,7 +24,7 @@ export const categoryListQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(100).default(20),
   searchText: Joi.string().trim().min(1).max(100).optional(),
   column: Joi.string()
-    .valid('name', 'onlineName', 'createdAt', 'updatedAt')
+    .valid('name', 'onlineName', 'createdAt', 'updatedAt', 'isActive')
     .optional()
     .default('name'),
   order: Joi.string().valid('ASC', 'DESC').optional().default('ASC'),

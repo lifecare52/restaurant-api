@@ -651,7 +651,7 @@ export const getOpenApiSpec = () => {
       { name: 'Brands' },
       { name: 'Outlets' },
       { name: 'Meta' },
-      { name: 'Categorys', description: 'Requires brand-id for detail/update/delete; brand-id and outlet-id for create/list.' },
+      { name: 'Categories', description: 'Requires brand-id for detail/update/delete; brand-id and outlet-id for create/list.' },
       { name: 'Menu-Items', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
       { name: 'Variations', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
       { name: 'Menu-Item-Variants', description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.' },
@@ -1187,7 +1187,7 @@ export const getOpenApiSpec = () => {
       },
       '/api/v1/menu/categories': {
         post: {
-          tags: ['Categorys'],
+          tags: ['Categories'],
           summary: 'Create category',
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
@@ -1227,7 +1227,7 @@ export const getOpenApiSpec = () => {
           },
         },
         get: {
-          tags: ['Categorys'],
+          tags: ['Categories'],
           summary: 'List categories',
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
@@ -1256,7 +1256,7 @@ export const getOpenApiSpec = () => {
               required: false,
               schema: {
                 type: 'string',
-                enum: ['name', 'onlineName', 'createdAt', 'updatedAt'],
+                enum: ['name', 'onlineName', 'createdAt', 'updatedAt', 'isActive'],
                 default: 'name',
               },
             },
@@ -1283,7 +1283,7 @@ export const getOpenApiSpec = () => {
           },
         },
         patch: {
-          tags: ['Categorys'],
+          tags: ['Categories'],
           summary: 'Update category',
           description: 'Mandatory header: brand-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [] }],
@@ -1326,7 +1326,7 @@ export const getOpenApiSpec = () => {
           },
         },
         delete: {
-          tags: ['Categorys'],
+          tags: ['Categories'],
           summary: 'Delete category',
           description: 'Mandatory header: brand-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [] }],
@@ -1357,10 +1357,10 @@ export const getOpenApiSpec = () => {
       },
       '/api/v1/menu/categories/detail': {
         get: {
-          tags: ['Categorys'],
+          tags: ['Categories'],
           summary: 'Get category by id',
           description: 'Mandatory header: brand-id (set via Authorize).',
-          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
           parameters: [
             { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } },
           ],
