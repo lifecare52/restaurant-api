@@ -1,18 +1,6 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-export interface MenuItemAddon {
-  brandId: Types.ObjectId;
-  outletId: Types.ObjectId;
-  menuItemId: Types.ObjectId;
-  addonId: Types.ObjectId;
-  menuItemVariantId?: Types.ObjectId;
-  allowedItemIds?: Types.ObjectId[];
-  isSingleSelect?: boolean;
-  min?: number;
-  max?: number;
-  isActive: boolean;
-  isDelete: boolean;
-}
+import type { MenuItemAddon } from './menu-item-addon.types';
 
 const MenuItemAddonSchema = new Schema<MenuItemAddon>(
   {

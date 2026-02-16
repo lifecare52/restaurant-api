@@ -1,14 +1,6 @@
-import { Schema, model, type Model, Types } from 'mongoose';
+import { Schema, model, type Model } from 'mongoose';
 
-export interface Category {
-  brandId: Types.ObjectId;
-  outletId: Types.ObjectId;
-  name: string;
-  onlineName?: string;
-  logo?: string;
-  isActive: boolean;
-  isDelete: boolean;
-}
+import type { Category } from './category.types';
 
 export type CategoryModel = Model<Category>;
 

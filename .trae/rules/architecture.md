@@ -110,6 +110,8 @@ TYPESCRIPT RULES
 - Each module defines its own domain types.
 - Shared DTOs and contracts live in `src/shared/interfaces`.
 - Use path aliases (`@modules`, `@shared`).
+- Do NOT define inline interfaces within models, services, or controllers.
+- All interfaces MUST be declared in each module’s `.types.ts` file and imported where used.
 
 ============================
 ESLINT + PRETTIER CONTEXT

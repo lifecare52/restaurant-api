@@ -6,7 +6,7 @@ import { listMenuItemVariants, createMenuItemVariant } from '@modules/menu/menu-
 import { listMenuItemAddons, createMenuItemAddon, updateMenuItemAddon } from '@modules/menu/menu-item-addons/menu-item-addon.service';
 import { getVariation } from '@modules/menu/variations/variation.service';
 import { getAddon } from '@modules/menu/addons/addon.service';
-import type { MenuItem } from './menu-item.model';
+import type { MenuItem } from './menu-item.types';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 

@@ -1,3 +1,5 @@
+import type { Types } from 'mongoose';
+
 export interface MenuItemAddonInputCreate {
   addonId: string;
   isSingleSelect?: boolean;
@@ -27,6 +29,23 @@ export interface MenuItemCreateDTO {
   addons?: MenuItemAddonInputCreate[];
 
   isActive?: boolean;
+}
+
+export interface MenuItem {
+  brandId: Types.ObjectId;
+  outletId: Types.ObjectId;
+
+  name: string;
+  shortCodes?: string[];
+  categoryId: Types.ObjectId;
+
+  dietary: 'VEG' | 'NON_VEG' | 'EGG';
+
+  basePrice?: number | null;
+  costPrice?: number;
+
+  isActive: boolean;
+  isDelete: boolean;
 }
 
 export interface MenuItemUpdateDTO {

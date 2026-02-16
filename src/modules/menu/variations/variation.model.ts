@@ -1,4 +1,4 @@
-import { Schema, model, type Model, Types } from 'mongoose';
+import { Schema, model, type Model } from 'mongoose';
 
 import { VARIATION_DEPARTMENTS } from './variation.types';
 import type { Variation } from './variation.types';

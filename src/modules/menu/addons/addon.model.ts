@@ -1,22 +1,6 @@
-import { Schema, model, Types } from 'mongoose';
+import { Schema, model } from 'mongoose';
 
-export interface AddonItem {
-  _id?: Types.ObjectId;
-  name: string;
-  price: number;
-  sapCode?: string;
-  dietary?: 'VEG' | 'NON_VEG' | 'EGG';
-  available: boolean;
-}
-
-export interface Addon {
-  brandId: Types.ObjectId;
-  outletId: Types.ObjectId;
-  name: string;
-  items: AddonItem[];
-  isActive: boolean;
-  isDelete: boolean;
-}
+import type { Addon, AddonItem } from './addon.types';
 
 const AddonItemSchema = new Schema<AddonItem>({
   name: { type: String, required: true, trim: true },
