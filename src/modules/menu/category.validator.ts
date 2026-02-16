@@ -3,14 +3,14 @@ import Joi from 'joi';
 export const createCategorySchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
   onlineName: Joi.string().trim().min(2).optional(),
-  logo: Joi.string().uri().optional(),
+  logo: Joi.string().uri().optional().allow(''),
   isActive: Joi.boolean().default(true),
 });
 
 export const updateCategorySchema = Joi.object({
   name: Joi.string().trim().min(2),
   onlineName: Joi.string().trim().min(2),
-  logo: Joi.string().uri(),
+  logo: Joi.string().uri().optional().allow(''),
   isActive: Joi.boolean(),
 });
 
