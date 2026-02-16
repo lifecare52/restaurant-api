@@ -92,7 +92,7 @@ export const updateMenuItemController = async (
   next: NextFunction,
 ) => {
   try {
-    const { brandId } = getTenant(req);
+    const { brandId, outletId } = getTenant(req);
     const { menuItemId } = req.query as { menuItemId: string };
 
     const item = await updateMenuItem(brandId, menuItemId, req.body);
@@ -100,7 +100,19 @@ export const updateMenuItemController = async (
     if (!item) {
       res.locals.response = { status: false, code: 404, message: 'Not Found' };
     } else {
-      res.locals.response = { status: true, code: 200, data: item };
+      const result = await listMenuItemsWithNested(brandId, outletId, {
+        page: 1,
+        limit: 20,
+        column: 'name',
+        order: 'ASC',
+      });
+      res.locals.response = {
+        status: true,
+        code: 200,
+        message: API_MESSAGES.MENU_ITEM_UPDATED,
+        data: result.items,
+        total: result.total,
+      };
     }
     next();
   } catch (err) {

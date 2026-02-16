@@ -38,4 +38,8 @@ export const API_MESSAGES = {
   MENU_ITEM_ADDON_UPDATED: 'Menu item addon updated successfully',
   MENU_ITEM_ADDON_NOT_FOUND: 'Menu item addon not found',
   MENU_ITEM_ADDON_DELETED: 'Menu item addon deleted successfully',
+  CATEGORY_CREATED: 'Category created successfully',
+  CATEGORY_UPDATED: 'Category updated successfully',
+  CATEGORY_NOT_FOUND: 'Category not found',
+  CATEGORY_DELETED: 'Category deleted successfully',
 } as const;

@@ -14,15 +14,45 @@ export const createCategory = async (brandId: string, outletId: string, dto: Cat
   if (!brand) return null;
   const outlet = await getOutletById(brandId, outletId);
   if (!outlet) return null;
-  return CategoryEntity.create({
+  const existing = await CategoryEntity.findOne({
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     name: dto.name,
-    onlineName: dto.onlineName,
-    logo: dto.logo,
-    isActive: dto.isActive ?? true,
-    isDelete: false,
   });
+  if (existing) {
+    if (existing.isDelete) {
+      return CategoryEntity.findOneAndUpdate(
+        { _id: existing._id },
+        {
+          $set: {
+            onlineName: dto.onlineName,
+            logo: dto.logo,
+            isActive: dto.isActive ?? true,
+            isDelete: false,
+          },
+        },
+        { new: true },
+      );
+    }
+    throw { status: 409, code: 'DUPLICATE_CATEGORY', message: 'Category already exists' };
+  }
+  try {
+    return await CategoryEntity.create({
+      brandId: new Types.ObjectId(brandId),
+      outletId: new Types.ObjectId(outletId),
+      name: dto.name,
+      onlineName: dto.onlineName,
+      logo: dto.logo,
+      isActive: dto.isActive ?? true,
+      isDelete: false,
+    });
+  } catch (err) {
+    const e = err as { code?: number };
+    if (e?.code === 11000) {
+      throw { status: 409, code: 'DUPLICATE_CATEGORY', message: 'Category already exists' };
+    }
+    throw err;
+  }
 };
 
 export const listCategories = async (
@@ -73,11 +103,19 @@ export const updateCategory = async (
   categoryId: string,
   dto: CategoryUpdateDTO,
 ) => {
-  return CategoryEntity.findOneAndUpdate(
-    { _id: new Types.ObjectId(categoryId), brandId: new Types.ObjectId(brandId) },
-    { $set: dto },
-    { new: true },
-  );
+  try {
+    return await CategoryEntity.findOneAndUpdate(
+      { _id: new Types.ObjectId(categoryId), brandId: new Types.ObjectId(brandId) },
+      { $set: dto },
+      { new: true },
+    );
+  } catch (err) {
+    const e = err as { code?: number };
+    if (e?.code === 11000) {
+      throw { status: 409, code: 'DUPLICATE_CATEGORY', message: 'Category already exists' };
+    }
+    throw err;
+  }
 };
 
 export const deleteCategory = async (brandId: string, categoryId: string) => {

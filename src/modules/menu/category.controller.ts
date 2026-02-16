@@ -7,6 +7,7 @@ import {
 } from './category.service';
 
 import type { Request, Response, NextFunction } from 'express';
+import { API_MESSAGES } from '@shared/constants';
 
 export const createCategoryController = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -16,7 +17,7 @@ export const createCategoryController = async (req: Request, res: Response, next
     if (!category) {
       res.locals.response = { status: false, code: 400, message: 'Brand or outlet not found' };
     } else {
-      res.locals.response = { status: true, code: 201, data: category };
+      res.locals.response = { status: true, code: 201, message: API_MESSAGES.CATEGORY_CREATED, data: category };
     }
     next();
   } catch (err) {
@@ -55,7 +56,7 @@ export const getCategoryController = async (req: Request, res: Response, next: N
     const { categoryId } = req.query as { categoryId: string };
     const category = await getCategory(brandId, categoryId);
     if (!category) {
-      res.locals.response = { status: false, code: 404, message: 'Not Found' };
+      res.locals.response = { status: false, code: 404, message: API_MESSAGES.CATEGORY_NOT_FOUND };
     } else {
       res.locals.response = { status: true, code: 200, data: category };
     }
@@ -71,9 +72,9 @@ export const updateCategoryController = async (req: Request, res: Response, next
     const { categoryId } = req.query as { categoryId: string };
     const category = await updateCategory(brandId, categoryId, req.body);
     if (!category) {
-      res.locals.response = { status: false, code: 404, message: 'Not Found' };
+      res.locals.response = { status: false, code: 404, message: API_MESSAGES.CATEGORY_NOT_FOUND };
     } else {
-      res.locals.response = { status: true, code: 200, data: category };
+      res.locals.response = { status: true, code: 200, message: API_MESSAGES.CATEGORY_UPDATED, data: category };
     }
     next();
   } catch (err) {
@@ -87,9 +88,9 @@ export const deleteCategoryController = async (req: Request, res: Response, next
     const { categoryId } = req.query as { categoryId: string };
     const category = await deleteCategory(brandId, categoryId);
     if (!category) {
-      res.locals.response = { status: false, code: 404, message: 'Not Found' };
+      res.locals.response = { status: false, code: 404, message: API_MESSAGES.CATEGORY_NOT_FOUND };
     } else {
-      res.locals.response = { status: true, code: 200, data: category };
+      res.locals.response = { status: true, code: 200, message: API_MESSAGES.CATEGORY_DELETED };
     }
     next();
   } catch (err) {

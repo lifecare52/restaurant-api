@@ -378,9 +378,9 @@ export const getOpenApiSpec = () => {
                   addons: {
                     type: 'array',
                     items: {
-                $ref: '#/components/schemas/AddonInputCreate',
+                      $ref: '#/components/schemas/AddonInputCreate',
                     },
-              description: 'Objects with addonId, selection rules; allowedItems is ignored on create',
+                    description: 'Objects with addonId, selection rules; allowedItems is ignored on create',
                   },
                 },
                 required: ['variationId', 'price'],
@@ -388,7 +388,7 @@ export const getOpenApiSpec = () => {
             },
             addons: {
               type: 'array',
-        items: { $ref: '#/components/schemas/AddonInputCreate' },
+              items: { $ref: '#/components/schemas/AddonInputCreate' },
               description: 'Item-level addons (used only when variations are not provided); allowedItems is ignored on create',
             },
             isActive: { type: 'boolean', default: true },
@@ -413,7 +413,7 @@ export const getOpenApiSpec = () => {
                   variationId: { type: 'string' },
                   addons: {
                     type: 'array',
-                items: { $ref: '#/components/schemas/AddonInputUpdate' },
+                    items: { $ref: '#/components/schemas/AddonInputUpdate' },
                   },
                 },
                 required: ['variationId'],
@@ -422,7 +422,7 @@ export const getOpenApiSpec = () => {
             addons: {
               type: 'array',
               description: 'Optional: item-level addon updates (used when variations are not provided)',
-          items: { $ref: '#/components/schemas/AddonInputUpdate' },
+              items: { $ref: '#/components/schemas/AddonInputUpdate' },
             },
             isActive: { type: 'boolean' },
           },

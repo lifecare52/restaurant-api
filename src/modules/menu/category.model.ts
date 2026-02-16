@@ -25,7 +25,10 @@ const CategorySchema = new Schema<Category>(
   { timestamps: true },
 );
 
-CategorySchema.index({ brandId: 1, outletId: 1, name: 1 }, { unique: true });
+CategorySchema.index(
+  { brandId: 1, outletId: 1, name: 1 },
+  { unique: true, partialFilterExpression: { isDelete: false } },
+);
 
 export const CategoryEntity = model<Category, CategoryModel>('Category', CategorySchema);
 export default CategoryEntity;
