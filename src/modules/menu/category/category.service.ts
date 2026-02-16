@@ -82,6 +82,8 @@ export const listCategories = async (
   const sortOrder = pagination.order === 'DESC' ? -1 : 1;
   const [items, total] = await Promise.all([
     CategoryEntity.find(filter)
+      .select('name onlineName logo isActive createdAt updatedAt')
+      .lean()
       .sort({ [sortColumn]: sortOrder })
       .skip(skip)
       .limit(limit),
@@ -95,7 +97,9 @@ export const getCategory = async (brandId: string, categoryId: string) => {
     _id: new Types.ObjectId(categoryId),
     brandId: new Types.ObjectId(brandId),
     isDelete: false,
-  });
+  })
+    .select('name onlineName logo isActive createdAt updatedAt')
+    .lean();
 };
 
 export const updateCategory = async (

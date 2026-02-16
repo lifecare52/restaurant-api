@@ -1,31 +1,10 @@
 import { Router } from 'express';
-
-import { auth } from '@middlewares/auth.middleware';
-import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
-
-import { validateRequest } from '@shared/utils/validateRequest';
-
 import menuItemsRouter from './menu-items/menu-item.route';
 import variationsRouter from './variations/variation.route';
 import menuItemVariantsRouter from './menu-item-variants/menu-item-variant.route';
 import addonsRouter from './addons/addon.route';
 import menuItemAddonsRouter from './menu-item-addons/menu-item-addon.route';
-import {
-  createCategoryController,
-  listCategoriesController,
-  getCategoryController,
-  updateCategoryController,
-  deleteCategoryController,
-} from './category.controller';
-import {
-  createCategorySchema,
-  updateCategorySchema,
-  categoryListHeaderSchema,
-  categoryListQuerySchema,
-  categoryGetQuerySchema,
-  categoryModifyQuerySchema,
-  categoryBrandHeaderSchema,
-} from './category.validator';
+import categoriesRouter from './category/category.route';
 
 const router = Router();
 
@@ -34,53 +13,6 @@ router.use(variationsRouter);
 router.use(menuItemVariantsRouter);
 router.use(addonsRouter);
 router.use(menuItemAddonsRouter);
-
-router.post(
-  '/categories',
-  auth,
-  validateRequest(categoryListHeaderSchema, 'headers'),
-  requireBrandAccess,
-  requireOutletAccess,
-  validateRequest(createCategorySchema),
-  createCategoryController,
-);
-
-router.get(
-  '/categories',
-  auth,
-  validateRequest(categoryListHeaderSchema, 'headers'),
-  requireBrandAccess,
-  requireOutletAccess,
-  validateRequest(categoryListQuerySchema, 'query'),
-  listCategoriesController,
-);
-
-router.get(
-  '/categories/detail',
-  auth,
-  validateRequest(categoryBrandHeaderSchema, 'headers'),
-  validateRequest(categoryGetQuerySchema, 'query'),
-  requireBrandAccess,
-  getCategoryController,
-);
-
-router.patch(
-  '/categories',
-  auth,
-  validateRequest(categoryBrandHeaderSchema, 'headers'),
-  validateRequest(categoryModifyQuerySchema, 'query'),
-  requireBrandAccess,
-  validateRequest(updateCategorySchema),
-  updateCategoryController,
-);
-
-router.delete(
-  '/categories',
-  auth,
-  validateRequest(categoryBrandHeaderSchema, 'headers'),
-  validateRequest(categoryModifyQuerySchema, 'query'),
-  requireBrandAccess,
-  deleteCategoryController,
-);
+router.use(categoriesRouter);
 
 export default router;
