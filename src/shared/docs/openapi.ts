@@ -1436,7 +1436,7 @@ export const getOpenApiSpec = () => {
             { name: 'page', in: 'query', required: false, schema: { type: 'number', minimum: 1, default: 1 } },
             { name: 'limit', in: 'query', required: false, schema: { type: 'number', minimum: 1, maximum: 100, default: 20 } },
             { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
-            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['name', 'createdAt', 'updatedAt'], default: 'name' } },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['name', 'createdAt', 'updatedAt', 'isActive'], default: 'name' } },
             { name: 'order', in: 'query', required: false, schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' } },
           ],
           responses: {
@@ -1646,7 +1646,7 @@ export const getOpenApiSpec = () => {
                 enum: ['SIZE', 'PORTION', 'QUANTITY', 'WEIGHT', 'VOLUME', 'PACK', 'FLAVOR', 'TOPPING', 'STYLE', 'CUSTOM'],
               },
             },
-            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['name', 'department', 'createdAt', 'updatedAt'], default: 'name' } },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['name', 'department', 'createdAt', 'updatedAt', 'isActive'], default: 'name' } },
             { name: 'order', in: 'query', required: false, schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' } },
           ],
           responses: {
@@ -1744,7 +1744,7 @@ export const getOpenApiSpec = () => {
             { name: 'limit', in: 'query', required: false, schema: { type: 'number', minimum: 1, maximum: 100, default: 20 } },
             { name: 'menuItemId', in: 'query', required: false, schema: { type: 'string' } },
             { name: 'menuItemVariantId', in: 'query', required: false, schema: { type: 'string' } },
-            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['createdAt', 'updatedAt'], default: 'createdAt' } },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['createdAt', 'updatedAt', 'isActive'], default: 'createdAt' } },
             { name: 'order', in: 'query', required: false, schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' } },
           ],
           responses: {
@@ -1902,7 +1902,7 @@ export const getOpenApiSpec = () => {
             { name: 'menuItemId', in: 'query', required: false, schema: { type: 'string' } },
             { name: 'addonId', in: 'query', required: false, schema: { type: 'string' } },
             { name: 'menuItemVariantId', in: 'query', required: false, schema: { type: 'string' } },
-            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['createdAt', 'updatedAt'], default: 'createdAt' } },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string', enum: ['createdAt', 'updatedAt', 'isActive'], default: 'createdAt' } },
             { name: 'order', in: 'query', required: false, schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' } },
           ],
           responses: {

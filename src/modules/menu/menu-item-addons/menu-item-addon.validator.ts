@@ -55,6 +55,6 @@ export const menuItemAddonListQuerySchema = Joi.object({
   menuItemId: objectId.optional(),
   addonId: objectId.optional(),
   menuItemVariantId: objectId.optional(),
-  column: Joi.string().valid('createdAt', 'updatedAt').default('createdAt'),
+  column: Joi.string().valid('createdAt', 'updatedAt', 'isActive').default('createdAt'),
   order: Joi.string().valid('ASC', 'DESC').default('ASC'),
 });

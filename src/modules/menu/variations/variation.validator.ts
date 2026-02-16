@@ -32,6 +32,6 @@ export const variationListQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(100).default(20),
   searchText: Joi.string().trim().optional(),
   department: Joi.string().valid(...VARIATION_DEPARTMENTS).optional(),
-  column: Joi.string().valid('name', 'department', 'createdAt', 'updatedAt').default('name'),
+  column: Joi.string().valid('name', 'department', 'createdAt', 'updatedAt', 'isActive').default('name'),
   order: Joi.string().valid('ASC', 'DESC').default('ASC'),
 });

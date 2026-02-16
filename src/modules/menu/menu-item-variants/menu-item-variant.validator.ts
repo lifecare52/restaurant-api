@@ -30,6 +30,6 @@ export const menuItemVariantListQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(100).default(20),
   menuItemId: objectId.optional(),
   variationId: objectId.optional(),
-  column: Joi.string().valid('price', 'createdAt', 'updatedAt').default('createdAt'),
+  column: Joi.string().valid('price', 'createdAt', 'updatedAt', 'isActive').default('createdAt'),
   order: Joi.string().valid('ASC', 'DESC').default('ASC'),
 });
