@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { createApp } from './app';
-import { connectDB } from './config/db';
+import { createApp } from 'app';
+import { connectDB } from 'config/db';
 
 /**
  * Minimal server bootstrap (skeleton).

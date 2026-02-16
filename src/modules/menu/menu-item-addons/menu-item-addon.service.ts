@@ -1,14 +1,16 @@
 import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
-import { getOutletById } from '@modules/outlet/outlet.service';
-import { getMenuItem } from '@modules/menu/menu-items/menu-item.service';
 import { getAddon } from '@modules/menu/addons/addon.service';
 import { getMenuItemVariant } from '@modules/menu/menu-item-variants/menu-item-variant.service';
+import { getMenuItem } from '@modules/menu/menu-items/menu-item.service';
+import { getOutletById } from '@modules/outlet/outlet.service';
 
+import type { Dietary } from '@shared/enum';
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 import MenuItemAddonEntity from './menu-item-addon.model';
+
 import type { MenuItemAddonCreateDTO, MenuItemAddonUpdateDTO } from './menu-item-addon.types';
 
 type ResolvedAddonItem = {
@@ -16,11 +18,15 @@ type ResolvedAddonItem = {
   name: string;
   price: number;
   sapCode?: string;
-  dietary?: 'VEG' | 'NON_VEG' | 'EGG';
+  dietary?: Dietary;
   available: boolean;
 };
 
-export const createMenuItemAddon = async (brandId: string, outletId: string, dto: MenuItemAddonCreateDTO) => {
+export const createMenuItemAddon = async (
+  brandId: string,
+  outletId: string,
+  dto: MenuItemAddonCreateDTO,
+) => {
   const brand = await getBrandById(brandId);
   if (!brand) return null;
 
@@ -39,9 +45,7 @@ export const createMenuItemAddon = async (brandId: string, outletId: string, dto
   }
 
   try {
-    const allowedIds = new Set(
-      (addon.items || []).map(i => String(i._id || '')).filter(Boolean),
-    );
+    const allowedIds = new Set((addon.items || []).map(i => String(i._id || '')).filter(Boolean));
     const allowedItemIds =
       (dto.allowedItemIds || [])
         .map(s => (s ?? '').trim())
@@ -53,7 +57,9 @@ export const createMenuItemAddon = async (brandId: string, outletId: string, dto
       outletId: new Types.ObjectId(outletId),
       menuItemId: new Types.ObjectId(dto.menuItemId),
       addonId: new Types.ObjectId(dto.addonId),
-      menuItemVariantId: dto.menuItemVariantId ? new Types.ObjectId(dto.menuItemVariantId) : undefined,
+      menuItemVariantId: dto.menuItemVariantId
+        ? new Types.ObjectId(dto.menuItemVariantId)
+        : undefined,
       allowedItemIds: allowedItemIds.map(id => new Types.ObjectId(id)),
       isSingleSelect: dto.isSingleSelect,
       min: dto.min,
@@ -86,18 +92,23 @@ export const listMenuItemAddons = async (
   };
   if (filterInput.menuItemId) filter.menuItemId = new Types.ObjectId(filterInput.menuItemId);
   if (filterInput.addonId) filter.addonId = new Types.ObjectId(filterInput.addonId);
-  if (filterInput.menuItemVariantId) filter.menuItemVariantId = new Types.ObjectId(filterInput.menuItemVariantId);
+  if (filterInput.menuItemVariantId)
+    filter.menuItemVariantId = new Types.ObjectId(filterInput.menuItemVariantId);
 
   const sortColumn = pagination.column || 'createdAt';
   const sortOrder = pagination.order === 'DESC' ? -1 : 1;
   const [items, total] = await Promise.all([
-    MenuItemAddonEntity.find(filter).sort({ [sortColumn]: sortOrder }).skip(skip).limit(limit),
+    MenuItemAddonEntity.find(filter)
+      .sort({ [sortColumn]: sortOrder })
+      .skip(skip)
+      .limit(limit),
     MenuItemAddonEntity.countDocuments(filter),
   ]);
   const enriched = await Promise.all(
     items.map(async m => {
       const addon = await getAddon(brandId, outletId, String(m.addonId));
-      const addonItems: ResolvedAddonItem[] = ((addon?.items ?? []) as unknown as ResolvedAddonItem[]);
+      const addonItems: ResolvedAddonItem[] = (addon?.items ??
+        []) as unknown as ResolvedAddonItem[];
       if (!m.allowedItemIds || m.allowedItemIds.length === 0) {
         return { ...m.toObject(), allowedItems: addonItems };
       }
@@ -109,7 +120,11 @@ export const listMenuItemAddons = async (
   return { items: enriched, total };
 };
 
-export const getMenuItemAddon = async (brandId: string, outletId: string, menuItemAddonId: string) => {
+export const getMenuItemAddon = async (
+  brandId: string,
+  outletId: string,
+  menuItemAddonId: string,
+) => {
   const doc = await MenuItemAddonEntity.findOne({
     _id: new Types.ObjectId(menuItemAddonId),
     brandId: new Types.ObjectId(brandId),
@@ -118,7 +133,7 @@ export const getMenuItemAddon = async (brandId: string, outletId: string, menuIt
   });
   if (!doc) return null;
   const addon = await getAddon(brandId, outletId, String(doc.addonId));
-  const addonItems: ResolvedAddonItem[] = ((addon?.items ?? []) as unknown as ResolvedAddonItem[]);
+  const addonItems: ResolvedAddonItem[] = (addon?.items ?? []) as unknown as ResolvedAddonItem[];
   if (!doc.allowedItemIds || doc.allowedItemIds.length === 0) {
     return { ...doc.toObject(), allowedItems: addonItems };
   }
@@ -153,20 +168,26 @@ export const updateMenuItemAddon = async (
             (dto.allowedItemIds || [])
               .map(s => (s ?? '').trim())
               .filter(Boolean)
-              .filter((id, idx, arr) => arr.findIndex(n => n.toLowerCase() === id.toLowerCase()) === idx)
+              .filter(
+                (id, idx, arr) => arr.findIndex(n => n.toLowerCase() === id.toLowerCase()) === idx,
+              )
               .filter(id => allowedIds.has(id)) || [];
           patch.allowedItemIds = allowedItemIds.map(id => new Types.ObjectId(id));
         }
       }
     }
     const updated = await MenuItemAddonEntity.findOneAndUpdate(
-      { _id: new Types.ObjectId(menuItemAddonId), brandId: new Types.ObjectId(brandId), outletId: new Types.ObjectId(outletId) },
+      {
+        _id: new Types.ObjectId(menuItemAddonId),
+        brandId: new Types.ObjectId(brandId),
+        outletId: new Types.ObjectId(outletId),
+      },
       { $set: patch },
       { new: true },
     );
     if (!updated) return updated;
     const addon = await getAddon(brandId, outletId, String(updated.addonId));
-    const addonItems: ResolvedAddonItem[] = ((addon?.items ?? []) as unknown as ResolvedAddonItem[]);
+    const addonItems: ResolvedAddonItem[] = (addon?.items ?? []) as unknown as ResolvedAddonItem[];
     if (!updated.allowedItemIds || updated.allowedItemIds.length === 0) {
       return { ...updated.toObject(), allowedItems: addonItems };
     }
@@ -182,9 +203,17 @@ export const updateMenuItemAddon = async (
   }
 };
 
-export const deleteMenuItemAddon = async (brandId: string, outletId: string, menuItemAddonId: string) => {
+export const deleteMenuItemAddon = async (
+  brandId: string,
+  outletId: string,
+  menuItemAddonId: string,
+) => {
   return MenuItemAddonEntity.findOneAndUpdate(
-    { _id: new Types.ObjectId(menuItemAddonId), brandId: new Types.ObjectId(brandId), outletId: new Types.ObjectId(outletId) },
+    {
+      _id: new Types.ObjectId(menuItemAddonId),
+      brandId: new Types.ObjectId(brandId),
+      outletId: new Types.ObjectId(outletId),
+    },
     { $set: { isDelete: true } },
     { new: true },
   );

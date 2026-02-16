@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose';
 
-import type { MenuItemAddon } from './menu-item-addon.types';
+import type { MenuItemAddon } from '@modules/menu/menu-item-addons/menu-item-addon.types';
 
 const MenuItemAddonSchema = new Schema<MenuItemAddon>(
   {
@@ -21,13 +21,23 @@ const MenuItemAddonSchema = new Schema<MenuItemAddon>(
 
 MenuItemAddonSchema.index(
   { brandId: 1, outletId: 1, menuItemId: 1, addonId: 1 },
-  { unique: true, partialFilterExpression: { isDelete: false, menuItemVariantId: { $exists: false } } },
+  {
+    unique: true,
+    partialFilterExpression: { isDelete: false, menuItemVariantId: { $exists: false } },
+  },
 );
 
 MenuItemAddonSchema.index(
   { brandId: 1, outletId: 1, menuItemId: 1, addonId: 1, menuItemVariantId: 1 },
-  { unique: true, partialFilterExpression: { isDelete: false, menuItemVariantId: { $type: 'objectId' } } },
+  {
+    unique: true,
+    partialFilterExpression: { isDelete: false, menuItemVariantId: { $type: 'objectId' } },
+  },
 );
 
-const MenuItemAddonEntity = model<MenuItemAddon>('MenuItemAddon', MenuItemAddonSchema, 'menu_item_addons');
+const MenuItemAddonEntity = model<MenuItemAddon>(
+  'MenuItemAddon',
+  MenuItemAddonSchema,
+  'menu_item_addons',
+);
 export default MenuItemAddonEntity;

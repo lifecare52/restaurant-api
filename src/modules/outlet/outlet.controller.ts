@@ -1,4 +1,4 @@
-import { createOutlet, listOutlets, updateOutlet } from './outlet.service';
+import { createOutlet, listOutlets, updateOutlet } from '@modules/outlet/outlet.service';
 
 import type { Request, Response, NextFunction } from 'express';
 

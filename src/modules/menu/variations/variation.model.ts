@@ -1,7 +1,7 @@
 import { Schema, model, type Model } from 'mongoose';
 
-import { VARIATION_DEPARTMENTS } from './variation.types';
-import type { Variation } from './variation.types';
+import { VARIATION_DEPARTMENTS } from '@modules/menu/variations/variation.types';
+import type { Variation } from '@modules/menu/variations/variation.types';
 
 export type VariationModel = Model<Variation>;
 
@@ -29,6 +29,10 @@ VariationSchema.index(
   { unique: true, collation: { locale: 'en', strength: 2 } },
 );
 
-export const VariationEntity = model<Variation, VariationModel>('Variation', VariationSchema, 'variations');
+export const VariationEntity = model<Variation, VariationModel>(
+  'Variation',
+  VariationSchema,
+  'variations',
+);
 
 export default VariationEntity;

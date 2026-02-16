@@ -1,14 +1,16 @@
 import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
-import { getOutletById } from '@modules/outlet/outlet.service';
+import MenuItemVariantEntity from '@modules/menu/menu-item-variants/menu-item-variant.model';
+import type {
+  MenuItemVariantCreateDTO,
+  MenuItemVariantUpdateDTO,
+} from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import { getMenuItem } from '@modules/menu/menu-items/menu-item.service';
 import { getVariation } from '@modules/menu/variations/variation.service';
+import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
-
-import MenuItemVariantEntity from './menu-item-variant.model';
-import type { MenuItemVariantCreateDTO, MenuItemVariantUpdateDTO } from './menu-item-variant.types';
 
 export const createMenuItemVariant = async (
   brandId: string,
@@ -88,7 +90,10 @@ export const listMenuItemVariants = async (
   const sortOrder = pagination.order === 'DESC' ? -1 : 1;
 
   const [items, total] = await Promise.all([
-    MenuItemVariantEntity.find(filter).sort({ [sortColumn]: sortOrder }).skip(skip).limit(limit),
+    MenuItemVariantEntity.find(filter)
+      .sort({ [sortColumn]: sortOrder })
+      .skip(skip)
+      .limit(limit),
     MenuItemVariantEntity.countDocuments(filter),
   ]);
 

@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-import { VARIATION_DEPARTMENTS } from './variation.types';
+import { VARIATION_DEPARTMENTS } from '@modules/menu/variations/variation.types';
 
 const objectId = Joi.string().length(24).hex();
 
@@ -31,7 +31,11 @@ export const variationListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(20),
   searchText: Joi.string().trim().optional(),
-  department: Joi.string().valid(...VARIATION_DEPARTMENTS).optional(),
-  column: Joi.string().valid('name', 'department', 'createdAt', 'updatedAt', 'isActive').default('name'),
+  department: Joi.string()
+    .valid(...VARIATION_DEPARTMENTS)
+    .optional(),
+  column: Joi.string()
+    .valid('name', 'department', 'createdAt', 'updatedAt', 'isActive')
+    .default('name'),
   order: Joi.string().valid('ASC', 'DESC').default('ASC'),
 });

@@ -1,3 +1,5 @@
+import { API_MESSAGES } from '@shared/constants';
+
 import {
   createCategory,
   listCategories,
@@ -7,7 +9,6 @@ import {
 } from './category.service';
 
 import type { Request, Response, NextFunction } from 'express';
-import { API_MESSAGES } from '@shared/constants';
 
 export const createCategoryController = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -17,7 +18,12 @@ export const createCategoryController = async (req: Request, res: Response, next
     if (!category) {
       res.locals.response = { status: false, code: 400, message: 'Brand or outlet not found' };
     } else {
-      res.locals.response = { status: true, code: 201, message: API_MESSAGES.CATEGORY_CREATED, data: category };
+      res.locals.response = {
+        status: true,
+        code: 201,
+        message: API_MESSAGES.CATEGORY_CREATED,
+        data: category,
+      };
     }
     next();
   } catch (err) {
@@ -74,7 +80,12 @@ export const updateCategoryController = async (req: Request, res: Response, next
     if (!category) {
       res.locals.response = { status: false, code: 404, message: API_MESSAGES.CATEGORY_NOT_FOUND };
     } else {
-      res.locals.response = { status: true, code: 200, message: API_MESSAGES.CATEGORY_UPDATED, data: category };
+      res.locals.response = {
+        status: true,
+        code: 200,
+        message: API_MESSAGES.CATEGORY_UPDATED,
+        data: category,
+      };
     }
     next();
   } catch (err) {

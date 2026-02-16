@@ -1,4 +1,4 @@
-import { getConstants } from './meta.service';
+import { getConstants } from '@modules/meta/meta.service';
 
 import type { Request, Response, NextFunction } from 'express';
 

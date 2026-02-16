@@ -1,14 +1,20 @@
 import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
+import { VariationEntity } from '@modules/menu/variations/variation.model';
+import type {
+  VariationCreateDTO,
+  VariationUpdateDTO,
+} from '@modules/menu/variations/variation.types';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
-import { VariationEntity } from './variation.model';
-import type { VariationCreateDTO, VariationUpdateDTO } from './variation.types';
-
-export const createVariation = async (brandId: string, outletId: string, dto: VariationCreateDTO) => {
+export const createVariation = async (
+  brandId: string,
+  outletId: string,
+  dto: VariationCreateDTO,
+) => {
   const brand = await getBrandById(brandId);
   if (!brand) return null;
 
@@ -59,7 +65,10 @@ export const listVariations = async (
   const sortOrder = pagination.order === 'DESC' ? -1 : 1;
 
   const [items, total] = await Promise.all([
-    VariationEntity.find(filter).sort({ [sortColumn]: sortOrder }).skip(skip).limit(limit),
+    VariationEntity.find(filter)
+      .sort({ [sortColumn]: sortOrder })
+      .skip(skip)
+      .limit(limit),
     VariationEntity.countDocuments(filter),
   ]);
 

@@ -1,4 +1,4 @@
-import { getCorsConfig } from '../config/cors';
+import { getCorsConfig } from 'config/cors';
 
 import type { Request, Response, NextFunction } from 'express';
 

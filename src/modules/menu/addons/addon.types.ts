@@ -1,10 +1,12 @@
+import type { Dietary } from '@shared/enum';
+
 import type { Types } from 'mongoose';
 
 export interface AddonItemDTO {
   name: string;
   price: number;
   sapCode?: string;
-  dietary?: 'VEG' | 'NON_VEG' | 'EGG';
+  dietary?: Dietary;
   available?: boolean;
 }
 
@@ -25,7 +27,7 @@ export interface AddonItem {
   name: string;
   price: number;
   sapCode?: string;
-  dietary?: 'VEG' | 'NON_VEG' | 'EGG';
+  dietary?: Dietary;
   available: boolean;
 }
 

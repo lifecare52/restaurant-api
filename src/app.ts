@@ -1,10 +1,6 @@
 import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
-import corsMiddleware from '@middlewares/cors.middleware';
-import { notFoundHandler, errorHandler } from '@middlewares/error.middleware';
-import responseMiddleware from '@middlewares/response.middleware';
-
 import brandRoutes from '@modules/brand/brand.route';
 import menuRoutes from '@modules/menu/menu.route';
 import metaRoutes from '@modules/meta/meta.route';
@@ -12,6 +8,10 @@ import outletRoutes from '@modules/outlet/outlet.route';
 import userRoutes from '@modules/user/user.route';
 
 import { getOpenApiSpec } from '@shared/docs/openapi';
+
+import corsMiddleware from '@middlewares/cors.middleware';
+import { notFoundHandler, errorHandler } from '@middlewares/error.middleware';
+import responseMiddleware from '@middlewares/response.middleware';
 
 /**
  * Application entrypoint (skeleton).

@@ -1,5 +1,7 @@
 import Joi from 'joi';
 
+import { SORT_ORDERS, SortOrder } from '@shared/enum';
+
 const objectId = Joi.string().length(24).hex();
 
 export const menuItemAddonHeaderSchema = Joi.object({
@@ -56,5 +58,7 @@ export const menuItemAddonListQuerySchema = Joi.object({
   addonId: objectId.optional(),
   menuItemVariantId: objectId.optional(),
   column: Joi.string().valid('createdAt', 'updatedAt', 'isActive').default('createdAt'),
-  order: Joi.string().valid('ASC', 'DESC').default('ASC'),
+  order: Joi.string()
+    .valid(...SORT_ORDERS)
+    .default(SortOrder.ASC),
 });

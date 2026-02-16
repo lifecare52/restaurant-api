@@ -1,5 +1,3 @@
-import { ROLES } from '@shared/constants';
-
 import {
   createAdmin,
   createAdminBootstrap,
@@ -7,7 +5,9 @@ import {
   createUser,
   login,
   loginAdmin,
-} from './user.service';
+} from '@modules/user/user.service';
+
+import { ROLES } from '@shared/constants';
 
 import type { Request, Response, NextFunction } from 'express';
 

@@ -1,9 +1,9 @@
 import { Router } from 'express';
 
+import { validateRequest } from '@shared/utils/validateRequest';
+
 import { auth } from '@middlewares/auth.middleware';
 import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
-
-import { validateRequest } from '@shared/utils/validateRequest';
 
 import {
   createVariationController,

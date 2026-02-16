@@ -1,3 +1,5 @@
+import type { Dietary } from '@shared/enum';
+
 import type { Types } from 'mongoose';
 
 export interface MenuItemAddonInputCreate {
@@ -16,7 +18,7 @@ export interface MenuItemCreateDTO {
   shortCodes?: string[];
   categoryId: string;
 
-  dietary: 'VEG' | 'NON_VEG' | 'EGG';
+  dietary: Dietary;
 
   basePrice?: number | null;
   costPrice?: number;
@@ -39,7 +41,7 @@ export interface MenuItem {
   shortCodes?: string[];
   categoryId: Types.ObjectId;
 
-  dietary: 'VEG' | 'NON_VEG' | 'EGG';
+  dietary: Dietary;
 
   basePrice?: number | null;
   costPrice?: number;

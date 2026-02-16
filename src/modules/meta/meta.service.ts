@@ -1,6 +1,6 @@
-import { OUTLET_TYPES, CUISINE_TYPES } from '@shared/constants';
+import type { ConstantsResponse } from '@modules/meta/meta.types';
 
-import type { ConstantsResponse } from './meta.types';
+import { OUTLET_TYPES, CUISINE_TYPES } from '@shared/constants';
 
 export const getConstants = (): ConstantsResponse => {
   return {

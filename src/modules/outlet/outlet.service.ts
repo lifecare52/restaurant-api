@@ -1,10 +1,8 @@
 import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
-
-import OutletEntity from './outlet.model';
-
-import type { OutletCreateDTO, OutletUpdateDTO } from './outlet.types';
+import OutletEntity from '@modules/outlet/outlet.model';
+import type { OutletCreateDTO, OutletUpdateDTO } from '@modules/outlet/outlet.types';
 
 export const createOutlet = async (brandId: string, dto: OutletCreateDTO) => {
   const brand = await getBrandById(brandId);

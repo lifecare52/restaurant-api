@@ -1,12 +1,11 @@
 import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
+import AddonEntity from '@modules/menu/addons/addon.model';
+import type { AddonCreateDTO, AddonUpdateDTO } from '@modules/menu/addons/addon.types';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
-
-import AddonEntity from './addon.model';
-import type { AddonCreateDTO, AddonUpdateDTO } from './addon.types';
 
 export const createAddon = async (brandId: string, outletId: string, dto: AddonCreateDTO) => {
   const brand = await getBrandById(brandId);
@@ -37,7 +36,11 @@ export const createAddon = async (brandId: string, outletId: string, dto: AddonC
   }
 };
 
-export const listAddons = async (brandId: string, outletId: string, pagination: PaginationQuery) => {
+export const listAddons = async (
+  brandId: string,
+  outletId: string,
+  pagination: PaginationQuery,
+) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;
   const skip = (page - 1) * limit;
@@ -59,7 +62,10 @@ export const listAddons = async (brandId: string, outletId: string, pagination: 
   const sortColumn = pagination.column || 'name';
   const sortOrder = pagination.order === 'DESC' ? -1 : 1;
   const [items, total] = await Promise.all([
-    AddonEntity.find(filter).sort({ [sortColumn]: sortOrder }).skip(skip).limit(limit),
+    AddonEntity.find(filter)
+      .sort({ [sortColumn]: sortOrder })
+      .skip(skip)
+      .limit(limit),
     AddonEntity.countDocuments(filter),
   ]);
   return { items, total };
@@ -74,10 +80,19 @@ export const getAddon = async (brandId: string, outletId: string, addonId: strin
   });
 };
 
-export const updateAddon = async (brandId: string, outletId: string, addonId: string, dto: AddonUpdateDTO) => {
+export const updateAddon = async (
+  brandId: string,
+  outletId: string,
+  addonId: string,
+  dto: AddonUpdateDTO,
+) => {
   try {
     return AddonEntity.findOneAndUpdate(
-      { _id: new Types.ObjectId(addonId), brandId: new Types.ObjectId(brandId), outletId: new Types.ObjectId(outletId) },
+      {
+        _id: new Types.ObjectId(addonId),
+        brandId: new Types.ObjectId(brandId),
+        outletId: new Types.ObjectId(outletId),
+      },
       { $set: dto },
       { new: true },
     );
@@ -92,7 +107,11 @@ export const updateAddon = async (brandId: string, outletId: string, addonId: st
 
 export const deleteAddon = async (brandId: string, outletId: string, addonId: string) => {
   return AddonEntity.findOneAndUpdate(
-    { _id: new Types.ObjectId(addonId), brandId: new Types.ObjectId(brandId), outletId: new Types.ObjectId(outletId) },
+    {
+      _id: new Types.ObjectId(addonId),
+      brandId: new Types.ObjectId(brandId),
+      outletId: new Types.ObjectId(outletId),
+    },
     { $set: { isDelete: true } },
     { new: true },
   );

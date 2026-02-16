@@ -1,6 +1,6 @@
-import { ROLES } from '@shared/constants';
+import { createBrand, getBrandById, updateBrand } from '@modules/brand/brand.service';
 
-import { createBrand, getBrandById, updateBrand } from './brand.service';
+import { ROLES } from '@shared/constants';
 
 import type { Request, Response, NextFunction } from 'express';
 

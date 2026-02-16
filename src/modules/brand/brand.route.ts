@@ -1,17 +1,21 @@
 import { Router } from 'express';
 
-import { auth } from '@middlewares/auth.middleware';
-import { requireRole, requireBrandAccess, requirePermissions } from '@middlewares/guard.middleware';
-
-import { ROLES, PERMISSIONS } from '@shared/constants';
-import { validateRequest } from '@shared/utils/validateRequest';
-
 import {
   createBrandController,
   getBrandController,
   updateBrandController,
-} from './brand.controller';
-import { createBrandSchema, updateBrandSchema, brandIdQuerySchema } from './brand.validator';
+} from '@modules/brand/brand.controller';
+import {
+  createBrandSchema,
+  updateBrandSchema,
+  brandIdQuerySchema,
+} from '@modules/brand/brand.validator';
+
+import { ROLES, PERMISSIONS } from '@shared/constants';
+import { validateRequest } from '@shared/utils/validateRequest';
+
+import { auth } from '@middlewares/auth.middleware';
+import { requireRole, requireBrandAccess, requirePermissions } from '@middlewares/guard.middleware';
 
 const router = Router();
 

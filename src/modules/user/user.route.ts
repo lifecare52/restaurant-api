@@ -1,11 +1,5 @@
 import { Router } from 'express';
 
-import { auth } from '@middlewares/auth.middleware';
-import { requireRole, requirePermissions, requireBrandAccess } from '@middlewares/guard.middleware';
-
-import { ROLES, PERMISSIONS } from '@shared/constants';
-import { validateRequest } from '@shared/utils/validateRequest';
-
 import {
   createAdminBootstrapController,
   createAdminController,
@@ -13,13 +7,19 @@ import {
   adminLoginController,
   createOwnerController,
   createUserController,
-} from './user.controller';
+} from '@modules/user/user.controller';
 import {
   createAdminSchema,
   createOwnerSchema,
   createUserSchema,
   loginSchema,
-} from './user.validator';
+} from '@modules/user/user.validator';
+
+import { ROLES, PERMISSIONS } from '@shared/constants';
+import { validateRequest } from '@shared/utils/validateRequest';
+
+import { auth } from '@middlewares/auth.middleware';
+import { requireRole, requirePermissions, requireBrandAccess } from '@middlewares/guard.middleware';
 
 const router = Router();
 

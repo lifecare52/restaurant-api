@@ -1,6 +1,8 @@
 import { Schema, model, type Model } from 'mongoose';
 
-import type { MenuItem } from './menu-item.types';
+import type { MenuItem } from '@modules/menu/menu-items/menu-item.types';
+
+import { DIETARIES } from '@shared/enum';
 
 export type MenuItemModel = Model<MenuItem>;
 
@@ -30,7 +32,7 @@ const MenuItemSchema = new Schema<MenuItem>(
 
     dietary: {
       type: String,
-      enum: ['VEG', 'NON_VEG', 'EGG'],
+      enum: DIETARIES,
       required: true,
     },
 
@@ -59,6 +61,10 @@ MenuItemSchema.index(
   { unique: true, collation: { locale: 'en', strength: 2 } },
 );
 
-export const MenuItemEntity = model<MenuItem, MenuItemModel>('MenuItem', MenuItemSchema,'menu_items');
+export const MenuItemEntity = model<MenuItem, MenuItemModel>(
+  'MenuItem',
+  MenuItemSchema,
+  'menu_items',
+);
 
 export default MenuItemEntity;

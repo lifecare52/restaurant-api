@@ -1,6 +1,6 @@
 import { Schema, model, type Model } from 'mongoose';
 
-import type { MenuItemVariant } from './menu-item-variant.types';
+import type { MenuItemVariant } from '@modules/menu/menu-item-variants/menu-item-variant.types';
 
 export type MenuItemVariantModel = Model<MenuItemVariant>;
 

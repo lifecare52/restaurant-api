@@ -1,13 +1,11 @@
 import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
+import CategoryEntity from '@modules/menu/category/category.model';
+import type { CategoryCreateDTO, CategoryUpdateDTO } from '@modules/menu/category/category.types';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
-
-import CategoryEntity from './category.model';
-
-import type { CategoryCreateDTO, CategoryUpdateDTO } from './category.types';
 
 export const createCategory = async (brandId: string, outletId: string, dto: CategoryCreateDTO) => {
   const brand = await getBrandById(brandId);

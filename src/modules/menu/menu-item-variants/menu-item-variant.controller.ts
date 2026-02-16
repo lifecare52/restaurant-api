@@ -1,14 +1,14 @@
-import type { Request, Response, NextFunction } from 'express';
-
-import { API_MESSAGES } from '@shared/constants';
-
 import {
   createMenuItemVariant,
   listMenuItemVariants,
   getMenuItemVariant,
   updateMenuItemVariant,
   deleteMenuItemVariant,
-} from './menu-item-variant.service';
+} from '@modules/menu/menu-item-variants/menu-item-variant.service';
+
+import { API_MESSAGES } from '@shared/constants';
+
+import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
@@ -24,7 +24,11 @@ export const createMenuItemVariantController = async (
     const { brandId, outletId } = getTenant(req);
     const r = await createMenuItemVariant(brandId, outletId, req.body);
     if (!r) {
-      res.locals.response = { status: false, code: 400, message: 'Brand, outlet, item or variation not found' };
+      res.locals.response = {
+        status: false,
+        code: 400,
+        message: 'Brand, outlet, item or variation not found',
+      };
     } else {
       res.locals.response = {
         status: true,

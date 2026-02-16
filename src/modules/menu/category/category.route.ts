@@ -1,9 +1,17 @@
 import { Router } from 'express';
 
-import { auth } from '@middlewares/auth.middleware';
-import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
 import { validateRequest } from '@shared/utils/validateRequest';
 
+import { auth } from '@middlewares/auth.middleware';
+import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
+
+import {
+  createCategoryController,
+  listCategoriesController,
+  getCategoryController,
+  updateCategoryController,
+  deleteCategoryController,
+} from './category.controller';
 import {
   createCategorySchema,
   updateCategorySchema,
@@ -13,14 +21,6 @@ import {
   categoryModifyQuerySchema,
   categoryBrandHeaderSchema,
 } from './category.validator';
-
-import {
-  createCategoryController,
-  listCategoriesController,
-  getCategoryController,
-  updateCategoryController,
-  deleteCategoryController,
-} from './category.controller';
 
 const router = Router();
 

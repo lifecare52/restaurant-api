@@ -1,5 +1,20 @@
 import { Router } from 'express';
 
+import {
+  createOutletController,
+  listOutletsController,
+  updateOutletController,
+} from '@modules/outlet/outlet.controller';
+import {
+  createOutletSchema,
+  updateOutletSchema,
+  outletBrandQuerySchema,
+  outletUpdateQuerySchema,
+} from '@modules/outlet/outlet.validator';
+
+import { ROLES, PERMISSIONS } from '@shared/constants';
+import { validateRequest } from '@shared/utils/validateRequest';
+
 import { auth } from '@middlewares/auth.middleware';
 import {
   requireBrandAccess,
@@ -7,21 +22,6 @@ import {
   requireRole,
   requirePermissionsOrAdmin,
 } from '@middlewares/guard.middleware';
-
-import { ROLES, PERMISSIONS } from '@shared/constants';
-import { validateRequest } from '@shared/utils/validateRequest';
-
-import {
-  createOutletController,
-  listOutletsController,
-  updateOutletController,
-} from './outlet.controller';
-import {
-  createOutletSchema,
-  updateOutletSchema,
-  outletBrandQuerySchema,
-  outletUpdateQuerySchema,
-} from './outlet.validator';
 
 const router = Router({ mergeParams: true });
 

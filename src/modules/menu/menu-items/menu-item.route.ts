@@ -1,78 +1,76 @@
 import { Router } from 'express';
 
-import { auth } from '@middlewares/auth.middleware';
-import {
-    requireBrandAccess,
-    requireOutletAccess
-} from '@middlewares/guard.middleware';
 import { validateRequest } from '@shared/utils/validateRequest';
 
+import { auth } from '@middlewares/auth.middleware';
+import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
+
 import {
-    createMenuItemController,
-    deleteMenuItemController,
-    getMenuItemController,
-    listMenuItemsController,
-    updateMenuItemController,
+  createMenuItemController,
+  deleteMenuItemController,
+  getMenuItemController,
+  listMenuItemsController,
+  updateMenuItemController,
 } from './menu-item.controller';
 import {
-    createMenuItemSchema,
-    updateMenuItemSchema,
-    menuItemListQuerySchema,
-    menuItemIdQuerySchema,
-    menuItemHeaderSchema,
+  createMenuItemSchema,
+  updateMenuItemSchema,
+  menuItemListQuerySchema,
+  menuItemIdQuerySchema,
+  menuItemHeaderSchema,
 } from './menu-item.validator';
 
 const router = Router();
 
 router.post(
-    '/',
-    auth,
-    validateRequest(menuItemHeaderSchema, 'headers'),
-    requireBrandAccess,
-    requireOutletAccess,
-    validateRequest(createMenuItemSchema),
-    createMenuItemController,
+  '/',
+  auth,
+  validateRequest(menuItemHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  validateRequest(createMenuItemSchema),
+  createMenuItemController,
 );
 
 router.get(
-    '/',
-    auth,
-    validateRequest(menuItemHeaderSchema, 'headers'),
-    requireBrandAccess,
-    requireOutletAccess,
-    validateRequest(menuItemListQuerySchema, 'query'),
-    listMenuItemsController,
+  '/',
+  auth,
+  validateRequest(menuItemHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  validateRequest(menuItemListQuerySchema, 'query'),
+  listMenuItemsController,
 );
 
 router.get(
-    '/detail',
-    auth,
-    validateRequest(menuItemHeaderSchema, 'headers'),
-    requireBrandAccess,
-    requireOutletAccess,
-    validateRequest(menuItemIdQuerySchema, 'query'),
-    getMenuItemController,
+  '/detail',
+  auth,
+  validateRequest(menuItemHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  validateRequest(menuItemIdQuerySchema, 'query'),
+  getMenuItemController,
 );
 
 router.patch(
-    '/',
-    auth,
-    validateRequest(menuItemHeaderSchema, 'headers'),
-    requireBrandAccess,
-    requireOutletAccess,
-    validateRequest(menuItemIdQuerySchema, 'query'),
-    validateRequest(updateMenuItemSchema),
-    updateMenuItemController,
+  '/',
+  auth,
+  validateRequest(menuItemHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  validateRequest(menuItemIdQuerySchema, 'query'),
+  validateRequest(updateMenuItemSchema),
+  updateMenuItemController,
 );
 
 router.delete(
-    '/',
-    auth,
-    validateRequest(menuItemHeaderSchema, 'headers'),
-    requireBrandAccess,
-    requireOutletAccess,
-    validateRequest(menuItemIdQuerySchema, 'query'),
-    deleteMenuItemController,
+  '/',
+  auth,
+  validateRequest(menuItemHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  validateRequest(menuItemIdQuerySchema, 'query'),
+  deleteMenuItemController,
 );
 
 export default router;

@@ -1,23 +1,24 @@
 import { Router } from 'express';
 
-import { auth } from '@middlewares/auth.middleware';
-import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
-import { validateRequest } from '@shared/utils/validateRequest';
-
-import {
-  addonHeaderSchema,
-  createAddonSchema,
-  updateAddonSchema,
-  addonListQuerySchema,
-  addonIdQuerySchema,
-} from './addon.validator';
 import {
   createAddonController,
   listAddonsController,
   getAddonController,
   updateAddonController,
   deleteAddonController,
-} from './addon.controller';
+} from '@modules/menu/addons/addon.controller';
+import {
+  addonHeaderSchema,
+  createAddonSchema,
+  updateAddonSchema,
+  addonListQuerySchema,
+  addonIdQuerySchema,
+} from '@modules/menu/addons/addon.validator';
+
+import { validateRequest } from '@shared/utils/validateRequest';
+
+import { auth } from '@middlewares/auth.middleware';
+import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
 
 const router = Router();
 

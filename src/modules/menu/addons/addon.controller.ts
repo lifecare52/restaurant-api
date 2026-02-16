@@ -1,8 +1,9 @@
-import type { Request, Response, NextFunction } from 'express';
+import AddonService from '@modules/menu/addons/addon.service';
+import type { AddonCreateDTO, AddonUpdateDTO } from '@modules/menu/addons/addon.types';
 
 import { API_MESSAGES } from '@shared/constants';
-import type { AddonCreateDTO, AddonUpdateDTO } from './addon.types';
-import AddonService from './addon.service';
+
+import type { Request, Response, NextFunction } from 'express';
 
 export const createAddonController = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -13,7 +14,12 @@ export const createAddonController = async (req: Request, res: Response, next: N
     if (!v) {
       res.locals.response = { status: false, code: 400, message: 'Brand or outlet not found' };
     } else {
-      res.locals.response = { status: true, code: 201, message: API_MESSAGES.ADDON_CREATED, data: v };
+      res.locals.response = {
+        status: true,
+        code: 201,
+        message: API_MESSAGES.ADDON_CREATED,
+        data: v,
+      };
     }
     next();
   } catch (err) {
@@ -32,17 +38,13 @@ export const listAddonsController = async (req: Request, res: Response, next: Ne
       column?: string;
       order?: 'ASC' | 'DESC';
     };
-    const result = await AddonService.listAddons(
-      brandId,
-      outletId,
-      {
-        page: page ? Number(page) : 1,
-        limit: limit ? Number(limit) : 20,
-        searchText,
-        column,
-        order,
-      },
-    );
+    const result = await AddonService.listAddons(brandId, outletId, {
+      page: page ? Number(page) : 1,
+      limit: limit ? Number(limit) : 20,
+      searchText,
+      column,
+      order,
+    });
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
     next();
   } catch (err) {
@@ -77,7 +79,12 @@ export const updateAddonController = async (req: Request, res: Response, next: N
     if (!v) {
       res.locals.response = { status: false, code: 404, message: API_MESSAGES.ADDON_NOT_FOUND };
     } else {
-      res.locals.response = { status: true, code: 200, message: API_MESSAGES.ADDON_UPDATED, data: v };
+      res.locals.response = {
+        status: true,
+        code: 200,
+        message: API_MESSAGES.ADDON_UPDATED,
+        data: v,
+      };
     }
     next();
   } catch (err) {

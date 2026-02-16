@@ -1,6 +1,6 @@
 import { Schema, model, type Model } from 'mongoose';
 
-import type { Category } from './category.types';
+import type { Category } from '@modules/menu/category/category.types';
 
 export type CategoryModel = Model<Category>;
 

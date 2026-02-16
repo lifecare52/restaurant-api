@@ -1,16 +1,22 @@
 import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
-import { getOutletById } from '@modules/outlet/outlet.service';
-import { listMenuItemVariants, createMenuItemVariant } from '@modules/menu/menu-item-variants/menu-item-variant.service';
-import { listMenuItemAddons, createMenuItemAddon, updateMenuItemAddon } from '@modules/menu/menu-item-addons/menu-item-addon.service';
-import { getVariation } from '@modules/menu/variations/variation.service';
 import { getAddon } from '@modules/menu/addons/addon.service';
-import type { MenuItem } from './menu-item.types';
+import {
+  listMenuItemAddons,
+  createMenuItemAddon,
+  updateMenuItemAddon,
+} from '@modules/menu/menu-item-addons/menu-item-addon.service';
+import {
+  listMenuItemVariants,
+  createMenuItemVariant,
+} from '@modules/menu/menu-item-variants/menu-item-variant.service';
+import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
+import type { MenuItem } from '@modules/menu/menu-items/menu-item.types';
+import { getVariation } from '@modules/menu/variations/variation.service';
+import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
-
-import MenuItemEntity from './menu-item.model';
 
 import type { MenuItemCreateDTO, MenuItemUpdateDTO } from './menu-item.types';
 
@@ -22,7 +28,11 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
   if (!outlet) return null;
 
   try {
-    const normalizeAddonCreate = (arr: Array<{ addonId: string; isSingleSelect?: boolean; min?: number; max?: number }> | undefined) => {
+    const normalizeAddonCreate = (
+      arr:
+        | Array<{ addonId: string; isSingleSelect?: boolean; min?: number; max?: number }>
+        | undefined,
+    ) => {
       return (arr || []).map(a => ({
         addonId: a.addonId,
         isSingleSelect: a.isSingleSelect,
@@ -40,7 +50,11 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       const ids = new Set<string>();
       for (const v of variationsInput) {
         if (ids.has(v.variationId)) {
-          throw { status: 400, code: 'DUPLICATE_VARIATION', message: 'Duplicate variationId in input' };
+          throw {
+            status: 400,
+            code: 'DUPLICATE_VARIATION',
+            message: 'Duplicate variationId in input',
+          };
         }
         ids.add(v.variationId);
         const exists = await getVariation(brandId, outletId, v.variationId);
@@ -181,7 +195,7 @@ export const listMenuItems = async (
 const buildMenuItemNested = async (
   brandId: string,
   outletId: string,
-  item: (MenuItem & { _id: Types.ObjectId; outletId: Types.ObjectId; toObject?: () => any }),
+  item: MenuItem & { _id: Types.ObjectId; outletId: Types.ObjectId; toObject?: () => any },
 ) => {
   const variantsResult = await listMenuItemVariants(brandId, outletId, {
     page: 1,
@@ -261,18 +275,36 @@ export const listMenuItemsWithNested = async (
 ) => {
   const result = await listMenuItems(brandId, outletId, pagination);
   const enriched = await Promise.all(
-    result.items.map(i => buildMenuItemNested(brandId, outletId, i as unknown as MenuItem & { _id: Types.ObjectId; outletId: Types.ObjectId; toObject?: () => any })),
+    result.items.map(i =>
+      buildMenuItemNested(
+        brandId,
+        outletId,
+        i as unknown as MenuItem & {
+          _id: Types.ObjectId;
+          outletId: Types.ObjectId;
+          toObject?: () => any;
+        },
+      ),
+    ),
   );
   return { items: enriched, total: result.total };
 };
 
-export const getMenuItemWithNested = async (brandId: string, outletId: string, menuItemId: string) => {
+export const getMenuItemWithNested = async (
+  brandId: string,
+  outletId: string,
+  menuItemId: string,
+) => {
   const item = await getMenuItem(brandId, menuItemId);
   if (!item || String(item.outletId) !== String(outletId)) return null;
   return buildMenuItemNested(
     brandId,
     outletId,
-    item as unknown as MenuItem & { _id: Types.ObjectId; outletId: Types.ObjectId; toObject?: () => any },
+    item as unknown as MenuItem & {
+      _id: Types.ObjectId;
+      outletId: Types.ObjectId;
+      toObject?: () => any;
+    },
   );
 };
 
@@ -304,7 +336,17 @@ export const updateMenuItem = async (
 
     // If addons/variations provided, upsert menu_item_addons accordingly
     const outletId = String(updated.outletId);
-    const normalizeAddonUpdate = (arr: Array<{ addonId: string; allowedItems?: string[]; isSingleSelect?: boolean; min?: number; max?: number }> | undefined) => {
+    const normalizeAddonUpdate = (
+      arr:
+        | Array<{
+            addonId: string;
+            allowedItems?: string[];
+            isSingleSelect?: boolean;
+            min?: number;
+            max?: number;
+          }>
+        | undefined,
+    ) => {
       return (arr || []).map(a => ({
         addonId: a.addonId,
         allowedItemIds: (a.allowedItems || []).map(s => s),

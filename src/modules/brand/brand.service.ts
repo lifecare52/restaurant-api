@@ -1,6 +1,5 @@
-import BrandEntity from './brand.model';
-
-import type { BrandCreateDTO, BrandUpdateDTO } from './brand.types';
+import BrandEntity from '@modules/brand/brand.model';
+import type { BrandCreateDTO, BrandUpdateDTO } from '@modules/brand/brand.types';
 
 export const createBrand = async (dto: BrandCreateDTO) => {
   const brand = await BrandEntity.create({

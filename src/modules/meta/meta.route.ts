@@ -1,6 +1,6 @@
 import { Router } from 'express';
 
-import { getConstantsController } from './meta.controller';
+import { getConstantsController } from '@modules/meta/meta.controller';
 
 const router = Router();
 

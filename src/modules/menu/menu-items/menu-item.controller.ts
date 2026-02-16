@@ -1,24 +1,21 @@
-import type { Request, Response, NextFunction } from 'express';
-
 import {
   createMenuItem,
   listMenuItemsWithNested,
   getMenuItemWithNested,
   updateMenuItem,
   deleteMenuItem,
-} from './menu-item.service';
+} from '@modules/menu/menu-items/menu-item.service';
+
 import { API_MESSAGES } from '@shared/constants';
+
+import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
   outletId: (req.headers['outlet-id'] as string | undefined) || '',
 });
 
-export const createMenuItemController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const createMenuItemController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const item = await createMenuItem(brandId, outletId, req.body);
@@ -43,11 +40,7 @@ export const createMenuItemController = async (
   }
 };
 
-export const listMenuItemsController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const listMenuItemsController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const result = await listMenuItemsWithNested(brandId, outletId, req.query as any);
@@ -64,11 +57,7 @@ export const listMenuItemsController = async (
   }
 };
 
-export const getMenuItemController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const getMenuItemController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const { menuItemId } = req.query as { menuItemId: string };
@@ -86,11 +75,7 @@ export const getMenuItemController = async (
   }
 };
 
-export const updateMenuItemController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const updateMenuItemController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const { menuItemId } = req.query as { menuItemId: string };
@@ -120,11 +105,7 @@ export const updateMenuItemController = async (
   }
 };
 
-export const deleteMenuItemController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const deleteMenuItemController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { brandId } = getTenant(req);
     const { menuItemId } = req.query as { menuItemId: string };

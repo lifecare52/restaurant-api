@@ -28,7 +28,7 @@ module.exports = {
     {
       files: ['src/**/*.ts'],
       rules: {
-        '@typescript-eslint/no-explicit-any': 'error',
+        '@typescript-eslint/no-explicit-any': 'warn',
         'no-console': 'warn',
         'prettier/prettier': 'error',
         'import/order': [

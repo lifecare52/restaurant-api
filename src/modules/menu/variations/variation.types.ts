@@ -13,7 +13,9 @@ export enum VariationDepartment {
   CUSTOM = 'CUSTOM',
 }
 
-export const VARIATION_DEPARTMENTS = Object.values(VariationDepartment) as readonly VariationDepartment[];
+export const VARIATION_DEPARTMENTS = Object.values(
+  VariationDepartment,
+) as readonly VariationDepartment[];
 export type VariationDepartmentType = (typeof VARIATION_DEPARTMENTS)[number];
 
 export interface VariationCreateDTO {

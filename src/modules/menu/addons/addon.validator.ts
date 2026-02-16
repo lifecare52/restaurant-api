@@ -1,5 +1,7 @@
 import Joi from 'joi';
 
+import { DIETARIES } from '@shared/enum';
+
 const objectId = Joi.string().length(24).hex();
 
 export const addonHeaderSchema = Joi.object({
@@ -15,7 +17,9 @@ export const createAddonSchema = Joi.object({
         name: Joi.string().trim().min(1).max(100).required(),
         price: Joi.number().min(0).required(),
         sapCode: Joi.string().trim().max(50).optional(),
-        dietary: Joi.string().valid('VEG', 'NON_VEG', 'EGG').optional(),
+        dietary: Joi.string()
+          .valid(...DIETARIES)
+          .optional(),
         available: Joi.boolean().default(true),
       }),
     )
@@ -30,7 +34,9 @@ export const updateAddonSchema = Joi.object({
       name: Joi.string().trim().min(1).max(100).required(),
       price: Joi.number().min(0).required(),
       sapCode: Joi.string().trim().max(50).optional(),
-      dietary: Joi.string().valid('VEG', 'NON_VEG', 'EGG').optional(),
+      dietary: Joi.string()
+        .valid(...DIETARIES)
+        .optional(),
       available: Joi.boolean().default(true),
     }),
   ),

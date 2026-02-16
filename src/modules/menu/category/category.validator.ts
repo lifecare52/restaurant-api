@@ -1,5 +1,7 @@
 import Joi from 'joi';
 
+import { SORT_ORDERS } from '@shared/enum';
+
 export const createCategorySchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
   onlineName: Joi.string().trim().min(2).optional(),
@@ -27,7 +29,10 @@ export const categoryListQuerySchema = Joi.object({
     .valid('name', 'onlineName', 'createdAt', 'updatedAt', 'isActive')
     .optional()
     .default('name'),
-  order: Joi.string().valid('ASC', 'DESC').optional().default('ASC'),
+  order: Joi.string()
+    .valid(...SORT_ORDERS)
+    .optional()
+    .default('ASC'),
 });
 
 export const categoryGetQuerySchema = Joi.object({

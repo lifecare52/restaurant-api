@@ -1,24 +1,24 @@
 import { Router } from 'express';
 
-import { auth } from '@middlewares/auth.middleware';
-import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
-
-import { validateRequest } from '@shared/utils/validateRequest';
-
 import {
   createMenuItemVariantController,
   listMenuItemVariantsController,
   getMenuItemVariantController,
   updateMenuItemVariantController,
   deleteMenuItemVariantController,
-} from './menu-item-variant.controller';
+} from '@modules/menu/menu-item-variants/menu-item-variant.controller';
 import {
   createMenuItemVariantSchema,
   updateMenuItemVariantSchema,
   menuItemVariantHeaderSchema,
   menuItemVariantListQuerySchema,
   menuItemVariantIdQuerySchema,
-} from './menu-item-variant.validator';
+} from '@modules/menu/menu-item-variants/menu-item-variant.validator';
+
+import { validateRequest } from '@shared/utils/validateRequest';
+
+import { auth } from '@middlewares/auth.middleware';
+import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
 
 const router = Router();
 

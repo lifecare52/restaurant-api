@@ -1,5 +1,7 @@
 import Joi from 'joi';
 
+import { SORT_ORDERS } from '@shared/enum';
+
 const objectId = Joi.string().length(24).hex();
 
 export const menuItemVariantHeaderSchema = Joi.object({
@@ -31,5 +33,7 @@ export const menuItemVariantListQuerySchema = Joi.object({
   menuItemId: objectId.optional(),
   variationId: objectId.optional(),
   column: Joi.string().valid('price', 'createdAt', 'updatedAt', 'isActive').default('createdAt'),
-  order: Joi.string().valid('ASC', 'DESC').default('ASC'),
+  order: Joi.string()
+    .valid(...SORT_ORDERS)
+    .default('ASC'),
 });
