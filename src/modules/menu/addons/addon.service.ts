@@ -71,6 +71,17 @@ export const listAddons = async (
   return { items, total };
 };
 
+export const listActiveAddons = async (brandId: string, outletId: string) => {
+  const filter: Record<string, unknown> = {
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false,
+    isActive: true,
+  };
+  const items = await AddonEntity.find(filter).select('name').sort({ name: 1 }).lean();
+  return items;
+};
+
 export const getAddon = async (brandId: string, outletId: string, addonId: string) => {
   return AddonEntity.findOne({
     _id: new Types.ObjectId(addonId),
@@ -120,6 +131,7 @@ export const deleteAddon = async (brandId: string, outletId: string, addonId: st
 export default {
   createAddon,
   listAddons,
+  listActiveAddons,
   getAddon,
   updateAddon,
   deleteAddon,

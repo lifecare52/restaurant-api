@@ -3,6 +3,7 @@ import { Router } from 'express';
 import {
   createAddonController,
   listAddonsController,
+  listActiveAddonsController,
   getAddonController,
   updateAddonController,
   deleteAddonController,
@@ -40,6 +41,15 @@ router.get(
   requireOutletAccess,
   validateRequest(addonListQuerySchema, 'query'),
   listAddonsController,
+);
+
+router.get(
+  '/addons/active',
+  auth,
+  validateRequest(addonHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  listActiveAddonsController,
 );
 
 router.get(

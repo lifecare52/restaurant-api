@@ -52,6 +52,22 @@ export const listAddonsController = async (req: Request, res: Response, next: Ne
   }
 };
 
+export const listActiveAddonsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const brandId = req.headers['brand-id'] as string;
+    const outletId = req.headers['outlet-id'] as string;
+    const items = await AddonService.listActiveAddons(brandId, outletId);
+    res.locals.response = { status: true, code: 200, data: items };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const getAddonController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const brandId = req.headers['brand-id'] as string;

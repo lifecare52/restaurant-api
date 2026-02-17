@@ -484,6 +484,14 @@ export const getOpenApiSpec = () => {
           },
           required: ['_id', 'brandId', 'outletId', 'name', 'department', 'isActive', 'isDelete'],
         },
+        VariationName: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            name: { type: 'string' },
+          },
+          required: ['_id', 'name'],
+        },
         CreateVariationRequest: {
           type: 'object',
           properties: {
@@ -573,6 +581,14 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
             isDefault: { type: 'boolean' },
           },
+        },
+        AddonName: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            name: { type: 'string' },
+          },
+          required: ['_id', 'name'],
         },
         Addon: {
           type: 'object',
@@ -1933,6 +1949,37 @@ export const getOpenApiSpec = () => {
           },
         },
       },
+      '/api/v1/menu/variations/active': {
+        get: {
+          tags: ['Variations'],
+          summary: 'List active variations (no pagination)',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/VariationName' },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       '/api/v1/menu/menu-item-variants': {
         post: {
           tags: ['Menu-Item-Variants'],
@@ -2244,6 +2291,37 @@ export const getOpenApiSpec = () => {
               description: 'Not Found',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/menu/addons/active': {
+        get: {
+          tags: ['Addons'],
+          summary: 'List active addons (no pagination)',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/AddonName' },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
               },
             },
           },

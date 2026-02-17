@@ -3,6 +3,7 @@ import { API_MESSAGES } from '@shared/constants';
 import {
   createVariation,
   listVariations,
+  listActiveVariations,
   getVariation,
   updateVariation,
   deleteVariation,
@@ -48,6 +49,21 @@ export const listVariationsController = async (req: Request, res: Response, next
     const { brandId, outletId } = getTenant(req);
     const result = await listVariations(brandId, outletId, req.query as any);
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const listActiveVariationsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const items = await listActiveVariations(brandId, outletId);
+    res.locals.response = { status: true, code: 200, data: items };
     next();
   } catch (err) {
     next(err);
@@ -118,6 +134,7 @@ export const deleteVariationController = async (
 export default {
   createVariationController,
   listVariationsController,
+  listActiveVariationsController,
   getVariationController,
   updateVariationController,
   deleteVariationController,

@@ -64,6 +64,8 @@ Swagger documentation MUST be kept up-to-date with code changes.
 
 Route definitions MUST include proper HTTP status codes for success and error responses.
 
+All code changes that affect routes, parameters, payloads, status codes, or messages MUST include corresponding Swagger updates in the same change set.
+
 ============================
 CONTROLLER & SERVICE RULES
 Controllers:
@@ -107,6 +109,13 @@ No hardcoded messages in controllers or services.
 Follow Single Responsibility Principle in controllers, services, and middlewares.
 
 Ensure separation of concerns: controllers → services → response middleware.
+
+============================
+SOFT DELETE VISIBILITY
+============================
+- All read queries MUST include a filter to exclude soft-deleted records (isDelete: false).
+- API responses MUST NOT expose the isDelete field.
+- Prefer database projections or DTO shaping to omit isDelete from responses.
 
 ============================
 GOLDEN RULE

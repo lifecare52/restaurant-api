@@ -8,6 +8,7 @@ import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.midd
 import {
   createVariationController,
   listVariationsController,
+  listActiveVariationsController,
   getVariationController,
   updateVariationController,
   deleteVariationController,
@@ -40,6 +41,15 @@ router.get(
   requireOutletAccess,
   validateRequest(variationListQuerySchema, 'query'),
   listVariationsController,
+);
+
+router.get(
+  '/variations/active',
+  auth,
+  validateRequest(variationHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  listActiveVariationsController,
 );
 
 router.get(

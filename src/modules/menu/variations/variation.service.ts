@@ -75,6 +75,17 @@ export const listVariations = async (
   return { items, total };
 };
 
+export const listActiveVariations = async (brandId: string, outletId: string) => {
+  const filter = {
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false,
+    isActive: true,
+  };
+  const items = await VariationEntity.find(filter).select('name').sort({ name: 1 }).lean();
+  return items;
+};
+
 export const getVariation = async (brandId: string, outletId: string, variationId: string) => {
   return VariationEntity.findOne({
     _id: new Types.ObjectId(variationId),
@@ -124,6 +135,7 @@ export const deleteVariation = async (brandId: string, outletId: string, variati
 export default {
   createVariation,
   listVariations,
+  listActiveVariations,
   getVariation,
   updateVariation,
   deleteVariation,
