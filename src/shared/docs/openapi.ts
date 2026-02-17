@@ -267,6 +267,14 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
           },
         },
+        CategoryName: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            name: { type: 'string' },
+          },
+          required: ['_id', 'name'],
+        },
         MenuItem: {
           type: 'object',
           properties: {
@@ -1474,6 +1482,37 @@ export const getOpenApiSpec = () => {
               description: 'Forbidden',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/menu/categories/active': {
+        get: {
+          tags: ['Categories'],
+          summary: 'List active categories (no pagination)',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/CategoryName' },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
               },
             },
           },

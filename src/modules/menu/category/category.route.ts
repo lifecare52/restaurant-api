@@ -8,6 +8,7 @@ import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.midd
 import {
   createCategoryController,
   listCategoriesController,
+  listActiveCategoriesController,
   getCategoryController,
   updateCategoryController,
   deleteCategoryController,
@@ -42,6 +43,15 @@ router.get(
   requireOutletAccess,
   validateRequest(categoryListQuerySchema, 'query'),
   listCategoriesController,
+);
+
+router.get(
+  '/categories/active',
+  auth,
+  validateRequest(categoryListHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  listActiveCategoriesController,
 );
 
 router.get(

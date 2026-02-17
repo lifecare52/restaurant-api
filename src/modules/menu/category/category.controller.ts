@@ -3,6 +3,7 @@ import { API_MESSAGES } from '@shared/constants';
 import {
   createCategory,
   listCategories,
+  listActiveCategories,
   getCategory,
   updateCategory,
   deleteCategory,
@@ -50,6 +51,22 @@ export const listCategoriesController = async (req: Request, res: Response, next
       order,
     });
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const listActiveCategoriesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const brandId = (req.headers['brand-id'] as string | undefined) || '';
+    const outletId = (req.headers['outlet-id'] as string | undefined) || '';
+    const items = await listActiveCategories(brandId, outletId);
+    res.locals.response = { status: true, code: 200, data: items };
     next();
   } catch (err) {
     next(err);
@@ -112,6 +129,7 @@ export const deleteCategoryController = async (req: Request, res: Response, next
 export default {
   createCategoryController,
   listCategoriesController,
+  listActiveCategoriesController,
   getCategoryController,
   updateCategoryController,
   deleteCategoryController,

@@ -95,6 +95,19 @@ export const listCategories = async (
   return { items, total };
 };
 
+export const listActiveCategories = async (brandId: string, outletId: string) => {
+  const items = await CategoryEntity.find({
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false,
+    isActive: true,
+  })
+    .select('name')
+    .lean()
+    .sort({ name: 1 });
+  return items;
+};
+
 export const getCategory = async (brandId: string, categoryId: string) => {
   return CategoryEntity.findOne({
     _id: new Types.ObjectId(categoryId),
@@ -138,6 +151,7 @@ export const deleteCategory = async (brandId: string, categoryId: string) => {
 export default {
   createCategory,
   listCategories,
+  listActiveCategories,
   getCategory,
   updateCategory,
   deleteCategory,
