@@ -232,6 +232,46 @@ export const getOpenApiSpec = () => {
             },
           },
         },
+        OutletDetail: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            basicInfo: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                logo: { type: 'string', format: 'uri' },
+                cuisineType: { type: 'array', items: { type: 'string' } },
+                outletType: { type: 'string', enum: ['bakery', 'restaurant', 'cafe'] },
+              },
+              required: ['name', 'outletType'],
+            },
+            contact: {
+              type: 'object',
+              properties: {
+                email: { type: 'string', format: 'email' },
+                phone: { type: 'string' },
+                country: { type: 'string' },
+                state: { type: 'string' },
+                city: { type: 'string' },
+                address: { type: 'string' },
+              },
+              required: ['email', 'phone', 'country', 'state', 'city', 'address'],
+            },
+            settings: {
+              type: 'object',
+              properties: {
+                gstNo: { type: 'string' },
+                currency: { type: 'string' },
+                CGST: { type: 'number' },
+                SGST: { type: 'number' },
+              },
+            },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+          required: ['_id', 'basicInfo', 'contact'],
+        },
         Category: {
           type: 'object',
           properties: {
@@ -1059,10 +1099,7 @@ export const getOpenApiSpec = () => {
         get: {
           tags: ['Brands'],
           summary: 'Get brand by id',
-          security: [{ bearerAuth: [] }],
-          parameters: [
-            { name: 'brandId', in: 'query', required: true, schema: { type: 'string' } },
-          ],
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
           responses: {
             200: {
               description: 'OK',
@@ -1122,10 +1159,7 @@ export const getOpenApiSpec = () => {
         patch: {
           tags: ['Brands'],
           summary: 'Update brand',
-          security: [{ bearerAuth: [] }],
-          parameters: [
-            { name: 'brandId', in: 'query', required: true, schema: { type: 'string' } },
-          ],
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
           requestBody: {
             required: true,
             content: {
@@ -1170,10 +1204,7 @@ export const getOpenApiSpec = () => {
         post: {
           tags: ['Outlets'],
           summary: 'Create outlet',
-          security: [{ bearerAuth: [] }],
-          parameters: [
-            { name: 'brandId', in: 'query', required: true, schema: { type: 'string' } },
-          ],
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
           requestBody: {
             required: true,
             content: {
@@ -1210,10 +1241,7 @@ export const getOpenApiSpec = () => {
         get: {
           tags: ['Outlets'],
           summary: 'List brand outlets',
-          security: [{ bearerAuth: [] }],
-          parameters: [
-            { name: 'brandId', in: 'query', required: true, schema: { type: 'string' } },
-          ],
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
           responses: {
             200: {
               description: 'OK',
@@ -1248,10 +1276,6 @@ export const getOpenApiSpec = () => {
           tags: ['Outlets'],
           summary: 'Update outlet',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
-          parameters: [
-            { name: 'brand-id', in: 'header', required: true, schema: { type: 'string' } },
-            { name: 'outlet-id', in: 'header', required: true, schema: { type: 'string' } },
-          ],
           requestBody: {
             required: true,
             content: {
@@ -1279,6 +1303,39 @@ export const getOpenApiSpec = () => {
             },
             422: {
               description: 'Validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/brands/outlets/detail': {
+        get: {
+          tags: ['Outlets'],
+          summary: 'Get outlet details',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/OutletDetail' },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            404: {
+              description: 'Not Found',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
               },

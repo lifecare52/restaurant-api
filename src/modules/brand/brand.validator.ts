@@ -19,3 +19,7 @@ export const updateBrandSchema = Joi.object({
 export const brandIdQuerySchema = Joi.object({
   brandId: Joi.string().required(),
 });
+
+export const brandHeaderSchema = Joi.object({
+  'brand-id': Joi.string().required(),
+});

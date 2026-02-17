@@ -1,10 +1,10 @@
-import { createOutlet, listOutlets, updateOutlet } from '@modules/outlet/outlet.service';
+import { createOutlet, listOutlets, updateOutlet, getOutletById } from '@modules/outlet/outlet.service';
 
 import type { Request, Response, NextFunction } from 'express';
 
 export const createOutletController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId = (req.query as { brandId: string }).brandId;
+    const brandId = (req.headers['brand-id'] as string) || '';
     const outlet = await createOutlet(brandId, req.body);
     if (!outlet) {
       res.locals.response = {
@@ -27,7 +27,7 @@ export const createOutletController = async (req: Request, res: Response, next: 
 
 export const listOutletsController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId = (req.query as { brandId: string }).brandId;
+    const brandId = (req.headers['brand-id'] as string) || '';
     const outlets = await listOutlets(brandId);
     res.locals.response = {
       status: true,
@@ -56,6 +56,22 @@ export const updateOutletController = async (req: Request, res: Response, next: 
         code: 200,
         data: outlet,
       };
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getOutletDetailController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const brandId = (req.headers['brand-id'] as string) || '';
+    const outletId = (req.headers['outlet-id'] as string) || '';
+    const outlet = await getOutletById(brandId, outletId);
+    if (!outlet) {
+      res.locals.response = { status: false, code: 404, message: 'Not Found' };
+    } else {
+      res.locals.response = { status: true, code: 200, data: outlet };
     }
     next();
   } catch (err) {

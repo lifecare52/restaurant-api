@@ -26,7 +26,9 @@ export const getOutletById = async (brandId: string, outletId: string) => {
   return OutletEntity.findOne({
     _id: new Types.ObjectId(outletId),
     brandId: new Types.ObjectId(brandId),
-  });
+  })
+    .select('basicInfo contact settings createdAt updatedAt')
+    .lean();
 };
 
 export const updateOutlet = async (brandId: string, outletId: string, dto: OutletUpdateDTO) => {

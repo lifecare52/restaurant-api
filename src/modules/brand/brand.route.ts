@@ -8,7 +8,7 @@ import {
 import {
   createBrandSchema,
   updateBrandSchema,
-  brandIdQuerySchema,
+  brandHeaderSchema,
 } from '@modules/brand/brand.validator';
 
 import { ROLES, PERMISSIONS } from '@shared/constants';
@@ -30,7 +30,7 @@ router.post(
 router.get(
   '/',
   auth,
-  validateRequest(brandIdQuerySchema, 'query'),
+  validateRequest(brandHeaderSchema, 'headers'),
   requireBrandAccess,
   getBrandController,
 );
@@ -38,7 +38,7 @@ router.get(
 router.patch(
   '/',
   auth,
-  validateRequest(brandIdQuerySchema, 'query'),
+  validateRequest(brandHeaderSchema, 'headers'),
   requireBrandAccess,
   requireRole([ROLES.OWNER, ROLES.PARTNER, ROLES.ADMIN]),
   requirePermissions([PERMISSIONS.BRAND_MANAGEMENT]),

@@ -60,3 +60,12 @@ export const outletUpdateQuerySchema = Joi.object({
   brandId: Joi.string().required(),
   outletId: Joi.string().required(),
 });
+
+export const outletDetailHeaderSchema = Joi.object({
+  'brand-id': Joi.string().required(),
+  'outlet-id': Joi.string().required(),
+});
+
+export const outletBrandHeaderSchema = Joi.object({
+  'brand-id': Joi.string().required(),
+});
