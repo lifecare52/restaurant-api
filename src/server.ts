@@ -3,6 +3,7 @@ dotenv.config();
 
 import { createApp } from 'app';
 import { connectDB } from 'config/db';
+import mongoose from 'mongoose';
 
 /**
  * Minimal server bootstrap (skeleton).
@@ -17,6 +18,20 @@ const start = async () => {
     console.warn('MONGO_URI is not set, skipping DB connection');
   } else {
     await connectDB(uri);
+    const shouldSync =
+      ((process.env.SYNC_INDEXES ??
+        (process.env.NODE_ENV && process.env.NODE_ENV !== 'production' ? 'true' : 'false')) ||
+        '').toLowerCase() === 'true';
+    if (shouldSync) {
+      const names = mongoose.modelNames();
+      for (const n of names) {
+        try {
+          await mongoose.model(n).syncIndexes();
+        } catch {
+          // ignore sync errors
+        }
+      }
+    }
   }
   app.listen(PORT, () => {
     console.log(`Server started on port ${PORT}`);

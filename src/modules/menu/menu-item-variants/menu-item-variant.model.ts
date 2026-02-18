@@ -21,7 +21,7 @@ const MenuItemVariantSchema = new Schema<MenuItemVariant>(
 
 MenuItemVariantSchema.index(
   { brandId: 1, outletId: 1, menuItemId: 1, variationId: 1 },
-  { unique: true },
+  { unique: true, partialFilterExpression: { isDelete: false } },
 );
 
 MenuItemVariantSchema.index(

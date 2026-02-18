@@ -57,10 +57,17 @@ MenuItemSchema.pre('save', function (next) {
   next();
 });
 
-MenuItemSchema.index({ brandId: 1, outletId: 1, name: 1 }, { unique: true });
+MenuItemSchema.index(
+  { brandId: 1, outletId: 1, name: 1 },
+  { unique: true, partialFilterExpression: { isDelete: false } },
+);
 MenuItemSchema.index(
   { brandId: 1, outletId: 1, shortCodes: 1 },
-  { unique: true, collation: { locale: 'en', strength: 2 } },
+  {
+    unique: true,
+    collation: { locale: 'en', strength: 2 },
+    partialFilterExpression: { isDelete: false },
+  },
 );
 
 export const MenuItemEntity = model<MenuItem, MenuItemModel>(

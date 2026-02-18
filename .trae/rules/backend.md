@@ -126,6 +126,9 @@ SOFT DELETE VISIBILITY
 - All read queries MUST include a filter to exclude soft-deleted records (isDelete: false).
 - API responses MUST NOT expose the isDelete field.
 - Prefer database projections or DTO shaping to omit isDelete from responses.
+- Unique indexes involving domain fields MUST ignore soft-deleted documents by using a partial index:
+  partialFilterExpression: { isDelete: false }.
+  This ensures soft-deleted records never block new creations with the same unique values.
 
 ============================
 GOLDEN RULE

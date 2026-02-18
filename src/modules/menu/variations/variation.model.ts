@@ -26,7 +26,11 @@ const VariationSchema = new Schema<Variation>(
 // Unique per brand+outlet+department+name (case-insensitive)
 VariationSchema.index(
   { brandId: 1, outletId: 1, department: 1, name: 1 },
-  { unique: true, collation: { locale: 'en', strength: 2 } },
+  {
+    unique: true,
+    collation: { locale: 'en', strength: 2 },
+    partialFilterExpression: { isDelete: false },
+  },
 );
 
 export const VariationEntity = model<Variation, VariationModel>(
