@@ -96,6 +96,8 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       basePrice: dto.basePrice ?? null,
       costPrice: dto.costPrice ?? 0,
 
+      isVariation: variationsInput.length > 0,
+
       isActive: dto.isActive ?? true,
       isDelete: false,
     });
@@ -443,6 +445,18 @@ export const updateMenuItem = async (
         }
       }
     }
+    // Recompute isVariation flag based on existing variants
+    const variantCheck = await listMenuItemVariants(brandId, outletId, {
+      page: 1,
+      limit: 1,
+      menuItemId,
+      column: 'createdAt',
+      order: 'ASC',
+    });
+    await MenuItemEntity.updateOne(
+      { _id: new Types.ObjectId(menuItemId), brandId: new Types.ObjectId(brandId) },
+      { $set: { isVariation: (variantCheck.items || []).length > 0 } },
+    );
     return updated;
   } catch (err) {
     const e = err as { code?: number };

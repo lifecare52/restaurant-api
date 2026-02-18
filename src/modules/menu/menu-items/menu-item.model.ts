@@ -39,6 +39,8 @@ const MenuItemSchema = new Schema<MenuItem>(
     basePrice: { type: Number, default: null },
     costPrice: { type: Number, default: 0 },
 
+    isVariation: { type: Boolean, default: false },
+
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
   },

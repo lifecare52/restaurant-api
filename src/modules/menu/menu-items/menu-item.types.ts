@@ -47,6 +47,8 @@ export interface MenuItem {
   basePrice?: number | null;
   costPrice?: number;
 
+  isVariation: boolean;
+
   isActive: boolean;
   isDelete: boolean;
 }

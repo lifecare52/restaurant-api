@@ -333,6 +333,7 @@ export const getOpenApiSpec = () => {
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
             basePrice: { type: 'number', nullable: true },
             costPrice: { type: 'number' },
+            isVariation: { type: 'boolean', description: 'True if item has any variants' },
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
