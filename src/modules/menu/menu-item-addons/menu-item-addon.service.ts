@@ -7,7 +7,7 @@ import { getMenuItem } from '@modules/menu/menu-items/menu-item.service';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { Dietary } from '@shared/enum';
-import type { PaginationQuery } from '@shared/interfaces/pagination';
+import type { MenuItemAddonListQuery, MenuItemAddonFilterQuery } from './menu-item-addon.types';
 
 import MenuItemAddonEntity from './menu-item-addon.model';
 
@@ -79,8 +79,8 @@ export const createMenuItemAddon = async (
 export const listMenuItemAddons = async (
   brandId: string,
   outletId: string,
-  pagination: PaginationQuery,
-  filterInput: { menuItemId?: string; addonId?: string; menuItemVariantId?: string },
+  pagination: MenuItemAddonListQuery,
+  filterInput: MenuItemAddonFilterQuery,
 ) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;

@@ -1,3 +1,5 @@
+import type { PaginationQuery } from '@shared/interfaces/pagination';
+
 import type { Types } from 'mongoose';
 
 export interface MenuItemAddonCreateDTO {
@@ -31,4 +33,16 @@ export interface MenuItemAddonUpdateDTO {
   min?: number;
   max?: number;
   isActive?: boolean;
+}
+
+export type MenuItemAddonSortColumn = 'createdAt' | 'updatedAt' | 'isActive';
+
+export interface MenuItemAddonListQuery extends PaginationQuery {
+  column?: MenuItemAddonSortColumn;
+}
+
+export interface MenuItemAddonFilterQuery {
+  menuItemId?: string;
+  addonId?: string;
+  menuItemVariantId?: string;
 }

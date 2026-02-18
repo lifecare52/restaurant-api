@@ -43,7 +43,11 @@ export const createMenuItemController = async (req: Request, res: Response, next
 export const listMenuItemsController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { brandId, outletId } = getTenant(req);
-    const result = await listMenuItemsWithNested(brandId, outletId, req.query as any);
+    const result = await listMenuItemsWithNested(
+      brandId,
+      outletId,
+      req.query as import('@shared/interfaces/pagination').PaginationQuery,
+    );
 
     res.locals.response = {
       status: true,

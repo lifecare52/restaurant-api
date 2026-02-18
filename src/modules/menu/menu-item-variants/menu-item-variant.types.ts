@@ -1,17 +1,34 @@
+import type { PaginationQuery } from '@shared/interfaces/pagination';
+
 import type { Types } from 'mongoose';
 
 export interface MenuItemVariantCreateDTO {
   menuItemId: string;
   variationId: string;
-  price: number;
+  basePrice: number;
+  costPrice?: number;
   isActive?: boolean;
   isDefault?: boolean;
 }
 
 export interface MenuItemVariantUpdateDTO {
-  price?: number;
+  basePrice?: number;
+  costPrice?: number;
   isActive?: boolean;
   isDefault?: boolean;
+}
+
+export type MenuItemVariantSortColumn =
+  | 'basePrice'
+  | 'costPrice'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'isActive';
+
+export interface MenuItemVariantListQuery extends PaginationQuery {
+  menuItemId?: string;
+  variationId?: string;
+  column?: MenuItemVariantSortColumn;
 }
 
 export interface MenuItemVariant {
@@ -19,7 +36,8 @@ export interface MenuItemVariant {
   outletId: Types.ObjectId;
   menuItemId: Types.ObjectId;
   variationId: Types.ObjectId;
-  price: number;
+  basePrice: number;
+  costPrice?: number;
   isActive: boolean;
   isDelete: boolean;
   isDefault: boolean;

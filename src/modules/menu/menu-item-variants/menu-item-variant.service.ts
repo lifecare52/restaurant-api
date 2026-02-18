@@ -1,16 +1,11 @@
 import { Types } from 'mongoose';
 
+import type { MenuItemVariantCreateDTO, MenuItemVariantUpdateDTO, MenuItemVariantListQuery } from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import { getBrandById } from '@modules/brand/brand.service';
 import MenuItemVariantEntity from '@modules/menu/menu-item-variants/menu-item-variant.model';
-import type {
-  MenuItemVariantCreateDTO,
-  MenuItemVariantUpdateDTO,
-} from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import { getMenuItem } from '@modules/menu/menu-items/menu-item.service';
 import { getVariation } from '@modules/menu/variations/variation.service';
 import { getOutletById } from '@modules/outlet/outlet.service';
-
-import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 export const createMenuItemVariant = async (
   brandId: string,
@@ -46,7 +41,8 @@ export const createMenuItemVariant = async (
       outletId: new Types.ObjectId(outletId),
       menuItemId: new Types.ObjectId(dto.menuItemId),
       variationId: new Types.ObjectId(dto.variationId),
-      price: dto.price,
+      basePrice: dto.basePrice,
+      costPrice: dto.costPrice ?? 0,
       isActive: dto.isActive ?? true,
       isDelete: false,
       isDefault: dto.isDefault ?? false,
@@ -67,7 +63,7 @@ export const createMenuItemVariant = async (
 export const listMenuItemVariants = async (
   brandId: string,
   outletId: string,
-  pagination: PaginationQuery & { menuItemId?: string; variationId?: string },
+  pagination: MenuItemVariantListQuery,
 ) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;

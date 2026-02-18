@@ -25,7 +25,8 @@ export interface MenuItemCreateDTO {
 
   variations?: Array<{
     variationId: string;
-    price: number;
+    basePrice: number;
+    costPrice?: number;
     addons?: MenuItemAddonInputCreate[];
   }>;
   addons?: MenuItemAddonInputCreate[];

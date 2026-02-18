@@ -42,7 +42,8 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
     };
     const variationsInput = (dto.variations || []).map(v => ({
       variationId: v.variationId,
-      price: v.price,
+      basePrice: v.basePrice,
+      costPrice: v.costPrice,
       addons: normalizeAddonCreate(v.addons),
     }));
     const topLevelAddons = normalizeAddonCreate(dto.addons);
@@ -104,7 +105,8 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
           createMenuItemVariant(brandId, outletId, {
             menuItemId: String(created._id),
             variationId: v.variationId,
-            price: v.price,
+            basePrice: v.basePrice,
+            costPrice: v.costPrice,
             isActive: true,
             isDefault: false,
           }),
@@ -195,7 +197,11 @@ export const listMenuItems = async (
 const buildMenuItemNested = async (
   brandId: string,
   outletId: string,
-  item: MenuItem & { _id: Types.ObjectId; outletId: Types.ObjectId; toObject?: () => any },
+  item: MenuItem & {
+    _id: Types.ObjectId;
+    outletId: Types.ObjectId;
+    toObject?: () => Record<string, unknown>;
+  },
 ) => {
   const variantsResult = await listMenuItemVariants(brandId, outletId, {
     page: 1,
@@ -203,7 +209,7 @@ const buildMenuItemNested = async (
     menuItemId: String(item?._id),
     column: 'createdAt',
     order: 'ASC',
-  } as any);
+  });
 
   const hasVariants = (variantsResult.items || []).length > 0;
 
@@ -215,7 +221,7 @@ const buildMenuItemNested = async (
         const addonsResult = await listMenuItemAddons(
           brandId,
           outletId,
-          { page: 1, limit: 1000, column: 'createdAt', order: 'ASC' } as any,
+          { page: 1, limit: 1000, column: 'createdAt', order: 'ASC' },
           { menuItemId: String(item?._id), menuItemVariantId: String(v._id) },
         );
         const addons = await Promise.all(
@@ -232,7 +238,7 @@ const buildMenuItemNested = async (
               };
             }),
         );
-        return { name: variation?.name ?? '', price: v.price, addons };
+        return { name: variation?.name ?? '', price: v.basePrice, addons };
       }),
   );
 
@@ -241,7 +247,7 @@ const buildMenuItemNested = async (
     const itemAddonsResult = await listMenuItemAddons(
       brandId,
       outletId,
-      { page: 1, limit: 1000, column: 'createdAt', order: 'ASC' } as any,
+      { page: 1, limit: 1000, column: 'createdAt', order: 'ASC' },
       { menuItemId: String(item?._id) },
     );
     const itemLevelActive = (itemAddonsResult.items || [])
@@ -261,7 +267,7 @@ const buildMenuItemNested = async (
     );
   }
 
-  const base = item?.toObject ? item.toObject() : (item as any);
+  const base = item?.toObject ? item.toObject() : (item as unknown as Record<string, unknown>);
   if (hasVariants) {
     return { ...base, variations };
   }
@@ -282,7 +288,7 @@ export const listMenuItemsWithNested = async (
         i as unknown as MenuItem & {
           _id: Types.ObjectId;
           outletId: Types.ObjectId;
-          toObject?: () => any;
+          toObject?: () => Record<string, unknown>;
         },
       ),
     ),
@@ -303,7 +309,7 @@ export const getMenuItemWithNested = async (
     item as unknown as MenuItem & {
       _id: Types.ObjectId;
       outletId: Types.ObjectId;
-      toObject?: () => any;
+      toObject?: () => Record<string, unknown>;
     },
   );
 };
@@ -363,7 +369,7 @@ export const updateMenuItem = async (
         menuItemId,
         column: 'createdAt',
         order: 'ASC',
-      } as any);
+      });
       const byVariationId = new Map<string, string>();
       (variants.items || []).forEach(v => byVariationId.set(String(v.variationId), String(v._id)));
 
@@ -376,7 +382,7 @@ export const updateMenuItem = async (
           const existing = await listMenuItemAddons(
             brandId,
             outletId,
-            { page: 1, limit: 1, column: 'createdAt', order: 'ASC' } as any,
+            { page: 1, limit: 1, column: 'createdAt', order: 'ASC' },
             { menuItemId, addonId: a.addonId, menuItemVariantId: variantDocId },
           );
           if (existing.items && existing.items.length > 0) {
@@ -410,7 +416,7 @@ export const updateMenuItem = async (
         const existing = await listMenuItemAddons(
           brandId,
           outletId,
-          { page: 1, limit: 1, column: 'createdAt', order: 'ASC' } as any,
+          { page: 1, limit: 1, column: 'createdAt', order: 'ASC' },
           { menuItemId, addonId: a.addonId },
         );
         if (existing.items && existing.items.length > 0) {

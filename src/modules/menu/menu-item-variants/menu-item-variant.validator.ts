@@ -12,13 +12,15 @@ export const menuItemVariantHeaderSchema = Joi.object({
 export const createMenuItemVariantSchema = Joi.object({
   menuItemId: objectId.required(),
   variationId: objectId.required(),
-  price: Joi.number().min(0).required(),
+  basePrice: Joi.number().min(0).required(),
+  costPrice: Joi.number().min(0),
   isActive: Joi.boolean().default(true),
   isDefault: Joi.boolean().default(false),
 });
 
 export const updateMenuItemVariantSchema = Joi.object({
-  price: Joi.number().min(0),
+  basePrice: Joi.number().min(0),
+  costPrice: Joi.number().min(0),
   isActive: Joi.boolean(),
   isDefault: Joi.boolean(),
 });
@@ -32,7 +34,9 @@ export const menuItemVariantListQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(100).default(20),
   menuItemId: objectId.optional(),
   variationId: objectId.optional(),
-  column: Joi.string().valid('price', 'createdAt', 'updatedAt', 'isActive').default('createdAt'),
+  column: Joi.string()
+    .valid('basePrice', 'costPrice', 'createdAt', 'updatedAt', 'isActive')
+    .default('createdAt'),
   order: Joi.string()
     .valid(...SORT_ORDERS)
     .default('ASC'),

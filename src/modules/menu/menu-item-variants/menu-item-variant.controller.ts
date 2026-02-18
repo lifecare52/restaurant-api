@@ -9,6 +9,7 @@ import {
 import { API_MESSAGES } from '@shared/constants';
 
 import type { Request, Response, NextFunction } from 'express';
+import { MenuItemVariantListQuery } from './menu-item-variant.types';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
@@ -50,7 +51,11 @@ export const listMenuItemVariantsController = async (
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
-    const result = await listMenuItemVariants(brandId, outletId, req.query as any);
+    const result = await listMenuItemVariants(
+      brandId,
+      outletId,
+      req.query as MenuItemVariantListQuery,
+    );
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
     next();
   } catch (err) {

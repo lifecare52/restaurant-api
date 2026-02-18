@@ -111,6 +111,16 @@ Follow Single Responsibility Principle in controllers, services, and middlewares
 Ensure separation of concerns: controllers → services → response middleware.
 
 ============================
+TYPE SAFETY
+============================
+- Do not use `any`. Use proper DTOs and interfaces for all inputs/outputs.
+- Define DTOs in each module’s `.types.ts` and import where used.
+- Controllers must cast `req.query`, `req.body`, and `req.params` to typed DTOs.
+- Services must accept and return typed data only; never `any`.
+- Prefer `unknown` over `any` when narrowing is required, then refine to concrete types.
+- Use type-only imports and maintain configured import order.
+
+============================
 SOFT DELETE VISIBILITY
 ============================
 - All read queries MUST include a filter to exclude soft-deleted records (isDelete: false).

@@ -1,14 +1,9 @@
 import { Types } from 'mongoose';
 
+import type { VariationListQuery, VariationCreateDTO, VariationUpdateDTO } from '@modules/menu/variations/variation.types';
 import { getBrandById } from '@modules/brand/brand.service';
 import { VariationEntity } from '@modules/menu/variations/variation.model';
-import type {
-  VariationCreateDTO,
-  VariationUpdateDTO,
-} from '@modules/menu/variations/variation.types';
 import { getOutletById } from '@modules/outlet/outlet.service';
-
-import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 export const createVariation = async (
   brandId: string,
@@ -42,7 +37,7 @@ export const createVariation = async (
 export const listVariations = async (
   brandId: string,
   outletId: string,
-  pagination: PaginationQuery & { department?: string },
+  pagination: VariationListQuery,
 ) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;

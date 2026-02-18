@@ -1,3 +1,5 @@
+import type { PaginationQuery } from '@shared/interfaces/pagination';
+
 import type { Types } from 'mongoose';
 
 export enum VariationDepartment {
@@ -28,6 +30,14 @@ export interface VariationUpdateDTO {
   name?: string;
   department?: VariationDepartmentType;
   isActive?: boolean;
+}
+
+export type VariationSortColumn = 'name' | 'department' | 'createdAt' | 'updatedAt' | 'isActive';
+
+export interface VariationListQuery extends PaginationQuery {
+  searchText?: string;
+  department?: VariationDepartmentType;
+  column?: VariationSortColumn;
 }
 
 export interface Variation {

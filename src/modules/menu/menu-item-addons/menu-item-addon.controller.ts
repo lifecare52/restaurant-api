@@ -7,6 +7,8 @@ import {
 } from '@modules/menu/menu-item-addons/menu-item-addon.service';
 import type {
   MenuItemAddonCreateDTO,
+  MenuItemAddonFilterQuery,
+  MenuItemAddonListQuery,
   MenuItemAddonUpdateDTO,
 } from '@modules/menu/menu-item-addons/menu-item-addon.types';
 
@@ -54,7 +56,12 @@ export const listMenuItemAddonsController = async (
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
-    const result = await listMenuItemAddons(brandId, outletId, req.query as any, req.query as any);
+    const result = await listMenuItemAddons(
+      brandId,
+      outletId,
+      req.query as MenuItemAddonListQuery,
+      req.query as MenuItemAddonFilterQuery,
+    );
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
     next();
   } catch (err) {

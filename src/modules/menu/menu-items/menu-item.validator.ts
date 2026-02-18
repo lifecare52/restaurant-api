@@ -26,7 +26,8 @@ export const createMenuItemSchema = Joi.object({
     .items(
       Joi.object({
         variationId: objectId.required(),
-        price: Joi.number().min(0).required(),
+        basePrice: Joi.number().min(0).required(),
+        costPrice: Joi.number().min(0).optional(),
         addons: Joi.array()
           .items(
             Joi.object({

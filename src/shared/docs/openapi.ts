@@ -441,7 +441,8 @@ export const getOpenApiSpec = () => {
                 type: 'object',
                 properties: {
                   variationId: { type: 'string' },
-                  price: { type: 'number', minimum: 0 },
+                  basePrice: { type: 'number', minimum: 0 },
+                  costPrice: { type: 'number', minimum: 0 },
                   addons: {
                     type: 'array',
                     items: {
@@ -451,7 +452,7 @@ export const getOpenApiSpec = () => {
                       'Objects with addonId, selection rules; allowedItems is ignored on create',
                   },
                 },
-                required: ['variationId', 'price'],
+                required: ['variationId', 'basePrice'],
               },
             },
             addons: {
@@ -593,7 +594,8 @@ export const getOpenApiSpec = () => {
             outletId: { type: 'string' },
             menuItemId: { type: 'string' },
             variationId: { type: 'string' },
-            price: { type: 'number', minimum: 0 },
+            basePrice: { type: 'number', minimum: 0 },
+            costPrice: { type: 'number', minimum: 0 },
             isActive: { type: 'boolean' },
             isDefault: { type: 'boolean' },
             isDelete: { type: 'boolean' },
@@ -606,7 +608,7 @@ export const getOpenApiSpec = () => {
             'outletId',
             'menuItemId',
             'variationId',
-            'price',
+            'basePrice',
             'isActive',
             'isDelete',
           ],
@@ -616,16 +618,18 @@ export const getOpenApiSpec = () => {
           properties: {
             menuItemId: { type: 'string' },
             variationId: { type: 'string' },
-            price: { type: 'number', minimum: 0 },
+            basePrice: { type: 'number', minimum: 0 },
+            costPrice: { type: 'number', minimum: 0 },
             isActive: { type: 'boolean', default: true },
             isDefault: { type: 'boolean', default: false },
           },
-          required: ['menuItemId', 'variationId', 'price'],
+          required: ['menuItemId', 'variationId', 'basePrice'],
         },
         UpdateMenuItemVariantRequest: {
           type: 'object',
           properties: {
-            price: { type: 'number', minimum: 0 },
+            basePrice: { type: 'number', minimum: 0 },
+            costPrice: { type: 'number', minimum: 0 },
             isActive: { type: 'boolean' },
             isDefault: { type: 'boolean' },
           },
@@ -2079,7 +2083,7 @@ export const getOpenApiSpec = () => {
       '/api/v1/menu/menu-item-variants': {
         post: {
           tags: ['Menu-Item-Variants'],
-          summary: 'Attach variation to menu item with price',
+          summary: 'Attach variation to menu item with basePrice (and optional costPrice)',
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
@@ -2143,7 +2147,7 @@ export const getOpenApiSpec = () => {
               required: false,
               schema: {
                 type: 'string',
-                enum: ['createdAt', 'updatedAt', 'isActive'],
+                enum: ['basePrice', 'costPrice', 'createdAt', 'updatedAt', 'isActive'],
                 default: 'createdAt',
               },
             },
@@ -2165,7 +2169,7 @@ export const getOpenApiSpec = () => {
         },
         patch: {
           tags: ['Menu-Item-Variants'],
-          summary: 'Update menu item variant price or status',
+          summary: 'Update menu item variant basePrice/costPrice or status',
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
