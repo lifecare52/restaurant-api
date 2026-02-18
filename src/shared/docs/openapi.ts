@@ -331,6 +331,7 @@ export const getOpenApiSpec = () => {
             },
             categoryId: { type: 'string' },
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
+            dietaryShort: { type: 'string', enum: ['V', 'NV', 'E'] },
             basePrice: { type: 'number', nullable: true },
             costPrice: { type: 'number' },
             isVariation: { type: 'boolean', description: 'True if item has any variants' },
@@ -1646,7 +1647,7 @@ export const getOpenApiSpec = () => {
               required: false,
               schema: {
                 type: 'string',
-                enum: ['name', 'createdAt', 'updatedAt', 'isActive'],
+                enum: ['name', 'shortCodes', 'dietary', 'basePrice', 'createdAt', 'updatedAt', 'isActive'],
                 default: 'name',
               },
             },

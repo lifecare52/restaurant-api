@@ -109,7 +109,9 @@ export const menuItemListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(20),
   searchText: Joi.string().trim().optional(),
-  column: Joi.string().valid('name', 'createdAt', 'updatedAt', 'isActive').default('name'),
+  column: Joi.string()
+    .valid('name', 'shortCodes', 'dietary', 'basePrice', 'createdAt', 'updatedAt', 'isActive')
+    .default('name'),
   order: Joi.string()
     .valid(...SORT_ORDERS)
     .default('ASC'),

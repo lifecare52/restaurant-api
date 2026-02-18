@@ -270,10 +270,12 @@ const buildMenuItemNested = async (
   }
 
   const base = item?.toObject ? item.toObject() : (item as unknown as Record<string, unknown>);
+  const diet = (base as { dietary?: string }).dietary;
+  const dietaryShort = diet === 'VEG' ? 'V' : diet === 'NON_VEG' ? 'NV' : diet === 'EGG' ? 'E' : undefined;
   if (hasVariants) {
-    return { ...base, variations };
+    return { ...base, dietaryShort, variations };
   }
-  return { ...base, variations: [], addons: topLevelAddons ?? [] };
+  return { ...base, dietaryShort, variations: [], addons: topLevelAddons ?? [] };
 };
 
 export const listMenuItemsWithNested = async (
