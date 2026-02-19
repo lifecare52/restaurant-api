@@ -6,13 +6,20 @@ import {
   loginController,
   adminLoginController,
   createOwnerController,
-  createUserController,
+  createOutletUserController,
+  listOutletUsersController,
+  getOutletUserController,
+  updateOutletUserController,
+  deleteOutletUserController,
 } from '@modules/user/user.controller';
 import {
   createAdminSchema,
   createOwnerSchema,
   createUserSchema,
   loginSchema,
+  userListQuerySchema,
+  userIdQuerySchema,
+  updateUserSchema,
 } from '@modules/user/user.validator';
 
 import { ROLES, PERMISSIONS } from '@shared/constants';
@@ -55,7 +62,44 @@ router.post(
   requireBrandAccess,
   requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(createUserSchema),
-  createUserController,
+  createOutletUserController,
+);
+
+router.get(
+  '/',
+  auth,
+  requireBrandAccess,
+  requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
+  validateRequest(userListQuerySchema, 'query'),
+  listOutletUsersController,
+);
+
+router.get(
+  '/detail',
+  auth,
+  requireBrandAccess,
+  requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
+  validateRequest(userIdQuerySchema, 'query'),
+  getOutletUserController,
+);
+
+router.patch(
+  '/',
+  auth,
+  requireBrandAccess,
+  requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
+  validateRequest(userIdQuerySchema, 'query'),
+  validateRequest(updateUserSchema),
+  updateOutletUserController,
+);
+
+router.delete(
+  '/',
+  auth,
+  requireBrandAccess,
+  requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
+  validateRequest(userIdQuerySchema, 'query'),
+  deleteOutletUserController,
 );
 
 export default router;
