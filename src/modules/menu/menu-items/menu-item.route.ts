@@ -10,7 +10,9 @@ import {
   deleteMenuItemController,
   getMenuItemController,
   listMenuItemsController,
+  listMenuItemsCategoryWiseController,
   updateMenuItemController,
+  bulkUpdateMenuItemAvailabilityController,
 } from './menu-item.controller';
 import {
   createMenuItemSchema,
@@ -18,6 +20,7 @@ import {
   menuItemListQuerySchema,
   menuItemIdQuerySchema,
   menuItemHeaderSchema,
+  bulkUpdateMenuItemAvailabilitySchema,
 } from './menu-item.validator';
 
 const router = Router();
@@ -40,6 +43,15 @@ router.get(
   requireOutletAccess,
   validateRequest(menuItemListQuerySchema, 'query'),
   listMenuItemsController,
+);
+
+router.get(
+  '/category-wise',
+  auth,
+  validateRequest(menuItemHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  listMenuItemsCategoryWiseController,
 );
 
 router.get(
@@ -71,6 +83,16 @@ router.delete(
   requireOutletAccess,
   validateRequest(menuItemIdQuerySchema, 'query'),
   deleteMenuItemController,
+);
+
+router.patch(
+  '/availability',
+  auth,
+  validateRequest(menuItemHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  validateRequest(bulkUpdateMenuItemAvailabilitySchema),
+  bulkUpdateMenuItemAvailabilityController,
 );
 
 export default router;

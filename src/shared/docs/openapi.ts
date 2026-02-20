@@ -506,6 +506,26 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
           },
         },
+        BulkUpdateMenuItemAvailabilityRequest: {
+          type: 'object',
+          properties: {
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  _id: { type: 'string' },
+                  online: { type: 'boolean' },
+                  takeAway: { type: 'boolean' },
+                  dineIn: { type: 'boolean' },
+                },
+                required: ['_id', 'online', 'takeAway', 'dineIn'],
+              },
+              minItems: 1,
+            },
+          },
+          required: ['items'],
+        },
         Variation: {
           type: 'object',
           properties: {
@@ -774,6 +794,35 @@ export const getOpenApiSpec = () => {
             max: { type: 'number', minimum: 1 },
             isActive: { type: 'boolean' },
           },
+        },
+        CategoryWiseGroup: {
+          type: 'object',
+          description: 'A category with its non-deleted menu items',
+          properties: {
+            category: {
+              type: 'object',
+              properties: {
+                _id: { type: 'string' },
+                name: { type: 'string' },
+                isActive: { type: 'boolean' },
+              },
+              required: ['_id', 'name', 'isActive'],
+            },
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  _id: { type: 'string' },
+                  name: { type: 'string' },
+                  dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
+                  isActive: { type: 'boolean' },
+                },
+                required: ['_id', 'name', 'dietary', 'isActive'],
+              },
+            },
+          },
+          required: ['category', 'items'],
         },
       },
     },
@@ -1647,7 +1696,15 @@ export const getOpenApiSpec = () => {
               required: false,
               schema: {
                 type: 'string',
-                enum: ['name', 'shortCodes', 'dietary', 'basePrice', 'createdAt', 'updatedAt', 'isActive'],
+                enum: [
+                  'name',
+                  'shortCodes',
+                  'dietary',
+                  'basePrice',
+                  'createdAt',
+                  'updatedAt',
+                  'isActive',
+                ],
                 default: 'name',
               },
             },
@@ -1760,6 +1817,86 @@ export const getOpenApiSpec = () => {
             },
             422: {
               description: 'Validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/menu/menu-items/availability': {
+        patch: {
+          tags: ['Menu-Items'],
+          summary: 'Bulk update menu items availability',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/BulkUpdateMenuItemAvailabilityRequest' },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            400: {
+              description: 'Bad Request',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            401: {
+              description: 'Unauthorized',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            422: {
+              description: 'Validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/menu/menu-items/category-wise': {
+        get: {
+          tags: ['Menu-Items'],
+          summary: 'List menu items grouped by category',
+          description:
+            'Returns non-deleted menu items (active & inactive) grouped under their non-deleted category. Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/CategoryWiseGroup' },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            401: {
+              description: 'Unauthorized',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
               },

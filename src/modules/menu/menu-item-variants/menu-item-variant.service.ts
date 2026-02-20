@@ -1,8 +1,12 @@
 import { Types } from 'mongoose';
 
-import type { MenuItemVariantCreateDTO, MenuItemVariantUpdateDTO, MenuItemVariantListQuery } from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import { getBrandById } from '@modules/brand/brand.service';
 import MenuItemVariantEntity from '@modules/menu/menu-item-variants/menu-item-variant.model';
+import type {
+  MenuItemVariantCreateDTO,
+  MenuItemVariantUpdateDTO,
+  MenuItemVariantListQuery,
+} from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import { getMenuItem } from '@modules/menu/menu-items/menu-item.service';
 import { getVariation } from '@modules/menu/variations/variation.service';
 import { getOutletById } from '@modules/outlet/outlet.service';

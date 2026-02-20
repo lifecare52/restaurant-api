@@ -8,9 +8,9 @@ import {
   updateVariation,
   deleteVariation,
 } from './variation.service';
+import { VariationListQuery } from './variation.types';
 
 import type { Request, Response, NextFunction } from 'express';
-import { VariationListQuery } from './variation.types';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
@@ -48,11 +48,7 @@ export const createVariationController = async (
 export const listVariationsController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { brandId, outletId } = getTenant(req);
-    const result = await listVariations(
-      brandId,
-      outletId,
-      req.query as VariationListQuery,
-    );
+    const result = await listVariations(brandId, outletId, req.query as VariationListQuery);
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
     next();
   } catch (err) {

@@ -8,8 +8,9 @@ import {
 
 import { API_MESSAGES } from '@shared/constants';
 
-import type { Request, Response, NextFunction } from 'express';
 import { MenuItemVariantListQuery } from './menu-item-variant.types';
+
+import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',

@@ -41,6 +41,10 @@ const MenuItemSchema = new Schema<MenuItem>(
 
     isVariation: { type: Boolean, default: false },
 
+    online: { type: Boolean, default: false },
+    takeAway: { type: Boolean, default: false },
+    dineIn: { type: Boolean, default: false },
+
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
   },

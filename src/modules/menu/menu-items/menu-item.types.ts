@@ -23,6 +23,10 @@ export interface MenuItemCreateDTO {
   basePrice?: number | null;
   costPrice?: number;
 
+  online?: boolean;
+  takeAway?: boolean;
+  dineIn?: boolean;
+
   variations?: Array<{
     variationId: string;
     basePrice: number;
@@ -49,6 +53,10 @@ export interface MenuItem {
 
   isVariation: boolean;
 
+  online: boolean;
+  takeAway: boolean;
+  dineIn: boolean;
+
   isActive: boolean;
   isDelete: boolean;
 }
@@ -62,6 +70,10 @@ export interface MenuItemUpdateDTO {
 
   basePrice?: number | null;
   costPrice?: number;
+
+  online?: boolean;
+  takeAway?: boolean;
+  dineIn?: boolean;
 
   variations?: Array<{
     variationId: string;

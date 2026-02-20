@@ -2,6 +2,7 @@ import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
 import { getAddon } from '@modules/menu/addons/addon.service';
+import CategoryEntity from '@modules/menu/category/category.model';
 import {
   listMenuItemAddons,
   createMenuItemAddon,
@@ -97,6 +98,10 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       costPrice: dto.costPrice ?? 0,
 
       isVariation: variationsInput.length > 0,
+
+      online: dto.online ?? false,
+      takeAway: dto.takeAway ?? false,
+      dineIn: dto.dineIn ?? false,
 
       isActive: dto.isActive ?? true,
       isDelete: false,
@@ -271,7 +276,8 @@ const buildMenuItemNested = async (
 
   const base = item?.toObject ? item.toObject() : (item as unknown as Record<string, unknown>);
   const diet = (base as { dietary?: string }).dietary;
-  const dietaryShort = diet === 'VEG' ? 'V' : diet === 'NON_VEG' ? 'NV' : diet === 'EGG' ? 'E' : undefined;
+  const dietaryShort =
+    diet === 'VEG' ? 'V' : diet === 'NON_VEG' ? 'NV' : diet === 'EGG' ? 'E' : undefined;
   if (hasVariants) {
     return { ...base, dietaryShort, variations };
   }
@@ -349,12 +355,12 @@ export const updateMenuItem = async (
     const normalizeAddonUpdate = (
       arr:
         | Array<{
-            addonId: string;
-            allowedItems?: string[];
-            isSingleSelect?: boolean;
-            min?: number;
-            max?: number;
-          }>
+          addonId: string;
+          allowedItems?: string[];
+          isSingleSelect?: boolean;
+          min?: number;
+          max?: number;
+        }>
         | undefined,
     ) => {
       return (arr || []).map(a => ({
@@ -473,6 +479,32 @@ export const updateMenuItem = async (
   }
 };
 
+export const listMenuItemsCategoryWise = async (brandId: string, outletId: string) => {
+  const categories = await CategoryEntity.find({
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false,
+  })
+    .select('_id name isActive')
+    .sort({ name: 1 });
+
+  const result = await Promise.all(
+    categories.map(async cat => {
+      const items = await MenuItemEntity.find({
+        brandId: new Types.ObjectId(brandId),
+        outletId: new Types.ObjectId(outletId),
+        categoryId: cat._id,
+        isDelete: false,
+      })
+        .select('_id name dietary isActive online takeAway dineIn')
+        .sort({ name: 1 });
+      return { category: cat, items };
+    }),
+  );
+
+  return result.filter(r => r.items.length > 0);
+};
+
 export const deleteMenuItem = async (brandId: string, menuItemId: string) => {
   return MenuItemEntity.findOneAndUpdate(
     { _id: new Types.ObjectId(menuItemId), brandId: new Types.ObjectId(brandId) },
@@ -481,12 +513,49 @@ export const deleteMenuItem = async (brandId: string, menuItemId: string) => {
   );
 };
 
+export interface BulkUpdateAvailabilityDTO {
+  _id: string;
+  online: boolean;
+  takeAway: boolean;
+  dineIn: boolean;
+}
+
+export const bulkUpdateMenuItemAvailability = async (
+  brandId: string,
+  outletId: string,
+  dto: BulkUpdateAvailabilityDTO[],
+) => {
+  const bulkOps = dto.map(item => ({
+    updateOne: {
+      filter: {
+        _id: new Types.ObjectId(item._id),
+        brandId: new Types.ObjectId(brandId),
+        outletId: new Types.ObjectId(outletId),
+        isDelete: false,
+      },
+      update: {
+        $set: {
+          online: item.online,
+          takeAway: item.takeAway,
+          dineIn: item.dineIn,
+        },
+      },
+    },
+  }));
+
+  if (bulkOps.length === 0) return null;
+
+  return MenuItemEntity.bulkWrite(bulkOps);
+};
+
 export default {
   createMenuItem,
   listMenuItems,
   listMenuItemsWithNested,
+  listMenuItemsCategoryWise,
   getMenuItem,
   getMenuItemWithNested,
   updateMenuItem,
   deleteMenuItem,
+  bulkUpdateMenuItemAvailability,
 };

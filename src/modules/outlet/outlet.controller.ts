@@ -7,11 +7,7 @@ import {
 
 import type { Request, Response, NextFunction } from 'express';
 
-export const createOutletController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const createOutletController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const brandId = (req.headers['brand-id'] as string) || '';
     const outlet = await createOutlet(brandId, req.body);
@@ -34,11 +30,7 @@ export const createOutletController = async (
   }
 };
 
-export const listOutletsController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const listOutletsController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const brandId = (req.headers['brand-id'] as string) || '';
     const outlets = await listOutlets(brandId);
@@ -53,11 +45,7 @@ export const listOutletsController = async (
   }
 };
 
-export const updateOutletController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
+export const updateOutletController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { brandId, outletId } = req.query as { brandId: string; outletId: string };
     const outlet = await updateOutlet(brandId, outletId, req.body);

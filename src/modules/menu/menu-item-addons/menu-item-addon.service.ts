@@ -7,10 +7,10 @@ import { getMenuItem } from '@modules/menu/menu-items/menu-item.service';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { Dietary } from '@shared/enum';
-import type { MenuItemAddonListQuery, MenuItemAddonFilterQuery } from './menu-item-addon.types';
 
 import MenuItemAddonEntity from './menu-item-addon.model';
 
+import type { MenuItemAddonListQuery, MenuItemAddonFilterQuery } from './menu-item-addon.types';
 import type { MenuItemAddonCreateDTO, MenuItemAddonUpdateDTO } from './menu-item-addon.types';
 
 type ResolvedAddonItem = {

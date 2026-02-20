@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+import mongoose from 'mongoose';
+
 import { createApp } from 'app';
 import { connectDB } from 'config/db';
-import mongoose from 'mongoose';
 
 /**
  * Minimal server bootstrap (skeleton).
@@ -19,9 +20,11 @@ const start = async () => {
   } else {
     await connectDB(uri);
     const shouldSync =
-      ((process.env.SYNC_INDEXES ??
-        (process.env.NODE_ENV && process.env.NODE_ENV !== 'production' ? 'true' : 'false')) ||
-        '').toLowerCase() === 'true';
+      (
+        (process.env.SYNC_INDEXES ??
+          (process.env.NODE_ENV && process.env.NODE_ENV !== 'production' ? 'true' : 'false')) ||
+        ''
+      ).toLowerCase() === 'true';
     if (shouldSync) {
       const names = mongoose.modelNames();
       for (const n of names) {

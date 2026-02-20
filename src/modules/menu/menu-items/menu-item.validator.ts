@@ -54,6 +54,10 @@ export const createMenuItemSchema = Joi.object({
     )
     .optional(),
 
+  online: Joi.boolean().default(false),
+  takeAway: Joi.boolean().default(false),
+  dineIn: Joi.boolean().default(false),
+
   isActive: Joi.boolean().default(true),
 });
 
@@ -102,6 +106,10 @@ export const updateMenuItemSchema = Joi.object({
     )
     .optional(),
 
+  online: Joi.boolean().optional(),
+  takeAway: Joi.boolean().optional(),
+  dineIn: Joi.boolean().optional(),
+
   isActive: Joi.boolean(),
 });
 
@@ -124,4 +132,18 @@ export const menuItemIdQuerySchema = Joi.object({
 export const menuItemHeaderSchema = Joi.object({
   'brand-id': objectId.required(),
   'outlet-id': objectId.required(),
+});
+
+export const bulkUpdateMenuItemAvailabilitySchema = Joi.object({
+  items: Joi.array()
+    .items(
+      Joi.object({
+        _id: objectId.required(),
+        online: Joi.boolean().required(),
+        takeAway: Joi.boolean().required(),
+        dineIn: Joi.boolean().required(),
+      }),
+    )
+    .min(1)
+    .required(),
 });

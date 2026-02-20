@@ -1,9 +1,11 @@
 import {
   createMenuItem,
   listMenuItemsWithNested,
+  listMenuItemsCategoryWise,
   getMenuItemWithNested,
   updateMenuItem,
   deleteMenuItem,
+  bulkUpdateMenuItemAvailability,
 } from '@modules/menu/menu-items/menu-item.service';
 
 import { API_MESSAGES } from '@shared/constants';
@@ -54,6 +56,26 @@ export const listMenuItemsController = async (req: Request, res: Response, next:
       code: 200,
       data: result.items,
       total: result.total,
+    };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const listMenuItemsCategoryWiseController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const result = await listMenuItemsCategoryWise(brandId, outletId);
+
+    res.locals.response = {
+      status: true,
+      code: 200,
+      data: result,
     };
     next();
   } catch (err) {
@@ -135,10 +157,36 @@ export const deleteMenuItemController = async (req: Request, res: Response, next
   }
 };
 
+export const bulkUpdateMenuItemAvailabilityController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const result = await bulkUpdateMenuItemAvailability(brandId, outletId, req.body.items);
+
+    if (!result) {
+      res.locals.response = { status: false, code: 400, message: 'Failed to update availability' };
+    } else {
+      res.locals.response = {
+        status: true,
+        code: 200,
+        message: 'Menu items availability updated successfully',
+      };
+    }
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   createMenuItemController,
   listMenuItemsController,
+  listMenuItemsCategoryWiseController,
   getMenuItemController,
   updateMenuItemController,
   deleteMenuItemController,
+  bulkUpdateMenuItemAvailabilityController,
 };

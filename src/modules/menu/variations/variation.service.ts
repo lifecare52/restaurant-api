@@ -1,8 +1,12 @@
 import { Types } from 'mongoose';
 
-import type { VariationListQuery, VariationCreateDTO, VariationUpdateDTO } from '@modules/menu/variations/variation.types';
 import { getBrandById } from '@modules/brand/brand.service';
 import { VariationEntity } from '@modules/menu/variations/variation.model';
+import type {
+  VariationListQuery,
+  VariationCreateDTO,
+  VariationUpdateDTO,
+} from '@modules/menu/variations/variation.types';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 export const createVariation = async (
