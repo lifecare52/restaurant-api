@@ -116,11 +116,41 @@ export const getOpenApiSpec = () => {
             email: { type: 'string', format: 'email' },
             password: { type: 'string', minLength: 6 },
             role: { type: 'string', enum: ['PARTNER', 'STAFF'] },
-            brandId: { type: 'string' },
-            outlets: { type: 'array', items: { type: 'string' }, default: [] },
             permissions: { type: 'array', items: { type: 'string' }, default: [] },
+            isActive: { type: 'boolean', default: true },
+            salary: { type: 'number' },
           },
-          required: ['name', 'username', 'password', 'role', 'brandId'],
+          required: ['name', 'username', 'password', 'role'],
+        },
+        UpdateUserRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            email: { type: 'string', format: 'email' },
+            password: { type: 'string', minLength: 6 },
+            role: { type: 'string', enum: ['PARTNER', 'STAFF'] },
+            outlets: { type: 'array', items: { type: 'string' } },
+            permissions: { type: 'array', items: { type: 'string' } },
+            isActive: { type: 'boolean' },
+            salary: { type: 'number' },
+          },
+        },
+        User: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            name: { type: 'string' },
+            username: { type: 'string' },
+            email: { type: 'string' },
+            role: { type: 'string', enum: ['PARTNER', 'STAFF', 'ADMIN', 'OWNER'] },
+            brandId: { type: 'string' },
+            outlets: { type: 'array', items: { type: 'string' } },
+            permissions: { type: 'array', items: { type: 'string' } },
+            isActive: { type: 'boolean' },
+            salary: { type: 'number' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
         },
         CreateBrandRequest: {
           type: 'object',
@@ -1090,7 +1120,9 @@ export const getOpenApiSpec = () => {
         post: {
           tags: ['Users'],
           summary: 'Create user (PARTNER/STAFF)',
-          security: [{ bearerAuth: [] }],
+          description:
+            'Creates a new user. The `brand-id` header is mandatory. The `outlet-id` header is optional; if provided, it will be added to the user\'s `outlets` list. Note: `outlets` in payload is ignored; user is assigned only to the outlet in the header (if present).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
             content: {
@@ -1101,7 +1133,19 @@ export const getOpenApiSpec = () => {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/User' },
+                        },
+                      },
+                    ],
+                  },
+                },
               },
             },
             403: {
@@ -1112,6 +1156,194 @@ export const getOpenApiSpec = () => {
             },
             422: {
               description: 'Validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        get: {
+          tags: ['Users'],
+          summary: 'List users',
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
+          parameters: [
+            {
+              name: 'page',
+              in: 'query',
+              required: false,
+              schema: { type: 'number', minimum: 1, default: 1 },
+            },
+            {
+              name: 'limit',
+              in: 'query',
+              required: false,
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+            },
+            {
+              name: 'searchText',
+              in: 'query',
+              required: false,
+              schema: { type: 'string' },
+            },
+            {
+              name: 'role',
+              in: 'query',
+              required: false,
+              schema: { type: 'string', enum: ['PARTNER', 'STAFF'] },
+            },
+            {
+              name: 'column',
+              in: 'query',
+              required: false,
+              schema: { type: 'string', default: 'createdAt' },
+            },
+            {
+              name: 'order',
+              in: 'query',
+              required: false,
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'DESC' },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/User' },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        patch: {
+          tags: ['Users'],
+          summary: 'Update user',
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
+          parameters: [
+            { name: 'userId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateUserRequest' } },
+            },
+          },
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/User' },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        delete: {
+          tags: ['Users'],
+          summary: 'Delete user (soft delete)',
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
+          parameters: [
+            { name: 'userId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/users/detail': {
+        get: {
+          tags: ['Users'],
+          summary: 'Get user details',
+          security: [{ bearerAuth: [], brandIdHeader: [] }],
+          parameters: [
+            { name: 'userId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/User' },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
               },

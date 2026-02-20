@@ -12,6 +12,9 @@ export interface User {
   brandId?: Types.ObjectId;
   outlets?: Types.ObjectId[];
   permissions?: string[];
+  isActive: boolean;
+  salary?: number;
+  isDelete: boolean;
 }
 
 export interface UserMethods {
@@ -23,24 +26,30 @@ export type UserModel = Model<User, Record<string, never>, UserMethods>;
 const UserSchema = new Schema<User, UserModel, UserMethods>(
   {
     name: { type: String, required: true, trim: true },
-    username: { type: String, required: true, unique: true, trim: true },
+    username: { type: String, required: true, trim: true },
     email: { type: String, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
     role: { type: String, required: true, enum: Object.values(ROLES) },
     brandId: { type: Schema.Types.ObjectId, index: true },
     outlets: [{ type: Schema.Types.ObjectId }],
     permissions: [{ type: String }],
+    isActive: { type: Boolean, default: true },
+    salary: { type: Number },
+    isDelete: { type: Boolean, default: false },
   },
   {
     timestamps: true,
     toJSON: {
       transform: (_doc, ret: Record<string, unknown>) => {
         delete (ret as { password?: unknown }).password;
+        delete (ret as { isDelete?: unknown }).isDelete;
         return ret;
       },
     },
   },
 );
+
+UserSchema.index({ username: 1 }, { unique: true, partialFilterExpression: { isDelete: false } });
 
 UserSchema.pre('save', async function (next) {
   if (this.isModified('username')) {
