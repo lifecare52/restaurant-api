@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
 import { getAddon } from '@modules/menu/addons/addon.service';
-import CategoryEntity from '@modules/menu/category/category.model';
+import { listActiveCategories } from '@modules/menu/category/category.service';
 import {
   listMenuItemAddons,
   createMenuItemAddon,
@@ -11,15 +11,17 @@ import {
 import {
   listMenuItemVariants,
   createMenuItemVariant,
+  getAllMenuItemVariants,
 } from '@modules/menu/menu-item-variants/menu-item-variant.service';
+import type { MenuItemVariant } from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
-import type { MenuItem } from '@modules/menu/menu-items/menu-item.types';
-import { getVariation } from '@modules/menu/variations/variation.service';
+import type { MenuItem, MenuItemCreateDTO, MenuItemUpdateDTO } from '@modules/menu/menu-items/menu-item.types';
+import { getVariation, listActiveVariations } from '@modules/menu/variations/variation.service';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
+import CategoryEntity from '../category/category.model';
 
-import type { MenuItemCreateDTO, MenuItemUpdateDTO } from './menu-item.types';
 
 export const createMenuItem = async (brandId: string, outletId: string, dto: MenuItemCreateDTO) => {
   const brand = await getBrandById(brandId);
@@ -548,6 +550,428 @@ export const bulkUpdateMenuItemAvailability = async (
   return MenuItemEntity.bulkWrite(bulkOps);
 };
 
+export const getAddonMapping = async (brandId: string, outletId: string) => {
+  const categories = await listActiveCategories(brandId, outletId);
+
+  const menuItems = await MenuItemEntity.find({
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isActive: true,
+    isDelete: false,
+  }).lean();
+
+  const variants = (await getAllMenuItemVariants(
+    brandId,
+    outletId,
+  )) as unknown as (MenuItemVariant & {
+    _id: Types.ObjectId;
+  })[];
+
+  const variations = await listActiveVariations(brandId, outletId);
+  const variationMap = new Map(variations.map(v => [v._id.toString(), v.name]));
+
+  const itemsByCategoryId = new Map<
+    string,
+    {
+      Name: string;
+      menuItemId?: Types.ObjectId;
+      menuItemVariantId?: Types.ObjectId;
+      _id?: Types.ObjectId;
+    }[]
+  >();
+
+  const variantsByItemId = new Map<string, (MenuItemVariant & { _id: Types.ObjectId })[]>();
+  variants.forEach(v => {
+    const itemId = v.menuItemId.toString();
+    if (!variantsByItemId.has(itemId)) {
+      variantsByItemId.set(itemId, []);
+    }
+    variantsByItemId.get(itemId)?.push(v);
+  });
+
+  menuItems.forEach(item => {
+    const categoryId = item.categoryId.toString();
+    if (!itemsByCategoryId.has(categoryId)) {
+      itemsByCategoryId.set(categoryId, []);
+    }
+
+    if (!item.isVariation) {
+      itemsByCategoryId.get(categoryId)?.push({
+        Name: item.name,
+        _id: item._id,
+      });
+    } else {
+      const itemVariants = variantsByItemId.get(item._id.toString()) || [];
+      itemVariants.forEach(v => {
+        const variationName = variationMap.get(v.variationId.toString()) || 'Unknown';
+        itemsByCategoryId.get(categoryId)?.push({
+          Name: `${item.name} ${variationName}`,
+          menuItemId: item._id,
+          menuItemVariantId: v._id,
+        });
+      });
+    }
+  });
+
+  return categories.map(cat => ({
+    Category: cat.name,
+    Items: itemsByCategoryId.get(cat._id.toString()) || [],
+  }));
+};
+
+
+// export const getAddonMappingAggregation = async (
+//   brandId: string,
+//   outletId: string,
+// ) => {
+//   const brandObjectId = new Types.ObjectId(brandId);
+//   const outletObjectId = new Types.ObjectId(outletId);
+
+//   return CategoryEntity.aggregate([
+//     /* ---------------- CATEGORY FILTER ---------------- */
+
+//     {
+//       $match: {
+//         brandId: brandObjectId,
+//         outletId: outletObjectId,
+//         isActive: true,
+//         isDelete: false,
+//       },
+//     },
+
+//     /* ---------------- MENU ITEMS ---------------- */
+
+//     {
+//       $lookup: {
+//         from: 'menu_items',
+//         let: { categoryId: '$_id' },
+//         pipeline: [
+//           {
+//             $match: {
+//               $expr: {
+//                 $and: [
+//                   { $eq: ['$categoryId', '$$categoryId'] },
+//                   { $eq: ['$brandId', brandObjectId] },
+//                   { $eq: ['$outletId', outletObjectId] },
+//                   { $eq: ['$isActive', true] },
+//                   { $eq: ['$isDelete', false] },
+//                 ],
+//               },
+//             },
+//           },
+
+//           /* ---------- VARIANTS ---------- */
+
+//           {
+//             $lookup: {
+//               from: 'menu_item_variants',
+//               localField: '_id',
+//               foreignField: 'menuItemId',
+//               as: 'variants',
+//             },
+//           },
+
+//           /* ---------- VARIATION NAME ---------- */
+
+//           {
+//             $lookup: {
+//               from: 'variations',
+//               localField: 'variants.variationId',
+//               foreignField: '_id',
+//               as: 'variationDocs',
+//             },
+//           },
+
+//           /* ---------- ITEM LEVEL ADDONS ---------- */
+
+//           {
+//             $lookup: {
+//               from: 'menu_item_addons',
+//               localField: '_id',
+//               foreignField: 'menuItemId',
+//               as: 'itemAddons',
+//             },
+//           },
+
+//           /* ---------- VARIANT LEVEL ADDONS ---------- */
+
+//           {
+//             $lookup: {
+//               from: 'menu_item_addons',
+//               localField: 'variants._id',
+//               foreignField: 'menuItemVariantId',
+//               as: 'variantAddons',
+//             },
+//           },
+
+//           /* ---------- PROJECT OUTPUT ---------- */
+
+//           {
+//             $project: {
+//               _id: 1,
+//               name: 1,
+//               isVariation: 1,
+
+//               addons: {
+//                 $cond: [
+//                   { $eq: ['$isVariation', false] },
+//                   '$itemAddons',
+//                   [],
+//                 ],
+//               },
+
+//               variants: {
+//                 $map: {
+//                   input: '$variants',
+//                   as: 'v',
+//                   in: {
+//                     menuItemVariantId: '$$v._id',
+//                     variationId: '$$v.variationId',
+//                     basePrice: '$$v.basePrice',
+
+//                     addons: {
+//                       $filter: {
+//                         input: '$variantAddons',
+//                         as: 'va',
+//                         cond: {
+//                           $eq: [
+//                             '$$va.menuItemVariantId',
+//                             '$$v._id',
+//                           ],
+//                         },
+//                       },
+//                     },
+//                   },
+//                 },
+//               },
+//             },
+//           },
+//         ],
+//         as: 'items',
+//       },
+//     },
+
+//     /* ---------------- FINAL OUTPUT ---------------- */
+
+//     {
+//       $project: {
+//         category: '$name',
+//         categoryId: '$_id',
+//         items: 1,
+//       },
+//     },
+//   ]);
+// };
+
+
+export const getAddonMappingAggregationV2 = async (
+  brandId: string,
+  outletId: string,
+  filterAddonId?: string,
+) => {
+  const brandObjectId = new Types.ObjectId(brandId);
+  const outletObjectId = new Types.ObjectId(outletId);
+  const addonObjectId = filterAddonId
+    ? new Types.ObjectId(filterAddonId)
+    : null;
+
+  return MenuItemEntity.aggregate([
+
+    /* ---------------- MENU FILTER ---------------- */
+
+    {
+      $match: {
+        brandId: brandObjectId,
+        outletId: outletObjectId,
+        isActive: true,
+        isDelete: false,
+      },
+    },
+
+    /* ---------------- CATEGORY ---------------- */
+
+    {
+      $lookup: {
+        from: 'categories',
+        localField: 'categoryId',
+        foreignField: '_id',
+        as: 'category',
+      },
+    },
+    { $unwind: '$category' },
+
+    /* ---------------- VARIANTS ---------------- */
+
+    {
+      $lookup: {
+        from: 'menu_item_variants',
+        localField: '_id',
+        foreignField: 'menuItemId',
+        as: 'variants',
+      },
+    },
+
+    /* ---------------- VARIATION MASTER ---------------- */
+
+    {
+      $lookup: {
+        from: 'variations',
+        localField: 'variants.variationId',
+        foreignField: '_id',
+        as: 'variationDocs',
+      },
+    },
+
+    /* ---------------- VARIANT ADDONS ---------------- */
+
+    {
+      $lookup: {
+        from: 'menu_item_addons',
+        localField: 'variants._id',
+        foreignField: 'menuItemVariantId',
+        as: 'variantAddons',
+      },
+    },
+
+    /* ---------------- BUILD OUTPUT ITEMS ---------------- */
+
+    {
+      $project: {
+        category: '$category.name',
+        categoryId: '$category._id',
+
+        items: {
+          $cond: [
+
+            /* ---------- NO VARIATION ---------- */
+
+            { $eq: ['$isVariation', false] },
+
+            [
+              {
+                menuId: '$_id',
+                name: '$name',
+              },
+            ],
+
+            /* ---------- HAS VARIATION ---------- */
+
+            {
+              $map: {
+                input: '$variants',
+                as: 'v',
+                in: {
+                  menuId: '$_id',
+                  variationId: '$$v._id',
+
+                  name: {
+                    $concat: [
+                      {
+                        $let: {
+                          vars: {
+                            variationDoc: {
+                              $first: {
+                                $filter: {
+                                  input: '$variationDocs',
+                                  as: 'vd',
+                                  cond: {
+                                    $eq: [
+                                      '$$vd._id',
+                                      '$$v.variationId',
+                                    ],
+                                  },
+                                },
+                              },
+                            },
+                          },
+                          in: '$$variationDoc.name',
+                        },
+                      },
+                      ' ',
+                      '$name',
+                    ],
+                  },
+
+                  addons: {
+                    $filter: {
+                      input: '$variantAddons',
+                      as: 'va',
+                      cond: {
+                        $eq: [
+                          '$$va.menuItemVariantId',
+                          '$$v._id',
+                        ],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+
+    /* ---------------- FILTER EXISTING ADDON ---------------- */
+
+    ...(addonObjectId
+      ? [
+        {
+          $addFields: {
+            items: {
+              $filter: {
+                input: '$items',
+                as: 'i',
+                cond: {
+                  $not: {
+                    $in: [
+                      addonObjectId,
+                      {
+                        $map: {
+                         input: { $ifNull: ['$$i.addons', []] },
+                          as: 'a',
+                          in: '$$a.addonId',
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      ]
+      : []),
+
+    /* ---------------- GROUP CATEGORY ---------------- */
+
+    {
+      $group: {
+        _id: '$categoryId',
+        category: { $first: '$category' },
+        items: { $push: '$items' },
+      },
+    },
+
+    /* ---------------- FLATTEN ---------------- */
+
+    {
+      $project: {
+        _id: 0,
+        category: 1,
+        categoryId: '$_id',
+        items: {
+          $reduce: {
+            input: '$items',
+            initialValue: [],
+            in: { $concatArrays: ['$$value', '$$this'] },
+          },
+        },
+      },
+    },
+  ]);
+};
+
 export default {
   createMenuItem,
   listMenuItems,
@@ -558,4 +982,6 @@ export default {
   updateMenuItem,
   deleteMenuItem,
   bulkUpdateMenuItemAvailability,
+  getAddonMapping,
+  getAddonMappingAggregationV2,
 };

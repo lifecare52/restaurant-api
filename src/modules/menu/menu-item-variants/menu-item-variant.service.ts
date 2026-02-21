@@ -100,6 +100,15 @@ export const listMenuItemVariants = async (
   return { items, total };
 };
 
+export const getAllMenuItemVariants = async (brandId: string, outletId: string) => {
+  return MenuItemVariantEntity.find({
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false,
+    isActive: true,
+  }).lean();
+};
+
 export const getMenuItemVariant = async (
   brandId: string,
   outletId: string,

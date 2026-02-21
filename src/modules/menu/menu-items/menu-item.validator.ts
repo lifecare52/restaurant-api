@@ -147,3 +147,7 @@ export const bulkUpdateMenuItemAvailabilitySchema = Joi.object({
     .min(1)
     .required(),
 });
+
+export const addonMappingQuerySchema = Joi.object({
+  addonId: objectId.optional(),
+});

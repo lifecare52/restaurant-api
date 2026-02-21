@@ -815,6 +815,29 @@ export const getOpenApiSpec = () => {
           },
           required: ['menuItemId', 'addonId'],
         },
+        CreateBulkMenuItemAddonRequest: {
+          type: 'object',
+          properties: {
+            addonId: { type: 'string' },
+            allowedItemsId: { type: 'array', items: { type: 'string' } },
+            isSingleSelect: { type: 'boolean' },
+            min: { type: 'number', minimum: 0 },
+            max: { type: 'number', minimum: 1 },
+            isActive: { type: 'boolean', default: true },
+            items: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  menuId: { type: 'string' },
+                  variationId: { type: 'string' },
+                },
+                required: ['menuId'],
+              },
+            },
+          },
+          required: ['addonId', 'items'],
+        },
         UpdateMenuItemAddonRequest: {
           type: 'object',
           properties: {
@@ -1121,7 +1144,7 @@ export const getOpenApiSpec = () => {
           tags: ['Users'],
           summary: 'Create user (PARTNER/STAFF)',
           description:
-            'Creates a new user. The `brand-id` header is mandatory. The `outlet-id` header is optional; if provided, it will be added to the user\'s `outlets` list. Note: `outlets` in payload is ignored; user is assigned only to the outlet in the header (if present).',
+            "Creates a new user. The `brand-id` header is mandatory. The `outlet-id` header is optional; if provided, it will be added to the user's `outlets` list. Note: `outlets` in payload is ignored; user is assigned only to the outlet in the header (if present).",
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
@@ -1238,9 +1261,7 @@ export const getOpenApiSpec = () => {
           tags: ['Users'],
           summary: 'Update user',
           security: [{ bearerAuth: [], brandIdHeader: [] }],
-          parameters: [
-            { name: 'userId', in: 'query', required: true, schema: { type: 'string' } },
-          ],
+          parameters: [{ name: 'userId', in: 'query', required: true, schema: { type: 'string' } }],
           requestBody: {
             required: true,
             content: {
@@ -1284,9 +1305,7 @@ export const getOpenApiSpec = () => {
           tags: ['Users'],
           summary: 'Delete user (soft delete)',
           security: [{ bearerAuth: [], brandIdHeader: [] }],
-          parameters: [
-            { name: 'userId', in: 'query', required: true, schema: { type: 'string' } },
-          ],
+          parameters: [{ name: 'userId', in: 'query', required: true, schema: { type: 'string' } }],
           responses: {
             200: {
               description: 'OK',
@@ -1314,9 +1333,7 @@ export const getOpenApiSpec = () => {
           tags: ['Users'],
           summary: 'Get user details',
           security: [{ bearerAuth: [], brandIdHeader: [] }],
-          parameters: [
-            { name: 'userId', in: 'query', required: true, schema: { type: 'string' } },
-          ],
+          parameters: [{ name: 'userId', in: 'query', required: true, schema: { type: 'string' } }],
           responses: {
             200: {
               description: 'OK',
@@ -1857,6 +1874,75 @@ export const getOpenApiSpec = () => {
                     ],
                   },
                 },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/menu/menu-items/addon-mapping': {
+        get: {
+          tags: ['Menu-Items'],
+          summary: 'Get addon mapping structure',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'addonId', in: 'query', required: false, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                Category: { type: 'string' },
+                                Items: {
+                                  type: 'array',
+                                  items: {
+                                    oneOf: [
+                                      {
+                                        type: 'object',
+                                        properties: {
+                                          Name: { type: 'string' },
+                                          _id: { type: 'string' },
+                                        },
+                                        required: ['Name', '_id'],
+                                      },
+                                      {
+                                        type: 'object',
+                                        properties: {
+                                          Name: { type: 'string' },
+                                          menuItemId: { type: 'string' },
+                                          menuItemVariantId: { type: 'string' },
+                                        },
+                                        required: ['Name', 'menuItemId', 'menuItemVariantId'],
+                                      },
+                                    ],
+                                  },
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
               },
             },
           },
@@ -2816,6 +2902,36 @@ export const getOpenApiSpec = () => {
             },
             404: {
               description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/menu/menu-item-addons/bulk': {
+        post: {
+          tags: ['Menu-Item-Addons'],
+          summary: 'Bulk attach addon to menu item',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/CreateBulkMenuItemAddonRequest' },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Created',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            422: {
+              description: 'Validation failed',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
               },

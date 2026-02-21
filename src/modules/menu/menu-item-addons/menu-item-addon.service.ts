@@ -11,7 +11,11 @@ import type { Dietary } from '@shared/enum';
 import MenuItemAddonEntity from './menu-item-addon.model';
 
 import type { MenuItemAddonListQuery, MenuItemAddonFilterQuery } from './menu-item-addon.types';
-import type { MenuItemAddonCreateDTO, MenuItemAddonUpdateDTO } from './menu-item-addon.types';
+import type {
+  MenuItemAddonCreateDTO,
+  MenuItemAddonUpdateDTO,
+  BulkMenuItemAddonCreateDTO,
+} from './menu-item-addon.types';
 
 type ResolvedAddonItem = {
   _id: Types.ObjectId;
@@ -74,6 +78,45 @@ export const createMenuItemAddon = async (
     }
     throw err;
   }
+};
+
+export const createBulkMenuItemAddons = async (
+  brandId: string,
+  outletId: string,
+  dto: BulkMenuItemAddonCreateDTO,
+) => {
+  const results = [];
+  const errors = [];
+
+  for (const item of dto.items) {
+    try {
+      const createDto: MenuItemAddonCreateDTO = {
+        menuItemId: item.menuId,
+        addonId: dto.addonId,
+        allowedItemIds: dto.allowedItemsId,
+        menuItemVariantId: item.variationId,
+        isSingleSelect: dto.isSingleSelect,
+        min: dto.min,
+        max: dto.max,
+        isActive: dto.isActive,
+      };
+
+      const result = await createMenuItemAddon(brandId, outletId, createDto);
+      if (result) {
+        results.push(result);
+      }
+    } catch (err) {
+      const e = err as { code?: string; message?: string };
+      // Push errors to return later if needed, or just log
+      errors.push({
+        item,
+        error: e.message || 'Unknown error',
+        code: e.code,
+      });
+    }
+  }
+
+  return { results, errors };
 };
 
 export const listMenuItemAddons = async (

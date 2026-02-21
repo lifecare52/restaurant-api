@@ -13,6 +13,21 @@ export interface MenuItemAddonCreateDTO {
   isActive?: boolean;
 }
 
+export interface BulkMenuItemAddonItemDTO {
+  menuId: string;
+  variationId?: string;
+}
+
+export interface BulkMenuItemAddonCreateDTO {
+  addonId: string;
+  allowedItemsId?: string[];
+  isSingleSelect?: boolean;
+  min?: number;
+  max?: number;
+  isActive?: boolean;
+  items: BulkMenuItemAddonItemDTO[];
+}
+
 export interface MenuItemAddon {
   brandId: Types.ObjectId;
   outletId: Types.ObjectId;

@@ -4,12 +4,14 @@ import {
   getMenuItemAddon,
   updateMenuItemAddon,
   deleteMenuItemAddon,
+  createBulkMenuItemAddons,
 } from '@modules/menu/menu-item-addons/menu-item-addon.service';
 import type {
   MenuItemAddonCreateDTO,
   MenuItemAddonFilterQuery,
   MenuItemAddonListQuery,
   MenuItemAddonUpdateDTO,
+  BulkMenuItemAddonCreateDTO,
 } from '@modules/menu/menu-item-addons/menu-item-addon.types';
 
 import { API_MESSAGES } from '@shared/constants';
@@ -43,6 +45,30 @@ export const createMenuItemAddonController = async (
         data: v,
       };
     }
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const createBulkMenuItemAddonController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const result = await createBulkMenuItemAddons(
+      brandId,
+      outletId,
+      req.body as BulkMenuItemAddonCreateDTO,
+    );
+    res.locals.response = {
+      status: true,
+      code: 201,
+      message: 'Bulk addons processed',
+      data: result,
+    };
     next();
   } catch (err) {
     next(err);

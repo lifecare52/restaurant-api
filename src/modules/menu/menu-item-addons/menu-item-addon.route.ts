@@ -6,6 +6,7 @@ import {
   getMenuItemAddonController,
   updateMenuItemAddonController,
   deleteMenuItemAddonController,
+  createBulkMenuItemAddonController,
 } from '@modules/menu/menu-item-addons/menu-item-addon.controller';
 import {
   menuItemAddonHeaderSchema,
@@ -13,6 +14,7 @@ import {
   updateMenuItemAddonSchema,
   menuItemAddonListQuerySchema,
   menuItemAddonIdQuerySchema,
+  createBulkMenuItemAddonSchema,
 } from '@modules/menu/menu-item-addons/menu-item-addon.validator';
 
 import { validateRequest } from '@shared/utils/validateRequest';
@@ -21,6 +23,16 @@ import { auth } from '@middlewares/auth.middleware';
 import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
 
 const router = Router();
+
+router.post(
+  '/menu-item-addons/bulk',
+  auth,
+  validateRequest(menuItemAddonHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  validateRequest(createBulkMenuItemAddonSchema),
+  createBulkMenuItemAddonController,
+);
 
 router.post(
   '/menu-item-addons',

@@ -6,6 +6,7 @@ import {
   updateMenuItem,
   deleteMenuItem,
   bulkUpdateMenuItemAvailability,
+  getAddonMappingAggregationV2,
 } from '@modules/menu/menu-items/menu-item.service';
 
 import { API_MESSAGES } from '@shared/constants';
@@ -181,6 +182,30 @@ export const bulkUpdateMenuItemAvailabilityController = async (
   }
 };
 
+export const getAddonMappingController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const addonId = req.query.addonId as string;
+    // const data = await getAddonMapping(brandId, outletId);
+    // const data = await getAddonMappingAggregation(brandId, outletId);
+    // const data = await formatAddonMappingItems(brandId, outletId);
+    const dataV2 = await getAddonMappingAggregationV2(brandId, outletId, addonId);
+
+    res.locals.response = {
+      status: true,
+      code: 200,
+      data: dataV2,
+    };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   createMenuItemController,
   listMenuItemsController,
@@ -189,4 +214,5 @@ export default {
   updateMenuItemController,
   deleteMenuItemController,
   bulkUpdateMenuItemAvailabilityController,
+  getAddonMappingController,
 };
