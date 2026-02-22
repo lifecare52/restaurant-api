@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { commonHeaderSchema } from '@shared/utils/common.validation';
 import { validateRequest } from '@shared/utils/validateRequest';
 
 import { auth } from '@middlewares/auth.middleware';
@@ -16,7 +17,6 @@ import {
 import {
   createVariationSchema,
   updateVariationSchema,
-  variationHeaderSchema,
   variationListQuerySchema,
   variationIdQuerySchema,
 } from './variation.validator';
@@ -26,7 +26,7 @@ const router = Router();
 router.post(
   '/variations',
   auth,
-  validateRequest(variationHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createVariationSchema),
@@ -36,7 +36,7 @@ router.post(
 router.get(
   '/variations',
   auth,
-  validateRequest(variationHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(variationListQuerySchema, 'query'),
@@ -46,7 +46,7 @@ router.get(
 router.get(
   '/variations/active',
   auth,
-  validateRequest(variationHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   listActiveVariationsController,
@@ -55,7 +55,7 @@ router.get(
 router.get(
   '/variations/detail',
   auth,
-  validateRequest(variationHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(variationIdQuerySchema, 'query'),
@@ -65,7 +65,7 @@ router.get(
 router.patch(
   '/variations',
   auth,
-  validateRequest(variationHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(variationIdQuerySchema, 'query'),
@@ -76,7 +76,7 @@ router.patch(
 router.delete(
   '/variations',
   auth,
-  validateRequest(variationHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(variationIdQuerySchema, 'query'),

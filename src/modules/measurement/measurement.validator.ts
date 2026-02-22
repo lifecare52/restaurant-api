@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-const objectId = Joi.string().length(24).hex();
+import { objectId } from '@shared/utils/common.validation';
 
 export const createMeasurementSchema = Joi.object({
   name: Joi.string().trim().required(),

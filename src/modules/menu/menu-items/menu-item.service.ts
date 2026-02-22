@@ -25,8 +25,8 @@ import { getVariation, listActiveVariations } from '@modules/menu/variations/var
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
-import CategoryEntity from '../category/category.model';
 
+import CategoryEntity from '../category/category.model';
 
 export const createMenuItem = async (brandId: string, outletId: string, dto: MenuItemCreateDTO) => {
   const brand = await getBrandById(brandId);
@@ -177,10 +177,11 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
         ),
       );
     }
-    
+
     // Format response to nest measurement config
     if (result.isMeasurementBased && result.measurementId) {
-      const { measurementId, rate, baseValue, minValue, maxValue, stepValue, ...rest } = result as any;
+      const { measurementId, rate, baseValue, minValue, maxValue, stepValue, ...rest } =
+        result as any;
       result = {
         ...rest,
         measurementConfig: {
@@ -193,7 +194,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
         },
       };
     }
-    
+
     return result;
   } catch (err) {
     const e = err as { code?: number };
@@ -315,7 +316,7 @@ const buildMenuItemNested = async (
   }
 
   const base = item?.toObject ? item.toObject() : (item as unknown as Record<string, unknown>);
-  
+
   // Format measurement config
   if (base.isMeasurementBased && base.measurementId) {
     const { measurementId, rate, baseValue, minValue, maxValue, stepValue, ...rest } = base as any;

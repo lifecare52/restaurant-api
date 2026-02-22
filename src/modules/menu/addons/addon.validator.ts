@@ -1,13 +1,7 @@
 import Joi from 'joi';
 
 import { DIETARIES } from '@shared/enum';
-
-const objectId = Joi.string().length(24).hex();
-
-export const addonHeaderSchema = Joi.object({
-  'brand-id': objectId.required(),
-  'outlet-id': objectId.required(),
-});
+import { objectId } from '@shared/utils/common.validation';
 
 export const createAddonSchema = Joi.object({
   name: Joi.string().trim().min(2).max(100).required(),

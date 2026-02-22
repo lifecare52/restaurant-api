@@ -1,13 +1,7 @@
 import Joi from 'joi';
 
 import { SORT_ORDERS } from '@shared/enum';
-
-const objectId = Joi.string().length(24).hex();
-
-export const menuItemVariantHeaderSchema = Joi.object({
-  'brand-id': objectId.required(),
-  'outlet-id': objectId.required(),
-});
+import { objectId } from '@shared/utils/common.validation';
 
 const measurementConfigSchema = Joi.object({
   measurementId: objectId.required(),

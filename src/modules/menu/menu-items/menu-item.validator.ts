@@ -1,8 +1,7 @@
 import Joi from 'joi';
 
 import { DIETARIES } from '@shared/enum';
-
-const objectId = Joi.string().length(24).hex();
+import { objectId } from '@shared/utils/common.validation';
 
 const measurementConfigSchema = Joi.object({
   measurementId: objectId.required(),
@@ -153,11 +152,6 @@ export const updateMenuItemSchema = Joi.object({
 
   isActive: Joi.boolean(),
 });
-
-export const menuItemHeaderSchema = Joi.object({
-  'brand-id': objectId.required(),
-  'outlet-id': objectId.required(),
-}).unknown(true);
 
 export const menuItemListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),

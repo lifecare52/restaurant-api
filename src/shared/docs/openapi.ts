@@ -19,6 +19,89 @@ export const getOpenApiSpec = () => {
         outletIdHeader: { type: 'apiKey', in: 'header', name: 'outlet-id' },
       },
       schemas: {
+        Zone: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            name: { type: 'string' },
+            isActive: { type: 'boolean' },
+            isDelete: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+          required: ['_id', 'brandId', 'outletId', 'name', 'isActive', 'isDelete'],
+        },
+        CreateZoneRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            isActive: { type: 'boolean', default: true },
+          },
+          required: ['name'],
+        },
+        UpdateZoneRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            isActive: { type: 'boolean' },
+          },
+        },
+        Table: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            zoneId: { type: 'string' },
+            name: { type: 'string' },
+            capacity: { type: 'number' },
+            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            isActive: { type: 'boolean' },
+            isDelete: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+          required: [
+            '_id',
+            'brandId',
+            'outletId',
+            'name',
+            'capacity',
+            'status',
+            'isActive',
+            'isDelete',
+          ],
+        },
+        CreateTableRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            capacity: { type: 'number', minimum: 1 },
+            zoneId: { type: 'string' },
+            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            isActive: { type: 'boolean', default: true },
+          },
+          required: ['name'],
+        },
+        UpdateTableRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            capacity: { type: 'number', minimum: 1 },
+            zoneId: { type: 'string', nullable: true },
+            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            isActive: { type: 'boolean' },
+          },
+        },
+        UpdateTableStatusRequest: {
+          type: 'object',
+          properties: {
+            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+          },
+          required: ['status'],
+        },
         ApiError: {
           type: 'object',
           properties: {
@@ -3423,6 +3506,286 @@ export const getOpenApiSpec = () => {
           },
         },
       },
+      '/api/v1/zones': {
+        post: {
+          tags: ['Zones'],
+          summary: 'Create a new zone',
+          description:
+            'Mandatory headers: brand-id, outlet-id (set via Authorize). Requires ADMIN or OWNER role.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CreateZoneRequest' } },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Created',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            409: {
+              description: 'Conflict',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        get: {
+          tags: ['Zones'],
+          summary: 'List zones',
+          description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'page', in: 'query', required: false, schema: { type: 'number', default: 1 } },
+            {
+              name: 'limit',
+              in: 'query',
+              required: false,
+              schema: { type: 'number', default: 20 },
+            },
+            { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'isActive', in: 'query', required: false, schema: { type: 'boolean' } },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string' } },
+            {
+              name: 'order',
+              in: 'query',
+              required: false,
+              schema: { type: 'string', enum: ['ASC', 'DESC'] },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        patch: {
+          tags: ['Zones'],
+          summary: 'Update zone',
+          description: 'Mandatory headers: brand-id, outlet-id. Requires ADMIN or OWNER role.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'zoneId', in: 'query', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateZoneRequest' } },
+            },
+          },
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        delete: {
+          tags: ['Zones'],
+          summary: 'Delete zone',
+          description: 'Mandatory headers: brand-id, outlet-id. Requires ADMIN or OWNER role.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'zoneId', in: 'query', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/zones/detail': {
+        get: {
+          tags: ['Zones'],
+          summary: 'Get zone detail',
+          description: 'Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'zoneId', in: 'query', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/tables': {
+        post: {
+          tags: ['Tables'],
+          summary: 'Create a new table',
+          description: 'Mandatory headers: brand-id, outlet-id. Requires ADMIN or OWNER role.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CreateTableRequest' } },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Created',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        get: {
+          tags: ['Tables'],
+          summary: 'List tables',
+          description: 'Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'page', in: 'query', required: false, schema: { type: 'number', default: 1 } },
+            {
+              name: 'limit',
+              in: 'query',
+              required: false,
+              schema: { type: 'number', default: 20 },
+            },
+            { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'isActive', in: 'query', required: false, schema: { type: 'boolean' } },
+            { name: 'zoneId', in: 'query', required: false, schema: { type: 'string' } },
+            {
+              name: 'status',
+              in: 'query',
+              required: false,
+              schema: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            },
+            { name: 'column', in: 'query', required: false, schema: { type: 'string' } },
+            {
+              name: 'order',
+              in: 'query',
+              required: false,
+              schema: { type: 'string', enum: ['ASC', 'DESC'] },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        patch: {
+          tags: ['Tables'],
+          summary: 'Update table',
+          description: 'Mandatory headers: brand-id, outlet-id. Requires ADMIN or OWNER role.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateTableRequest' } },
+            },
+          },
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        delete: {
+          tags: ['Tables'],
+          summary: 'Delete table',
+          description: 'Mandatory headers: brand-id, outlet-id. Requires ADMIN or OWNER role.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/tables/detail': {
+        get: {
+          tags: ['Tables'],
+          summary: 'Get table detail',
+          description: 'Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/tables/status': {
+        patch: {
+          tags: ['Tables'],
+          summary: 'Update table status',
+          description:
+            'Mandatory headers: brand-id, outlet-id. Update table status to AVAILABLE, OCCUPIED, or RESERVED.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateTableStatusRequest' },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
       '/api/v1/menu/menu-item-addons/detail': {
         get: {
           tags: ['Menu-Item-Addons'],
@@ -3450,5 +3813,6 @@ export const getOpenApiSpec = () => {
       },
     },
   };
+
   return spec;
 };

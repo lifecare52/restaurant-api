@@ -1,6 +1,7 @@
+import type { MeasurementConfig } from '@modules/menu/menu-items/menu-item.types';
+
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
-import type { MeasurementConfig } from '@modules/menu/menu-items/menu-item.types';
 import type { Types } from 'mongoose';
 
 export interface MenuItemVariantCreateDTO {

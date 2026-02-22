@@ -6,7 +6,9 @@ import measurementRoutes from '@modules/measurement/measurement.route';
 import menuRoutes from '@modules/menu/menu.route';
 import metaRoutes from '@modules/meta/meta.route';
 import outletRoutes from '@modules/outlet/outlet.route';
+import tableRoutes from '@modules/table/table.route';
 import userRoutes from '@modules/user/user.route';
+import zoneRoutes from '@modules/zone/zone.route';
 
 import { getOpenApiSpec } from '@shared/docs/openapi';
 
@@ -32,6 +34,8 @@ export const createApp = (): express.Express => {
   app.use('/api/v1/users', userRoutes);
   app.use('/api/v1/measurements', measurementRoutes);
   app.use('/api/v1/menu', menuRoutes);
+  app.use('/api/v1/zones', zoneRoutes);
+  app.use('/api/v1/tables', tableRoutes);
   app.use(responseMiddleware);
   app.use(notFoundHandler);
   app.use(errorHandler);

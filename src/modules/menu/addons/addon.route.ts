@@ -9,13 +9,13 @@ import {
   deleteAddonController,
 } from '@modules/menu/addons/addon.controller';
 import {
-  addonHeaderSchema,
   createAddonSchema,
   updateAddonSchema,
   addonListQuerySchema,
   addonIdQuerySchema,
 } from '@modules/menu/addons/addon.validator';
 
+import { commonHeaderSchema } from '@shared/utils/common.validation';
 import { validateRequest } from '@shared/utils/validateRequest';
 
 import { auth } from '@middlewares/auth.middleware';
@@ -26,7 +26,7 @@ const router = Router();
 router.post(
   '/addons',
   auth,
-  validateRequest(addonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createAddonSchema),
@@ -36,7 +36,7 @@ router.post(
 router.get(
   '/addons',
   auth,
-  validateRequest(addonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(addonListQuerySchema, 'query'),
@@ -46,7 +46,7 @@ router.get(
 router.get(
   '/addons/active',
   auth,
-  validateRequest(addonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   listActiveAddonsController,
@@ -55,7 +55,7 @@ router.get(
 router.get(
   '/addons/detail',
   auth,
-  validateRequest(addonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(addonIdQuerySchema, 'query'),
@@ -65,7 +65,7 @@ router.get(
 router.patch(
   '/addons',
   auth,
-  validateRequest(addonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(addonIdQuerySchema, 'query'),
@@ -76,7 +76,7 @@ router.patch(
 router.delete(
   '/addons',
   auth,
-  validateRequest(addonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(addonIdQuerySchema, 'query'),

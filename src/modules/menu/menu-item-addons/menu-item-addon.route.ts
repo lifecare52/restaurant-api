@@ -9,7 +9,6 @@ import {
   createBulkMenuItemAddonController,
 } from '@modules/menu/menu-item-addons/menu-item-addon.controller';
 import {
-  menuItemAddonHeaderSchema,
   createMenuItemAddonSchema,
   updateMenuItemAddonSchema,
   menuItemAddonListQuerySchema,
@@ -17,6 +16,7 @@ import {
   createBulkMenuItemAddonSchema,
 } from '@modules/menu/menu-item-addons/menu-item-addon.validator';
 
+import { commonHeaderSchema } from '@shared/utils/common.validation';
 import { validateRequest } from '@shared/utils/validateRequest';
 
 import { auth } from '@middlewares/auth.middleware';
@@ -27,7 +27,7 @@ const router = Router();
 router.post(
   '/menu-item-addons/bulk',
   auth,
-  validateRequest(menuItemAddonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createBulkMenuItemAddonSchema),
@@ -37,7 +37,7 @@ router.post(
 router.post(
   '/menu-item-addons',
   auth,
-  validateRequest(menuItemAddonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createMenuItemAddonSchema),
@@ -47,7 +47,7 @@ router.post(
 router.get(
   '/menu-item-addons',
   auth,
-  validateRequest(menuItemAddonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemAddonListQuerySchema, 'query'),
@@ -57,7 +57,7 @@ router.get(
 router.get(
   '/menu-item-addons/detail',
   auth,
-  validateRequest(menuItemAddonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemAddonIdQuerySchema, 'query'),
@@ -67,7 +67,7 @@ router.get(
 router.patch(
   '/menu-item-addons',
   auth,
-  validateRequest(menuItemAddonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemAddonIdQuerySchema, 'query'),
@@ -78,7 +78,7 @@ router.patch(
 router.delete(
   '/menu-item-addons',
   auth,
-  validateRequest(menuItemAddonHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemAddonIdQuerySchema, 'query'),

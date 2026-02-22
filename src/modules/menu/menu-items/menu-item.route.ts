@@ -1,5 +1,6 @@
 import { Router } from 'express';
 
+import { commonHeaderSchema } from '@shared/utils/common.validation';
 import { validateRequest } from '@shared/utils/validateRequest';
 
 import { auth } from '@middlewares/auth.middleware';
@@ -20,7 +21,6 @@ import {
   updateMenuItemSchema,
   menuItemListQuerySchema,
   menuItemIdQuerySchema,
-  menuItemHeaderSchema,
   bulkUpdateMenuItemAvailabilitySchema,
   addonMappingQuerySchema,
 } from './menu-item.validator';
@@ -30,7 +30,7 @@ const router = Router();
 router.post(
   '/',
   auth,
-  validateRequest(menuItemHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createMenuItemSchema),
@@ -40,7 +40,7 @@ router.post(
 router.get(
   '/addon-mapping',
   auth,
-  validateRequest(menuItemHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(addonMappingQuerySchema, 'query'),
@@ -50,7 +50,7 @@ router.get(
 router.get(
   '/',
   auth,
-  validateRequest(menuItemHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemListQuerySchema, 'query'),
@@ -60,7 +60,7 @@ router.get(
 router.get(
   '/category-wise',
   auth,
-  validateRequest(menuItemHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   listMenuItemsCategoryWiseController,
@@ -69,7 +69,7 @@ router.get(
 router.get(
   '/detail',
   auth,
-  validateRequest(menuItemHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemIdQuerySchema, 'query'),
@@ -79,7 +79,7 @@ router.get(
 router.patch(
   '/',
   auth,
-  validateRequest(menuItemHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemIdQuerySchema, 'query'),
@@ -90,7 +90,7 @@ router.patch(
 router.delete(
   '/',
   auth,
-  validateRequest(menuItemHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemIdQuerySchema, 'query'),
@@ -100,7 +100,7 @@ router.delete(
 router.patch(
   '/availability',
   auth,
-  validateRequest(menuItemHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(bulkUpdateMenuItemAvailabilitySchema),

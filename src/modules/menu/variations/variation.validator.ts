@@ -2,12 +2,7 @@ import Joi from 'joi';
 
 import { VARIATION_DEPARTMENTS } from '@modules/menu/variations/variation.types';
 
-const objectId = Joi.string().length(24).hex();
-
-export const variationHeaderSchema = Joi.object({
-  'brand-id': objectId.required(),
-  'outlet-id': objectId.required(),
-});
+import { objectId } from '@shared/utils/common.validation';
 
 export const createVariationSchema = Joi.object({
   name: Joi.string().trim().min(2).required(),

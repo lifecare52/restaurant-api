@@ -10,11 +10,11 @@ import {
 import {
   createMenuItemVariantSchema,
   updateMenuItemVariantSchema,
-  menuItemVariantHeaderSchema,
   menuItemVariantListQuerySchema,
   menuItemVariantIdQuerySchema,
 } from '@modules/menu/menu-item-variants/menu-item-variant.validator';
 
+import { commonHeaderSchema } from '@shared/utils/common.validation';
 import { validateRequest } from '@shared/utils/validateRequest';
 
 import { auth } from '@middlewares/auth.middleware';
@@ -25,7 +25,7 @@ const router = Router();
 router.post(
   '/menu-item-variants',
   auth,
-  validateRequest(menuItemVariantHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createMenuItemVariantSchema),
@@ -35,7 +35,7 @@ router.post(
 router.get(
   '/menu-item-variants',
   auth,
-  validateRequest(menuItemVariantHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemVariantListQuerySchema, 'query'),
@@ -45,7 +45,7 @@ router.get(
 router.get(
   '/menu-item-variants/detail',
   auth,
-  validateRequest(menuItemVariantHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemVariantIdQuerySchema, 'query'),
@@ -55,7 +55,7 @@ router.get(
 router.patch(
   '/menu-item-variants',
   auth,
-  validateRequest(menuItemVariantHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemVariantIdQuerySchema, 'query'),
@@ -66,7 +66,7 @@ router.patch(
 router.delete(
   '/menu-item-variants',
   auth,
-  validateRequest(menuItemVariantHeaderSchema, 'headers'),
+  validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemVariantIdQuerySchema, 'query'),
