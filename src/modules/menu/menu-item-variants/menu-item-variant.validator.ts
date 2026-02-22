@@ -9,11 +9,28 @@ export const menuItemVariantHeaderSchema = Joi.object({
   'outlet-id': objectId.required(),
 });
 
+const measurementConfigSchema = Joi.object({
+  measurementId: objectId.required(),
+  rate: Joi.number().min(0).optional(),
+  baseValue: Joi.number().min(0).optional(),
+  minValue: Joi.number().min(0).optional(),
+  maxValue: Joi.number().min(0).optional(),
+  stepValue: Joi.number().min(0).optional(),
+});
+
 export const createMenuItemVariantSchema = Joi.object({
   menuItemId: objectId.required(),
   variationId: objectId.required(),
   basePrice: Joi.number().min(0).required(),
   costPrice: Joi.number().min(0),
+
+  isMeasurementBased: Joi.boolean().default(false),
+  measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
+    is: true,
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
+
   isActive: Joi.boolean().default(true),
   isDefault: Joi.boolean().default(false),
 });
@@ -21,6 +38,14 @@ export const createMenuItemVariantSchema = Joi.object({
 export const updateMenuItemVariantSchema = Joi.object({
   basePrice: Joi.number().min(0),
   costPrice: Joi.number().min(0),
+
+  isMeasurementBased: Joi.boolean(),
+  measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
+    is: true,
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
+
   isActive: Joi.boolean(),
   isDefault: Joi.boolean(),
 });

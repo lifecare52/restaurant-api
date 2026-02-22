@@ -36,7 +36,9 @@ export const userListQuerySchema = Joi.object({
   limit: Joi.number().min(1).max(100).default(20),
   searchText: Joi.string().allow(''),
   role: Joi.string().valid('PARTNER', 'STAFF'),
-  column: Joi.string().valid('name', 'username', 'email', 'createdAt', 'updatedAt', 'isActive').default('createdAt'),
+  column: Joi.string()
+    .valid('name', 'username', 'email', 'createdAt', 'updatedAt', 'isActive')
+    .default('createdAt'),
   order: Joi.string().valid('ASC', 'DESC').default('DESC'),
 });
 

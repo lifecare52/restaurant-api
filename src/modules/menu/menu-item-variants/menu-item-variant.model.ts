@@ -12,6 +12,15 @@ const MenuItemVariantSchema = new Schema<MenuItemVariant>(
     variationId: { type: Schema.Types.ObjectId, required: true, index: true },
     basePrice: { type: Number, required: true, min: 0 },
     costPrice: { type: Number, min: 0, default: 0 },
+
+    isMeasurementBased: { type: Boolean, default: false },
+    measurementId: { type: Schema.Types.ObjectId, ref: 'Measurement' },
+    rate: { type: Number },
+    baseValue: { type: Number },
+    minValue: { type: Number },
+    maxValue: { type: Number },
+    stepValue: { type: Number },
+
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
     isDefault: { type: Boolean, default: false },

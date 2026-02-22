@@ -1,4 +1,5 @@
 import type { Dietary } from '@shared/enum';
+import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 import type { Types } from 'mongoose';
 
@@ -11,6 +12,15 @@ export interface MenuItemAddonInputCreate {
 
 export interface MenuItemAddonInputUpdate extends MenuItemAddonInputCreate {
   allowedItems?: string[];
+}
+
+export interface MeasurementConfig {
+  measurementId: string;
+  rate?: number;
+  baseValue?: number;
+  minValue?: number;
+  maxValue?: number;
+  stepValue?: number;
 }
 
 export interface MenuItemCreateDTO {
@@ -27,15 +37,27 @@ export interface MenuItemCreateDTO {
   takeAway?: boolean;
   dineIn?: boolean;
 
+  // Measurement fields
+  isMeasurementBased?: boolean;
+  measurementConfig?: MeasurementConfig;
+
   variations?: Array<{
     variationId: string;
     basePrice: number;
     costPrice?: number;
+    // Measurement fields for variation
+    isMeasurementBased?: boolean;
+    measurementConfig?: MeasurementConfig;
+
     addons?: MenuItemAddonInputCreate[];
   }>;
   addons?: MenuItemAddonInputCreate[];
 
   isActive?: boolean;
+}
+
+export interface MenuItemListQuery extends PaginationQuery {
+  categoryId?: string;
 }
 
 export interface MenuItem {
@@ -57,6 +79,15 @@ export interface MenuItem {
   takeAway: boolean;
   dineIn: boolean;
 
+  // Measurement fields
+  isMeasurementBased: boolean;
+  measurementId?: Types.ObjectId;
+  rate?: number;
+  baseValue?: number;
+  minValue?: number;
+  maxValue?: number;
+  stepValue?: number;
+
   isActive: boolean;
   isDelete: boolean;
 }
@@ -75,8 +106,18 @@ export interface MenuItemUpdateDTO {
   takeAway?: boolean;
   dineIn?: boolean;
 
+  // Measurement fields
+  isMeasurementBased?: boolean;
+  measurementConfig?: MeasurementConfig;
+
   variations?: Array<{
     variationId: string;
+    basePrice?: number;
+    costPrice?: number;
+    // Measurement fields for variation
+    isMeasurementBased?: boolean;
+    measurementConfig?: MeasurementConfig;
+
     addons?: MenuItemAddonInputUpdate[];
   }>;
   addons?: MenuItemAddonInputUpdate[];

@@ -10,6 +10,7 @@ import {
 } from '@modules/menu/menu-items/menu-item.service';
 
 import { API_MESSAGES } from '@shared/constants';
+import { PaginationQuery } from '@shared/interfaces/pagination';
 
 import type { Request, Response, NextFunction } from 'express';
 
@@ -49,7 +50,7 @@ export const listMenuItemsController = async (req: Request, res: Response, next:
     const result = await listMenuItemsWithNested(
       brandId,
       outletId,
-      req.query as import('@shared/interfaces/pagination').PaginationQuery,
+      req.query as PaginationQuery,
     );
 
     res.locals.response = {

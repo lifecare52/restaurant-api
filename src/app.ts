@@ -2,6 +2,7 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
 import brandRoutes from '@modules/brand/brand.route';
+import measurementRoutes from '@modules/measurement/measurement.route';
 import menuRoutes from '@modules/menu/menu.route';
 import metaRoutes from '@modules/meta/meta.route';
 import outletRoutes from '@modules/outlet/outlet.route';
@@ -29,6 +30,7 @@ export const createApp = (): express.Express => {
   app.use('/api/v1/meta', metaRoutes);
   app.use('/api/v1/brands', outletRoutes);
   app.use('/api/v1/users', userRoutes);
+  app.use('/api/v1/measurements', measurementRoutes);
   app.use('/api/v1/menu', menuRoutes);
   app.use(responseMiddleware);
   app.use(notFoundHandler);

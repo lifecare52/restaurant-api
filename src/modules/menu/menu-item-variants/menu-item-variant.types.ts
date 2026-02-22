@@ -1,5 +1,6 @@
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
+import type { MeasurementConfig } from '@modules/menu/menu-items/menu-item.types';
 import type { Types } from 'mongoose';
 
 export interface MenuItemVariantCreateDTO {
@@ -7,6 +8,11 @@ export interface MenuItemVariantCreateDTO {
   variationId: string;
   basePrice: number;
   costPrice?: number;
+
+  // Measurement fields
+  isMeasurementBased?: boolean;
+  measurementConfig?: MeasurementConfig;
+
   isActive?: boolean;
   isDefault?: boolean;
 }
@@ -14,6 +20,11 @@ export interface MenuItemVariantCreateDTO {
 export interface MenuItemVariantUpdateDTO {
   basePrice?: number;
   costPrice?: number;
+
+  // Measurement fields
+  isMeasurementBased?: boolean;
+  measurementConfig?: MeasurementConfig;
+
   isActive?: boolean;
   isDefault?: boolean;
 }
@@ -38,6 +49,16 @@ export interface MenuItemVariant {
   variationId: Types.ObjectId;
   basePrice: number;
   costPrice?: number;
+
+  // Measurement fields
+  isMeasurementBased: boolean;
+  measurementId?: Types.ObjectId;
+  rate?: number;
+  baseValue?: number;
+  minValue?: number;
+  maxValue?: number;
+  stepValue?: number;
+
   isActive: boolean;
   isDelete: boolean;
   isDefault: boolean;

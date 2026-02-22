@@ -1,8 +1,17 @@
 import Joi from 'joi';
 
-import { DIETARIES, SORT_ORDERS } from '@shared/enum';
+import { DIETARIES } from '@shared/enum';
 
 const objectId = Joi.string().length(24).hex();
+
+const measurementConfigSchema = Joi.object({
+  measurementId: objectId.required(),
+  rate: Joi.number().min(0).optional(),
+  baseValue: Joi.number().min(0).optional(),
+  minValue: Joi.number().min(0).optional(),
+  maxValue: Joi.number().min(0).optional(),
+  stepValue: Joi.number().min(0).optional(),
+});
 
 export const createMenuItemSchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
@@ -22,12 +31,27 @@ export const createMenuItemSchema = Joi.object({
   basePrice: Joi.number().min(0).allow(null).optional(),
   costPrice: Joi.number().min(0).optional(),
 
+  isMeasurementBased: Joi.boolean().default(false),
+  measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
+    is: true,
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
+
   variations: Joi.array()
     .items(
       Joi.object({
         variationId: objectId.required(),
         basePrice: Joi.number().min(0).required(),
         costPrice: Joi.number().min(0).optional(),
+
+        isMeasurementBased: Joi.boolean().default(false),
+        measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
+          is: true,
+          then: Joi.required(),
+          otherwise: Joi.optional(),
+        }),
+
         addons: Joi.array()
           .items(
             Joi.object({
@@ -73,21 +97,42 @@ export const updateMenuItemSchema = Joi.object({
 
   dietary: Joi.string().valid(...DIETARIES),
 
-  basePrice: Joi.number().min(0).allow(null),
-  costPrice: Joi.number().min(0),
+  basePrice: Joi.number().min(0).allow(null).optional(),
+  costPrice: Joi.number().min(0).optional(),
+
+  online: Joi.boolean().default(false),
+  takeAway: Joi.boolean().default(false),
+  dineIn: Joi.boolean().default(false),
+
+  isMeasurementBased: Joi.boolean(),
+  measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
+    is: true,
+    then: Joi.required(),
+    otherwise: Joi.optional(),
+  }),
 
   variations: Joi.array()
     .items(
       Joi.object({
         variationId: objectId.required(),
+        basePrice: Joi.number().min(0).optional(),
+        costPrice: Joi.number().min(0).optional(),
+        // Measurement fields for variation
+        isMeasurementBased: Joi.boolean().optional(),
+        measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
+          is: true,
+          then: Joi.required(),
+          otherwise: Joi.optional(),
+        }),
+
         addons: Joi.array()
           .items(
             Joi.object({
               addonId: objectId.required(),
-              allowedItems: Joi.array().items(objectId).optional(),
               isSingleSelect: Joi.boolean().optional(),
               min: Joi.number().integer().min(0).optional(),
               max: Joi.number().integer().min(0).optional(),
+              allowedItems: Joi.array().items(objectId).optional(),
             }),
           )
           .optional(),
@@ -98,40 +143,33 @@ export const updateMenuItemSchema = Joi.object({
     .items(
       Joi.object({
         addonId: objectId.required(),
-        allowedItems: Joi.array().items(objectId).optional(),
         isSingleSelect: Joi.boolean().optional(),
         min: Joi.number().integer().min(0).optional(),
         max: Joi.number().integer().min(0).optional(),
+        allowedItems: Joi.array().items(objectId).optional(),
       }),
     )
     .optional(),
 
-  online: Joi.boolean().optional(),
-  takeAway: Joi.boolean().optional(),
-  dineIn: Joi.boolean().optional(),
-
   isActive: Joi.boolean(),
-});
-
-export const menuItemListQuerySchema = Joi.object({
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(20),
-  searchText: Joi.string().trim().optional(),
-  column: Joi.string()
-    .valid('name', 'shortCodes', 'dietary', 'basePrice', 'createdAt', 'updatedAt', 'isActive')
-    .default('name'),
-  order: Joi.string()
-    .valid(...SORT_ORDERS)
-    .default('ASC'),
-});
-
-export const menuItemIdQuerySchema = Joi.object({
-  menuItemId: objectId.required(),
 });
 
 export const menuItemHeaderSchema = Joi.object({
   'brand-id': objectId.required(),
   'outlet-id': objectId.required(),
+}).unknown(true);
+
+export const menuItemListQuerySchema = Joi.object({
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).default(20),
+  searchText: Joi.string().allow('').optional(),
+  column: Joi.string().optional(),
+  order: Joi.string().valid('ASC', 'DESC').optional(),
+  categoryId: objectId.optional(),
+});
+
+export const menuItemIdQuerySchema = Joi.object({
+  menuItemId: objectId.required(),
 });
 
 export const bulkUpdateMenuItemAvailabilitySchema = Joi.object({
@@ -144,10 +182,13 @@ export const bulkUpdateMenuItemAvailabilitySchema = Joi.object({
         dineIn: Joi.boolean().required(),
       }),
     )
-    .min(1)
     .required(),
 });
 
 export const addonMappingQuerySchema = Joi.object({
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).default(20),
+  column: Joi.string().optional(),
+  order: Joi.string().valid('ASC', 'DESC').optional(),
   addonId: objectId.optional(),
 });

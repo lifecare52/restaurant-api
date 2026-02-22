@@ -23,15 +23,13 @@ MenuItemAddonSchema.index(
   { brandId: 1, outletId: 1, menuItemId: 1, addonId: 1, menuItemVariantId: 1 },
   {
     unique: true,
-    partialFilterExpression: { isDelete: false, menuItemVariantId: { $exists: false } },
-  },
-);
-
-MenuItemAddonSchema.index(
-  { brandId: 1, outletId: 1, menuItemId: 1, addonId: 1, menuItemVariantId: 1 },
-  {
-    unique: true,
-    partialFilterExpression: { isDelete: false, menuItemVariantId: { $type: 'objectId' } },
+    partialFilterExpression: {
+      isDelete: false,
+      menuItemVariantId: {
+        $exists: false,
+        $type: 'objectId',
+      },
+    },
   },
 );
 

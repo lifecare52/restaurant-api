@@ -39,6 +39,14 @@ const MenuItemSchema = new Schema<MenuItem>(
     basePrice: { type: Number, default: null },
     costPrice: { type: Number, default: 0 },
 
+    isMeasurementBased: { type: Boolean, default: false },
+    measurementId: { type: Schema.Types.ObjectId, ref: 'Measurement' },
+    rate: { type: Number },
+    baseValue: { type: Number },
+    minValue: { type: Number },
+    maxValue: { type: Number },
+    stepValue: { type: Number },
+
     isVariation: { type: Boolean, default: false },
 
     online: { type: Boolean, default: false },

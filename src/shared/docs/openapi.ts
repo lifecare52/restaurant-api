@@ -451,6 +451,18 @@ export const getOpenApiSpec = () => {
           },
           required: ['addonId'],
         },
+        MeasurementConfig: {
+          type: 'object',
+          properties: {
+            measurementId: { type: 'string' },
+            rate: { type: 'number' },
+            baseValue: { type: 'number' },
+            minValue: { type: 'number' },
+            maxValue: { type: 'number' },
+            stepValue: { type: 'number' },
+          },
+          required: ['measurementId'],
+        },
         CreateMenuItemRequest: {
           type: 'object',
           properties: {
@@ -466,6 +478,8 @@ export const getOpenApiSpec = () => {
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
             basePrice: { type: 'number', nullable: true },
             costPrice: { type: 'number' },
+            isMeasurementBased: { type: 'boolean', default: false },
+            measurementConfig: { $ref: '#/components/schemas/MeasurementConfig' },
             variations: {
               type: 'array',
               description: 'If provided, creates per-variation prices and per-variation addons',
@@ -475,6 +489,8 @@ export const getOpenApiSpec = () => {
                   variationId: { type: 'string' },
                   basePrice: { type: 'number', minimum: 0 },
                   costPrice: { type: 'number', minimum: 0 },
+                  isMeasurementBased: { type: 'boolean', default: false },
+                  measurementConfig: { $ref: '#/components/schemas/MeasurementConfig' },
                   addons: {
                     type: 'array',
                     items: {
@@ -512,6 +528,8 @@ export const getOpenApiSpec = () => {
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
             basePrice: { type: 'number', nullable: true },
             costPrice: { type: 'number' },
+            isMeasurementBased: { type: 'boolean' },
+            measurementConfig: { $ref: '#/components/schemas/MeasurementConfig' },
             variations: {
               type: 'array',
               description: 'Optional: provide variation-level addon updates',
@@ -519,6 +537,8 @@ export const getOpenApiSpec = () => {
                 type: 'object',
                 properties: {
                   variationId: { type: 'string' },
+                  isMeasurementBased: { type: 'boolean' },
+                  measurementConfig: { $ref: '#/components/schemas/MeasurementConfig' },
                   addons: {
                     type: 'array',
                     items: { $ref: '#/components/schemas/AddonInputUpdate' },
@@ -638,6 +658,68 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
           },
         },
+        Measurement: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            name: { type: 'string' },
+            measurementType: {
+              type: 'string',
+              enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM'],
+            },
+            unit: { type: 'string' },
+            baseUnit: { type: 'string' },
+            conversionFactor: { type: 'number' },
+            isDecimalAllowed: { type: 'boolean' },
+            isActive: { type: 'boolean' },
+            isDelete: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' },
+          },
+          required: [
+            '_id',
+            'name',
+            'measurementType',
+            'unit',
+            'baseUnit',
+            'conversionFactor',
+            'isActive',
+            'isDelete',
+          ],
+        },
+        CreateMeasurementRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2 },
+            measurementType: {
+              type: 'string',
+              enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM'],
+            },
+            unit: { type: 'string' },
+            baseUnit: { type: 'string' },
+            conversionFactor: { type: 'number', minimum: 0 },
+            isDecimalAllowed: { type: 'boolean', default: true },
+            isActive: { type: 'boolean', default: true },
+          },
+          required: ['name', 'measurementType', 'unit', 'baseUnit'],
+        },
+        UpdateMeasurementRequest: {
+          type: 'object',
+          properties: {
+            measurementId: { type: 'string' },
+            name: { type: 'string', minLength: 2 },
+            measurementType: {
+              type: 'string',
+              enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM'],
+            },
+            unit: { type: 'string' },
+            baseUnit: { type: 'string' },
+            conversionFactor: { type: 'number', minimum: 0 },
+            isDecimalAllowed: { type: 'boolean' },
+            isActive: { type: 'boolean' },
+          },
+          required: ['measurementId'],
+        },
         MenuItemVariant: {
           type: 'object',
           properties: {
@@ -648,6 +730,13 @@ export const getOpenApiSpec = () => {
             variationId: { type: 'string' },
             basePrice: { type: 'number', minimum: 0 },
             costPrice: { type: 'number', minimum: 0 },
+            isMeasurementBased: { type: 'boolean' },
+            measurementId: { type: 'string' },
+            rate: { type: 'number' },
+            baseValue: { type: 'number' },
+            minValue: { type: 'number' },
+            maxValue: { type: 'number' },
+            stepValue: { type: 'number' },
             isActive: { type: 'boolean' },
             isDefault: { type: 'boolean' },
             isDelete: { type: 'boolean' },
@@ -672,6 +761,8 @@ export const getOpenApiSpec = () => {
             variationId: { type: 'string' },
             basePrice: { type: 'number', minimum: 0 },
             costPrice: { type: 'number', minimum: 0 },
+            isMeasurementBased: { type: 'boolean', default: false },
+            measurementConfig: { $ref: '#/components/schemas/MeasurementConfig' },
             isActive: { type: 'boolean', default: true },
             isDefault: { type: 'boolean', default: false },
           },
@@ -682,6 +773,8 @@ export const getOpenApiSpec = () => {
           properties: {
             basePrice: { type: 'number', minimum: 0 },
             costPrice: { type: 'number', minimum: 0 },
+            isMeasurementBased: { type: 'boolean' },
+            measurementConfig: { $ref: '#/components/schemas/MeasurementConfig' },
             isActive: { type: 'boolean' },
             isDefault: { type: 'boolean' },
           },
@@ -1941,6 +2034,248 @@ export const getOpenApiSpec = () => {
             },
             403: {
               description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/measurements': {
+        get: {
+          tags: ['Measurements'],
+          summary: 'List measurements',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: 'page',
+              in: 'query',
+              required: false,
+              schema: { type: 'number', minimum: 1, default: 1 },
+            },
+            {
+              name: 'limit',
+              in: 'query',
+              required: false,
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+            },
+            {
+              name: 'searchText',
+              in: 'query',
+              required: false,
+              schema: { type: 'string' },
+            },
+            {
+              name: 'measurementType',
+              in: 'query',
+              required: false,
+              schema: {
+                type: 'string',
+                enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM'],
+              },
+            },
+            {
+              name: 'isActive',
+              in: 'query',
+              required: false,
+              schema: { type: 'boolean' },
+            },
+            {
+              name: 'column',
+              in: 'query',
+              required: false,
+              schema: { type: 'string', default: 'createdAt' },
+            },
+            {
+              name: 'order',
+              in: 'query',
+              required: false,
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'DESC' },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/Measurement' },
+                          },
+                          total: { type: 'number' },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        post: {
+          tags: ['Measurements'],
+          summary: 'Create measurement',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/CreateMeasurementRequest' },
+              },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Created',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/Measurement' },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        patch: {
+          tags: ['Measurements'],
+          summary: 'Update measurement',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateMeasurementRequest' },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/Measurement' },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+        delete: {
+          tags: ['Measurements'],
+          summary: 'Delete measurement',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: 'measurementId',
+              in: 'query',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Deleted',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            403: {
+              description: 'Forbidden',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/measurements/detail': {
+        get: {
+          tags: ['Measurements'],
+          summary: 'Get measurement by ID',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            {
+              name: 'measurementId',
+              in: 'query',
+              required: true,
+              schema: { type: 'string' },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/Measurement' },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+            404: {
+              description: 'Not Found',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
               },
