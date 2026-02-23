@@ -9,17 +9,8 @@ export const createMenuItemAddonSchema = Joi.object({
   allowedItemIds: Joi.array().items(objectId).optional(),
   menuItemVariantId: objectId.optional(),
   isSingleSelect: Joi.boolean().optional(),
-  min: Joi.number()
-    .integer()
-    .min(0)
-    .when('max', { is: Joi.exist(), then: Joi.number().integer().min(0).max(Joi.ref('max')) })
-    .when('isSingleSelect', { is: true, then: Joi.number().valid(0, 1) })
-    .optional(),
-  max: Joi.number()
-    .integer()
-    .min(1)
-    .when('isSingleSelect', { is: true, then: Joi.number().valid(1) })
-    .optional(),
+  min: Joi.number().integer().min(0).optional(),
+  max: Joi.number().integer().optional(),
   isActive: Joi.boolean().default(true),
 });
 
@@ -27,17 +18,8 @@ export const createBulkMenuItemAddonSchema = Joi.object({
   addonId: objectId.required(),
   allowedItemsId: Joi.array().items(objectId).optional(),
   isSingleSelect: Joi.boolean().optional(),
-  min: Joi.number()
-    .integer()
-    .min(0)
-    .when('max', { is: Joi.exist(), then: Joi.number().integer().min(0).max(Joi.ref('max')) })
-    .when('isSingleSelect', { is: true, then: Joi.number().valid(0, 1) })
-    .optional(),
-  max: Joi.number()
-    .integer()
-    .min(1)
-    .when('isSingleSelect', { is: true, then: Joi.number().valid(1) })
-    .optional(),
+  min: Joi.number().integer().min(0).optional(),
+  max: Joi.number().integer().optional(),
   isActive: Joi.boolean().default(true),
   items: Joi.array()
     .items(
@@ -53,17 +35,8 @@ export const createBulkMenuItemAddonSchema = Joi.object({
 export const updateMenuItemAddonSchema = Joi.object({
   allowedItemIds: Joi.array().items(objectId).optional(),
   isSingleSelect: Joi.boolean().optional(),
-  min: Joi.number()
-    .integer()
-    .min(0)
-    .when('max', { is: Joi.exist(), then: Joi.number().integer().min(0).max(Joi.ref('max')) })
-    .when('isSingleSelect', { is: true, then: Joi.number().valid(0, 1) })
-    .optional(),
-  max: Joi.number()
-    .integer()
-    .min(1)
-    .when('isSingleSelect', { is: true, then: Joi.number().valid(1) })
-    .optional(),
+  min: Joi.number().integer().min(0).optional(),
+  max: Joi.number().integer().optional(),
   isActive: Joi.boolean(),
 });
 

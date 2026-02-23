@@ -10,17 +10,16 @@ import type {
 
 export const createMeasurement = async (dto: MeasurementCreateDTO) => {
   const measurement = new MeasurementEntity(dto);
-  return measurement.save();
+  await measurement.save();
+  const obj = measurement.toObject();
+  const { isDelete, createdAt, updatedAt, isActive, ...rest } = obj;
+  return rest;
 };
 
 export const listMeasurements = async (query: MeasurementListQuery) => {
-  const { searchText, column = 'name', order = 'ASC', isActive } = query;
+  const { searchText, column = 'name', order = 'ASC' } = query;
 
-  const match: any = { isDelete: false };
-
-  if (isActive !== undefined) {
-    match.isActive = isActive;
-  }
+  const match: any = { isDelete: false, isActive: true };
 
   if (searchText) {
     match.$or = [
@@ -33,7 +32,9 @@ export const listMeasurements = async (query: MeasurementListQuery) => {
   const sort: any = {};
   sort[column] = order === 'ASC' ? 1 : -1;
 
-  const items = await MeasurementEntity.find(match).sort(sort);
+  const items = await MeasurementEntity.find(match)
+    .select('-isDelete -createdAt -updatedAt -isActive')
+    .sort(sort);
 
   return { items };
 };
@@ -42,7 +43,8 @@ export const getMeasurement = async (measurementId: string) => {
   return MeasurementEntity.findOne({
     _id: new Types.ObjectId(measurementId),
     isDelete: false,
-  });
+    isActive: true,
+  }).select('-isDelete -createdAt -updatedAt -isActive');
 };
 
 export const updateMeasurement = async (measurementId: string, dto: MeasurementUpdateDTO) => {
@@ -50,7 +52,7 @@ export const updateMeasurement = async (measurementId: string, dto: MeasurementU
     { _id: new Types.ObjectId(measurementId) },
     { $set: dto },
     { new: true },
-  );
+  ).select('-isDelete -createdAt -updatedAt -isActive');
 };
 
 export const deleteMeasurement = async (measurementId: string) => {
@@ -58,7 +60,7 @@ export const deleteMeasurement = async (measurementId: string) => {
     { _id: new Types.ObjectId(measurementId) },
     { $set: { isDelete: true } },
     { new: true },
-  );
+  ).select('-isDelete -createdAt -updatedAt -isActive');
 };
 
 export default {

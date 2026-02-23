@@ -29,7 +29,6 @@ export const measurementListQuerySchema = Joi.object({
     .valid('name', 'measurementType', 'unit', 'baseUnit', 'createdAt', 'updatedAt', 'isActive')
     .default('name'),
   order: Joi.string().valid('ASC', 'DESC').default('ASC'),
-  isActive: Joi.boolean().optional(),
 });
 
 export const measurementIdSchema = Joi.object({

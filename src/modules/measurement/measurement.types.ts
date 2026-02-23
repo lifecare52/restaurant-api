@@ -41,5 +41,4 @@ export interface MeasurementListQuery {
   searchText?: string;
   column?: string;
   order?: 'ASC' | 'DESC';
-  isActive?: boolean;
 }

@@ -16,7 +16,6 @@ export const createMenuItemSchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
   shortCodes: Joi.array()
     .items(Joi.string().trim().min(1))
-    .min(1)
     .max(2)
     .unique((a, b) => a.toLowerCase() === b.toLowerCase())
     .messages({ 'array.unique': 'shortCodes must be unique (case-insensitive)' })

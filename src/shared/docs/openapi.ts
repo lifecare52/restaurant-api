@@ -2146,12 +2146,6 @@ export const getOpenApiSpec = () => {
               },
             },
             {
-              name: 'isActive',
-              in: 'query',
-              required: false,
-              schema: { type: 'boolean' },
-            },
-            {
               name: 'column',
               in: 'query',
               required: false,
