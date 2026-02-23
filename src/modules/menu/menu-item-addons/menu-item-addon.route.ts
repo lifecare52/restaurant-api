@@ -7,6 +7,7 @@ import {
   updateMenuItemAddonController,
   deleteMenuItemAddonController,
   createBulkMenuItemAddonController,
+  getAddonMappingController,
 } from '@modules/menu/menu-item-addons/menu-item-addon.controller';
 import {
   createMenuItemAddonSchema,
@@ -14,6 +15,7 @@ import {
   menuItemAddonListQuerySchema,
   menuItemAddonIdQuerySchema,
   createBulkMenuItemAddonSchema,
+  addonMappingQuerySchema,
 } from '@modules/menu/menu-item-addons/menu-item-addon.validator';
 
 import { commonHeaderSchema } from '@shared/utils/common.validation';
@@ -42,6 +44,16 @@ router.post(
   requireOutletAccess,
   validateRequest(createMenuItemAddonSchema),
   createMenuItemAddonController,
+);
+
+router.get(
+  '/menu-item-addons/addon-mapping',
+  auth,
+  validateRequest(commonHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  validateRequest(addonMappingQuerySchema, 'query'),
+  getAddonMappingController,
 );
 
 router.get(

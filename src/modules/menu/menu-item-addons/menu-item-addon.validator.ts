@@ -83,3 +83,7 @@ export const menuItemAddonListQuerySchema = Joi.object({
     .valid(...SORT_ORDERS)
     .default(SortOrder.ASC),
 });
+
+export const addonMappingQuerySchema = Joi.object({
+  addonId: objectId.optional(),
+});

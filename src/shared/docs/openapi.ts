@@ -2055,9 +2055,9 @@ export const getOpenApiSpec = () => {
           },
         },
       },
-      '/api/v1/menu/menu-items/addon-mapping': {
+      '/api/v1/menu/menu-item-addons/addon-mapping': {
         get: {
-          tags: ['Menu-Items'],
+          tags: ['Menu-Item-Addons'],
           summary: 'Get addon mapping structure',
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],

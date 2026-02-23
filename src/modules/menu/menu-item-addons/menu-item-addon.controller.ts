@@ -6,6 +6,7 @@ import {
   deleteMenuItemAddon,
   createBulkMenuItemAddons,
 } from '@modules/menu/menu-item-addons/menu-item-addon.service';
+import { getAddonMappingAggregationV2 } from '@modules/menu/menu-items/menu-item.service';
 import type {
   MenuItemAddonCreateDTO,
   MenuItemAddonFilterQuery,
@@ -181,10 +182,32 @@ export const deleteMenuItemAddonController = async (
   }
 };
 
+export const getAddonMappingController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const addonId = req.query.addonId as string;
+    const dataV2 = await getAddonMappingAggregationV2(brandId, outletId, addonId);
+
+    res.locals.response = {
+      status: true,
+      code: 200,
+      data: dataV2,
+    };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
 export default {
   createMenuItemAddonController,
   listMenuItemAddonsController,
   getMenuItemAddonController,
   updateMenuItemAddonController,
   deleteMenuItemAddonController,
+  getAddonMappingController,
 };

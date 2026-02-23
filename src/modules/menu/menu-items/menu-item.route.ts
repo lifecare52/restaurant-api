@@ -14,7 +14,6 @@ import {
   listMenuItemsCategoryWiseController,
   updateMenuItemController,
   bulkUpdateMenuItemAvailabilityController,
-  getAddonMappingController,
 } from './menu-item.controller';
 import {
   createMenuItemSchema,
@@ -22,7 +21,6 @@ import {
   menuItemListQuerySchema,
   menuItemIdQuerySchema,
   bulkUpdateMenuItemAvailabilitySchema,
-  addonMappingQuerySchema,
 } from './menu-item.validator';
 
 const router = Router();
@@ -37,15 +35,7 @@ router.post(
   createMenuItemController,
 );
 
-router.get(
-  '/addon-mapping',
-  auth,
-  validateRequest(commonHeaderSchema, 'headers'),
-  requireBrandAccess,
-  requireOutletAccess,
-  validateRequest(addonMappingQuerySchema, 'query'),
-  getAddonMappingController,
-);
+
 
 router.get(
   '/',
