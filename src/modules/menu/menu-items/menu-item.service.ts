@@ -430,12 +430,12 @@ export const updateMenuItem = async (
     const normalizeAddonUpdate = (
       arr:
         | Array<{
-            addonId: string;
-            allowedItems?: string[];
-            isSingleSelect?: boolean;
-            min?: number;
-            max?: number;
-          }>
+          addonId: string;
+          allowedItems?: string[];
+          isSingleSelect?: boolean;
+          min?: number;
+          max?: number;
+        }>
         | undefined,
     ) => {
       return (arr || []).map(a => ({
@@ -701,149 +701,6 @@ export const getAddonMapping = async (brandId: string, outletId: string) => {
   }));
 };
 
-// export const getAddonMappingAggregation = async (
-//   brandId: string,
-//   outletId: string,
-// ) => {
-//   const brandObjectId = new Types.ObjectId(brandId);
-//   const outletObjectId = new Types.ObjectId(outletId);
-
-//   return CategoryEntity.aggregate([
-//     /* ---------------- CATEGORY FILTER ---------------- */
-
-//     {
-//       $match: {
-//         brandId: brandObjectId,
-//         outletId: outletObjectId,
-//         isActive: true,
-//         isDelete: false,
-//       },
-//     },
-
-//     /* ---------------- MENU ITEMS ---------------- */
-
-//     {
-//       $lookup: {
-//         from: 'menu_items',
-//         let: { categoryId: '$_id' },
-//         pipeline: [
-//           {
-//             $match: {
-//               $expr: {
-//                 $and: [
-//                   { $eq: ['$categoryId', '$$categoryId'] },
-//                   { $eq: ['$brandId', brandObjectId] },
-//                   { $eq: ['$outletId', outletObjectId] },
-//                   { $eq: ['$isActive', true] },
-//                   { $eq: ['$isDelete', false] },
-//                 ],
-//               },
-//             },
-//           },
-
-//           /* ---------- VARIANTS ---------- */
-
-//           {
-//             $lookup: {
-//               from: 'menu_item_variants',
-//               localField: '_id',
-//               foreignField: 'menuItemId',
-//               as: 'variants',
-//             },
-//           },
-
-//           /* ---------- VARIATION NAME ---------- */
-
-//           {
-//             $lookup: {
-//               from: 'variations',
-//               localField: 'variants.variationId',
-//               foreignField: '_id',
-//               as: 'variationDocs',
-//             },
-//           },
-
-//           /* ---------- ITEM LEVEL ADDONS ---------- */
-
-//           {
-//             $lookup: {
-//               from: 'menu_item_addons',
-//               localField: '_id',
-//               foreignField: 'menuItemId',
-//               as: 'itemAddons',
-//             },
-//           },
-
-//           /* ---------- VARIANT LEVEL ADDONS ---------- */
-
-//           {
-//             $lookup: {
-//               from: 'menu_item_addons',
-//               localField: 'variants._id',
-//               foreignField: 'menuItemVariantId',
-//               as: 'variantAddons',
-//             },
-//           },
-
-//           /* ---------- PROJECT OUTPUT ---------- */
-
-//           {
-//             $project: {
-//               _id: 1,
-//               name: 1,
-//               isVariation: 1,
-
-//               addons: {
-//                 $cond: [
-//                   { $eq: ['$isVariation', false] },
-//                   '$itemAddons',
-//                   [],
-//                 ],
-//               },
-
-//               variants: {
-//                 $map: {
-//                   input: '$variants',
-//                   as: 'v',
-//                   in: {
-//                     menuItemVariantId: '$$v._id',
-//                     variationId: '$$v.variationId',
-//                     basePrice: '$$v.basePrice',
-
-//                     addons: {
-//                       $filter: {
-//                         input: '$variantAddons',
-//                         as: 'va',
-//                         cond: {
-//                           $eq: [
-//                             '$$va.menuItemVariantId',
-//                             '$$v._id',
-//                           ],
-//                         },
-//                       },
-//                     },
-//                   },
-//                 },
-//               },
-//             },
-//           },
-//         ],
-//         as: 'items',
-//       },
-//     },
-
-//     /* ---------------- FINAL OUTPUT ---------------- */
-
-//     {
-//       $project: {
-//         category: '$name',
-//         categoryId: '$_id',
-//         items: 1,
-//       },
-//     },
-//   ]);
-// };
-
 export const getAddonMappingAggregationV2 = async (
   brandId: string,
   outletId: string,
@@ -986,31 +843,31 @@ export const getAddonMappingAggregationV2 = async (
 
     ...(addonObjectId
       ? [
-          {
-            $addFields: {
-              items: {
-                $filter: {
-                  input: '$items',
-                  as: 'i',
-                  cond: {
-                    $not: {
-                      $in: [
-                        addonObjectId,
-                        {
-                          $map: {
-                            input: { $ifNull: ['$$i.addons', []] },
-                            as: 'a',
-                            in: '$$a.addonId',
-                          },
+        {
+          $addFields: {
+            items: {
+              $filter: {
+                input: '$items',
+                as: 'i',
+                cond: {
+                  $not: {
+                    $in: [
+                      addonObjectId,
+                      {
+                        $map: {
+                          input: { $ifNull: ['$$i.addons', []] },
+                          as: 'a',
+                          in: '$$a.addonId',
                         },
-                      ],
-                    },
+                      },
+                    ],
                   },
                 },
               },
             },
           },
-        ]
+        },
+      ]
       : []),
 
     /* ---------------- GROUP CATEGORY ---------------- */
@@ -1038,6 +895,9 @@ export const getAddonMappingAggregationV2 = async (
           },
         },
       },
+    },
+    {
+      $unset: 'items.addons',
     },
   ]);
 };
