@@ -42,7 +42,6 @@ export const listMeasurementsController = async (
       status: true,
       code: 200,
       data: result.items,
-      total: result.total,
     };
     next();
   } catch (err) {

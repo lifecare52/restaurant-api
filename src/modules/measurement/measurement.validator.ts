@@ -24,8 +24,6 @@ export const updateMeasurementSchema = Joi.object({
 });
 
 export const measurementListQuerySchema = Joi.object({
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).max(100).default(20),
   searchText: Joi.string().trim().optional(),
   column: Joi.string()
     .valid('name', 'measurementType', 'unit', 'baseUnit', 'createdAt', 'updatedAt', 'isActive')

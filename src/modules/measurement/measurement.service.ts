@@ -14,7 +14,7 @@ export const createMeasurement = async (dto: MeasurementCreateDTO) => {
 };
 
 export const listMeasurements = async (query: MeasurementListQuery) => {
-  const { page = 1, limit = 20, searchText, column = 'name', order = 'ASC', isActive } = query;
+  const { searchText, column = 'name', order = 'ASC', isActive } = query;
 
   const match: any = { isDelete: false };
 
@@ -33,21 +33,9 @@ export const listMeasurements = async (query: MeasurementListQuery) => {
   const sort: any = {};
   sort[column] = order === 'ASC' ? 1 : -1;
 
-  const [result] = await MeasurementEntity.aggregate([
-    { $match: match },
-    { $sort: sort },
-    {
-      $facet: {
-        items: [{ $skip: (page - 1) * limit }, { $limit: limit }],
-        total: [{ $count: 'count' }],
-      },
-    },
-  ]);
+  const items = await MeasurementEntity.find(match).sort(sort);
 
-  return {
-    items: result.items,
-    total: result.total[0] ? result.total[0].count : 0,
-  };
+  return { items };
 };
 
 export const getMeasurement = async (measurementId: string) => {

@@ -38,8 +38,6 @@ export interface MeasurementUpdateDTO {
 }
 
 export interface MeasurementListQuery {
-  page?: number;
-  limit?: number;
   searchText?: string;
   column?: string;
   order?: 'ASC' | 'DESC';

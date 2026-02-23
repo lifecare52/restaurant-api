@@ -2131,18 +2131,6 @@ export const getOpenApiSpec = () => {
           security: [{ bearerAuth: [] }],
           parameters: [
             {
-              name: 'page',
-              in: 'query',
-              required: false,
-              schema: { type: 'number', minimum: 1, default: 1 },
-            },
-            {
-              name: 'limit',
-              in: 'query',
-              required: false,
-              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
-            },
-            {
               name: 'searchText',
               in: 'query',
               required: false,
