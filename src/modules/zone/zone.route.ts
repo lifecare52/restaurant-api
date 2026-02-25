@@ -3,6 +3,7 @@ import { Router } from 'express';
 import {
   createZoneController,
   listZonesController,
+  listActiveZonesController,
   getZoneController,
   updateZoneController,
   deleteZoneController,
@@ -51,6 +52,15 @@ router.get(
   requireOutletAccess,
   validateRequest(zoneListQuerySchema, 'query'),
   listZonesController,
+);
+
+router.get(
+  '/active',
+  auth,
+  validateRequest(commonHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  listActiveZonesController,
 );
 
 router.get(

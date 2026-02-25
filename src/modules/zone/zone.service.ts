@@ -55,6 +55,19 @@ export const listZones = async (brandId: string, outletId: string, query: ZoneLi
   return { items, total };
 };
 
+export const listActiveZones = async (brandId: string, outletId: string) => {
+  const items = await ZoneEntity.find({
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false,
+    isActive: true,
+  })
+    .select('name')
+    .lean()
+    .sort({ name: 1 });
+  return items;
+};
+
 export const getZone = async (brandId: string, outletId: string, zoneId: string) => {
   return ZoneEntity.findOne({
     _id: new Types.ObjectId(zoneId),

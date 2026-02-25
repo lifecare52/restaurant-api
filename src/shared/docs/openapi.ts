@@ -3614,6 +3614,45 @@ export const getOpenApiSpec = () => {
           },
         },
       },
+      '/api/v1/zones/active': {
+        get: {
+          tags: ['Zones'],
+          summary: 'List active zones (no pagination)',
+          description:
+            'Returns all zones where isDelete=false and isActive=true. Mandatory headers: brand-id, outlet-id (set via Authorize).',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                _id: { type: 'string' },
+                                name: { type: 'string' },
+                              },
+                              required: ['_id', 'name'],
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       '/api/v1/tables': {
         post: {
           tags: ['Tables'],
