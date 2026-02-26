@@ -16,11 +16,12 @@ export interface MenuItemAddonInputUpdate extends MenuItemAddonInputCreate {
 
 export interface MeasurementConfig {
   measurementId: string;
-  rate?: number;
-  baseValue?: number;
-  minValue?: number;
-  maxValue?: number;
-  stepValue?: number;
+  basePrice: number;
+  costPrice?: number | null;
+  baseValue?: number | null;
+  minValue?: number | null;
+  maxValue?: number | null;
+  stepValue?: number | null;
 }
 
 export interface MenuItemCreateDTO {
@@ -37,18 +38,15 @@ export interface MenuItemCreateDTO {
   takeAway?: boolean;
   dineIn?: boolean;
 
-  // Measurement fields
   isMeasurementBased?: boolean;
   measurementConfig?: MeasurementConfig;
 
   variations?: Array<{
     variationId: string;
-    basePrice: number;
+    basePrice?: number;
     costPrice?: number;
-    // Measurement fields for variation
     isMeasurementBased?: boolean;
     measurementConfig?: MeasurementConfig;
-
     addons?: MenuItemAddonInputCreate[];
   }>;
   addons?: MenuItemAddonInputCreate[];
@@ -79,14 +77,8 @@ export interface MenuItem {
   takeAway: boolean;
   dineIn: boolean;
 
-  // Measurement fields
   isMeasurementBased: boolean;
-  measurementId?: Types.ObjectId;
-  rate?: number;
-  baseValue?: number;
-  minValue?: number;
-  maxValue?: number;
-  stepValue?: number;
+  measurementConfig?: MeasurementConfig;
 
   isActive: boolean;
   isDelete: boolean;
@@ -106,7 +98,6 @@ export interface MenuItemUpdateDTO {
   takeAway?: boolean;
   dineIn?: boolean;
 
-  // Measurement fields
   isMeasurementBased?: boolean;
   measurementConfig?: MeasurementConfig;
 
@@ -114,10 +105,8 @@ export interface MenuItemUpdateDTO {
     variationId: string;
     basePrice?: number;
     costPrice?: number;
-    // Measurement fields for variation
     isMeasurementBased?: boolean;
     measurementConfig?: MeasurementConfig;
-
     addons?: MenuItemAddonInputUpdate[];
   }>;
   addons?: MenuItemAddonInputUpdate[];

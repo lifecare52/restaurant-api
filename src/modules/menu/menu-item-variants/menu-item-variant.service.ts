@@ -49,14 +49,12 @@ export const createMenuItemVariant = async (
       costPrice: dto.costPrice ?? 0,
 
       isMeasurementBased: dto.isMeasurementBased,
-      measurementId: dto.measurementConfig?.measurementId
-        ? new Types.ObjectId(dto.measurementConfig.measurementId)
+      measurementConfig: dto.measurementConfig
+        ? {
+          ...dto.measurementConfig,
+          measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+        }
         : undefined,
-      rate: dto.measurementConfig?.rate,
-      baseValue: dto.measurementConfig?.baseValue,
-      minValue: dto.measurementConfig?.minValue,
-      maxValue: dto.measurementConfig?.maxValue,
-      stepValue: dto.measurementConfig?.stepValue,
 
       isActive: dto.isActive ?? true,
       isDelete: false,
@@ -163,13 +161,10 @@ export const updateMenuItemVariant = async (
 
     const updateData: Record<string, unknown> = { ...dto };
     if (dto.measurementConfig) {
-      updateData.measurementId = new Types.ObjectId(dto.measurementConfig.measurementId);
-      updateData.rate = dto.measurementConfig.rate;
-      updateData.baseValue = dto.measurementConfig.baseValue;
-      updateData.minValue = dto.measurementConfig.minValue;
-      updateData.maxValue = dto.measurementConfig.maxValue;
-      updateData.stepValue = dto.measurementConfig.stepValue;
-      delete updateData.measurementConfig;
+      updateData.measurementConfig = {
+        ...dto.measurementConfig,
+        measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+      };
     }
 
     return await MenuItemVariantEntity.findOneAndUpdate(

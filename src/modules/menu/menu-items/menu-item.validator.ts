@@ -5,11 +5,12 @@ import { objectId } from '@shared/utils/common.validation';
 
 const measurementConfigSchema = Joi.object({
   measurementId: objectId.required(),
-  rate: Joi.number().min(0).optional(),
-  baseValue: Joi.number().min(0).optional(),
-  minValue: Joi.number().min(0).optional(),
-  maxValue: Joi.number().min(0).optional(),
-  stepValue: Joi.number().min(0).optional(),
+  basePrice: Joi.number().min(0).required(),
+  costPrice: Joi.number().min(0).allow(null).optional(),
+  baseValue: Joi.number().min(0).allow(null).optional(),
+  minValue: Joi.number().min(0).allow(null).optional(),
+  maxValue: Joi.number().min(0).allow(null).optional(),
+  stepValue: Joi.number().min(0).allow(null).optional(),
 });
 
 export const createMenuItemSchema = Joi.object({
@@ -40,7 +41,11 @@ export const createMenuItemSchema = Joi.object({
     .items(
       Joi.object({
         variationId: objectId.required(),
-        basePrice: Joi.number().min(0).required(),
+        basePrice: Joi.number().min(0).when('isMeasurementBased', {
+          is: true,
+          then: Joi.optional(),
+          otherwise: Joi.required(),
+        }),
         costPrice: Joi.number().min(0).optional(),
 
         isMeasurementBased: Joi.boolean().default(false),
@@ -60,7 +65,11 @@ export const createMenuItemSchema = Joi.object({
               allowedItems: Joi.any().forbidden(),
             }),
           )
-          .optional(),
+          .when('isMeasurementBased', {
+            is: true,
+            then: Joi.forbidden(),
+            otherwise: Joi.optional(),
+          }),
       }),
     )
     .optional(),
@@ -74,7 +83,11 @@ export const createMenuItemSchema = Joi.object({
         allowedItems: Joi.any().forbidden(),
       }),
     )
-    .optional(),
+    .when('isMeasurementBased', {
+      is: true,
+      then: Joi.forbidden(),
+      otherwise: Joi.optional(),
+    }),
 
   online: Joi.boolean().default(false),
   takeAway: Joi.boolean().default(false),
@@ -133,7 +146,11 @@ export const updateMenuItemSchema = Joi.object({
               allowedItems: Joi.array().items(objectId).optional(),
             }),
           )
-          .optional(),
+          .when('isMeasurementBased', {
+            is: true,
+            then: Joi.forbidden(),
+            otherwise: Joi.optional(),
+          }),
       }),
     )
     .optional(),
@@ -147,7 +164,11 @@ export const updateMenuItemSchema = Joi.object({
         allowedItems: Joi.array().items(objectId).optional(),
       }),
     )
-    .optional(),
+    .when('isMeasurementBased', {
+      is: true,
+      then: Joi.forbidden(),
+      otherwise: Joi.optional(),
+    }),
 
   isActive: Joi.boolean(),
 });

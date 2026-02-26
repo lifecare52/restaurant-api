@@ -5,6 +5,7 @@ import brandRoutes from '@modules/brand/brand.route';
 import measurementRoutes from '@modules/measurement/measurement.route';
 import menuRoutes from '@modules/menu/menu.route';
 import metaRoutes from '@modules/meta/meta.route';
+import orderRoutes from '@modules/order/order.route';
 import outletRoutes from '@modules/outlet/outlet.route';
 import tableRoutes from '@modules/table/table.route';
 import userRoutes from '@modules/user/user.route';
@@ -34,6 +35,7 @@ export const createApp = (): express.Express => {
   app.use('/api/v1/users', userRoutes);
   app.use('/api/v1/measurements', measurementRoutes);
   app.use('/api/v1/menu', menuRoutes);
+  app.use('/api/v1/order', orderRoutes);
   app.use('/api/v1/zones', zoneRoutes);
   app.use('/api/v1/tables', tableRoutes);
   app.use(responseMiddleware);

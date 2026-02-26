@@ -4,22 +4,30 @@ import type { MenuItemVariant } from '@modules/menu/menu-item-variants/menu-item
 
 export type MenuItemVariantModel = Model<MenuItemVariant>;
 
+const MeasurementConfigSchema = new Schema(
+  {
+    measurementId: { type: Schema.Types.ObjectId, required: true, ref: 'Measurement' },
+    basePrice: { type: Number, required: true, min: 0 },
+    costPrice: { type: Number, min: 0, default: null },
+    baseValue: { type: Number, min: 0, default: null },
+    minValue: { type: Number, default: null },
+    maxValue: { type: Number, default: null },
+    stepValue: { type: Number, default: null },
+  },
+  { _id: false },
+);
+
 const MenuItemVariantSchema = new Schema<MenuItemVariant>(
   {
     brandId: { type: Schema.Types.ObjectId, required: true, index: true },
     outletId: { type: Schema.Types.ObjectId, required: true, index: true },
     menuItemId: { type: Schema.Types.ObjectId, required: true, index: true },
     variationId: { type: Schema.Types.ObjectId, required: true, index: true },
-    basePrice: { type: Number, required: true, min: 0 },
+    basePrice: { type: Number, required: false, min: 0 },
     costPrice: { type: Number, min: 0, default: 0 },
 
     isMeasurementBased: { type: Boolean, default: false },
-    measurementId: { type: Schema.Types.ObjectId, ref: 'Measurement' },
-    rate: { type: Number },
-    baseValue: { type: Number },
-    minValue: { type: Number },
-    maxValue: { type: Number },
-    stepValue: { type: Number },
+    measurementConfig: { type: MeasurementConfigSchema, default: undefined },
 
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },

@@ -107,14 +107,12 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       costPrice: dto.costPrice ?? 0,
 
       isMeasurementBased: dto.isMeasurementBased,
-      measurementId: dto.measurementConfig?.measurementId
-        ? new Types.ObjectId(dto.measurementConfig.measurementId)
+      measurementConfig: dto.measurementConfig
+        ? {
+          ...dto.measurementConfig,
+          measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+        }
         : undefined,
-      rate: dto.measurementConfig?.rate,
-      baseValue: dto.measurementConfig?.baseValue,
-      minValue: dto.measurementConfig?.minValue,
-      maxValue: dto.measurementConfig?.maxValue,
-      stepValue: dto.measurementConfig?.stepValue,
 
       isVariation: variationsInput.length > 0,
 
@@ -150,7 +148,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       });
       for (const v of variationsInput) {
         const variantDocId = byVariationId.get(v.variationId);
-        if (!variantDocId) continue;
+        if (!variantDocId || v.isMeasurementBased) continue;
         for (const addon of v.addons || []) {
           await createMenuItemAddon(brandId, outletId, {
             menuItemId: String(created._id),
@@ -163,7 +161,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
           });
         }
       }
-    } else if (topLevelAddons.length > 0) {
+    } else if (topLevelAddons.length > 0 && !dto.isMeasurementBased) {
       await Promise.all(
         topLevelAddons.map(addon =>
           createMenuItemAddon(brandId, outletId, {
@@ -178,22 +176,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       );
     }
 
-    // Format response to nest measurement config
-    if (result.isMeasurementBased && result.measurementId) {
-      const { measurementId, rate, baseValue, minValue, maxValue, stepValue, ...rest } =
-        result as any;
-      result = {
-        ...rest,
-        measurementConfig: {
-          measurementId,
-          rate,
-          baseValue,
-          minValue,
-          maxValue,
-          stepValue,
-        },
-      };
-    }
+    // Formatting measurement config is no longer needed since it's natively nested
 
     return result;
   } catch (err) {
@@ -286,7 +269,16 @@ const buildMenuItemNested = async (
               };
             }),
         );
-        return { name: variation?.name ?? '', price: v.basePrice, addons };
+        const varRaw = (v as any).toObject ? (v as any).toObject() : v;
+        return {
+          variationId: String(v.variationId),
+          name: variation?.name ?? '',
+          basePrice: v.basePrice,
+          costPrice: v.costPrice,
+          isMeasurementBased: v.isMeasurementBased,
+          measurementConfig: varRaw.measurementConfig,
+          addons,
+        };
       }),
   );
 
@@ -317,27 +309,7 @@ const buildMenuItemNested = async (
 
   const base = item?.toObject ? item.toObject() : (item as unknown as Record<string, unknown>);
 
-  // Format measurement config
-  if (base.isMeasurementBased && base.measurementId) {
-    const { measurementId, rate, baseValue, minValue, maxValue, stepValue, ...rest } = base as any;
-    Object.assign(base, {
-      ...rest,
-      measurementConfig: {
-        measurementId,
-        rate,
-        baseValue,
-        minValue,
-        maxValue,
-        stepValue,
-      },
-    });
-    delete base.measurementId;
-    delete base.rate;
-    delete base.baseValue;
-    delete base.minValue;
-    delete base.maxValue;
-    delete base.stepValue;
-  }
+  // Format measurement config is no longer needed since it's natively nested
 
   const diet = (base as { dietary?: string }).dietary;
   const dietaryShort =
@@ -407,13 +379,10 @@ export const updateMenuItem = async (
       updateData.shortCodes = dto.shortCodes.map(s => s.trim().toUpperCase());
     }
     if (dto.measurementConfig) {
-      updateData.measurementId = new Types.ObjectId(dto.measurementConfig.measurementId);
-      updateData.rate = dto.measurementConfig.rate;
-      updateData.baseValue = dto.measurementConfig.baseValue;
-      updateData.minValue = dto.measurementConfig.minValue;
-      updateData.maxValue = dto.measurementConfig.maxValue;
-      updateData.stepValue = dto.measurementConfig.stepValue;
-      delete updateData.measurementConfig;
+      updateData.measurementConfig = {
+        ...dto.measurementConfig,
+        measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+      };
     }
 
     const updated = await MenuItemEntity.findOneAndUpdate(
@@ -504,7 +473,7 @@ export const updateMenuItem = async (
           }
         }
       }
-    } else if (dto.addons && dto.addons.length > 0) {
+    } else if (dto.addons && dto.addons.length > 0 && !dto.isMeasurementBased) {
       const addons = normalizeAddonUpdate(dto.addons);
       for (const a of addons) {
         const existing = await listMenuItemAddons(

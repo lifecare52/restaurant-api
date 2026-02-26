@@ -6,6 +6,19 @@ import { DIETARIES } from '@shared/enum';
 
 export type MenuItemModel = Model<MenuItem>;
 
+const MeasurementConfigSchema = new Schema(
+  {
+    measurementId: { type: Schema.Types.ObjectId, required: true, ref: 'Measurement' },
+    basePrice: { type: Number, required: true, min: 0 },
+    costPrice: { type: Number, min: 0, default: null },
+    baseValue: { type: Number, min: 0, default: null },
+    minValue: { type: Number, default: null },
+    maxValue: { type: Number, default: null },
+    stepValue: { type: Number, default: null },
+  },
+  { _id: false },
+);
+
 const MenuItemSchema = new Schema<MenuItem>(
   {
     brandId: { type: Schema.Types.ObjectId, required: true, index: true },
@@ -40,12 +53,7 @@ const MenuItemSchema = new Schema<MenuItem>(
     costPrice: { type: Number, default: 0 },
 
     isMeasurementBased: { type: Boolean, default: false },
-    measurementId: { type: Schema.Types.ObjectId, ref: 'Measurement' },
-    rate: { type: Number },
-    baseValue: { type: Number },
-    minValue: { type: Number },
-    maxValue: { type: Number },
-    stepValue: { type: Number },
+    measurementConfig: { type: MeasurementConfigSchema, default: undefined },
 
     isVariation: { type: Boolean, default: false },
 
@@ -78,7 +86,10 @@ MenuItemSchema.index(
   {
     unique: true,
     collation: { locale: 'en', strength: 2 },
-    partialFilterExpression: { isDelete: false },
+    partialFilterExpression: {
+      isDelete: false,
+      shortCodes: { $exists: true, $not: { $size: 0 } }
+    },
   },
 );
 

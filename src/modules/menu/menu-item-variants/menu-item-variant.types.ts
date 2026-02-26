@@ -7,10 +7,9 @@ import type { Types } from 'mongoose';
 export interface MenuItemVariantCreateDTO {
   menuItemId: string;
   variationId: string;
-  basePrice: number;
+  basePrice?: number;
   costPrice?: number;
 
-  // Measurement fields
   isMeasurementBased?: boolean;
   measurementConfig?: MeasurementConfig;
 
@@ -22,7 +21,6 @@ export interface MenuItemVariantUpdateDTO {
   basePrice?: number;
   costPrice?: number;
 
-  // Measurement fields
   isMeasurementBased?: boolean;
   measurementConfig?: MeasurementConfig;
 
@@ -51,14 +49,8 @@ export interface MenuItemVariant {
   basePrice: number;
   costPrice?: number;
 
-  // Measurement fields
   isMeasurementBased: boolean;
-  measurementId?: Types.ObjectId;
-  rate?: number;
-  baseValue?: number;
-  minValue?: number;
-  maxValue?: number;
-  stepValue?: number;
+  measurementConfig?: MeasurementConfig;
 
   isActive: boolean;
   isDelete: boolean;
