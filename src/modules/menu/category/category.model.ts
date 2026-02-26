@@ -6,8 +6,8 @@ export type CategoryModel = Model<Category>;
 
 const CategorySchema = new Schema<Category>(
   {
-    brandId: { type: Schema.Types.ObjectId, required: true, index: true },
-    outletId: { type: Schema.Types.ObjectId, required: true, index: true },
+    brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
+    outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
     name: { type: String, required: true, trim: true },
     onlineName: { type: String, trim: true },
     logo: { type: String },

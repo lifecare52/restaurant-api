@@ -14,8 +14,8 @@ const AddonItemSchema = new Schema<AddonItem>({
 
 const AddonSchema = new Schema<Addon>(
   {
-    brandId: { type: Schema.Types.ObjectId, required: true, index: true },
-    outletId: { type: Schema.Types.ObjectId, required: true, index: true },
+    brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
+    outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
     name: { type: String, required: true, trim: true },
     items: { type: [AddonItemSchema], default: [] },
     isActive: { type: Boolean, default: true },

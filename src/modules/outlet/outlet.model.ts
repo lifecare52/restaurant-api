@@ -28,7 +28,7 @@ export type OutletModel = Model<Outlet>;
 
 const OutletSchema = new Schema<Outlet>(
   {
-    brandId: { type: Schema.Types.ObjectId, required: true, index: true },
+    brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
     basicInfo: {
       name: { type: String, required: true, trim: true },
       logo: { type: String },

@@ -9,7 +9,8 @@
     "start": "node dist/server.js",
     "lint": "eslint \"src/**/*.ts\"",
     "lint:fix": "eslint \"src/**/*.ts\" --fix",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "generate:erd": "ts-node --project scripts/tsconfig.scripts.json scripts/generate-erd.ts"
   },
   "dependencies": {
     "@types/bcryptjs": "^2.4.6",

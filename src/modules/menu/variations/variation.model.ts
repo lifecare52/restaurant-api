@@ -7,8 +7,8 @@ export type VariationModel = Model<Variation>;
 
 const VariationSchema = new Schema<Variation>(
   {
-    brandId: { type: Schema.Types.ObjectId, required: true, index: true },
-    outletId: { type: Schema.Types.ObjectId, required: true, index: true },
+    brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
+    outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
 
     name: { type: String, required: true, trim: true },
     department: {
