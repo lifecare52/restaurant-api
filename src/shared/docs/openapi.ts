@@ -1053,6 +1053,19 @@ export const getOpenApiSpec = () => {
           },
           required: ['category', 'items'],
         },
+        OrderMenuCategoryGroup: {
+          type: 'object',
+          description: 'A category with its active menu items, variants, and addons for POS ordering',
+          properties: {
+            categoryId: { type: 'string' },
+            category: { type: 'string' },
+            items: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/MenuItemWithNested' },
+            },
+          },
+          required: ['categoryId', 'category', 'items'],
+        },
       },
     },
     tags: [
@@ -1081,8 +1094,43 @@ export const getOpenApiSpec = () => {
         name: 'Menu-Item-Addons',
         description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.',
       },
+      {
+        name: 'Orders',
+        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.',
+      },
     ],
     paths: {
+      '/api/v1/order/menu-items': {
+        get: {
+          tags: ['Orders'],
+          summary: 'List active POS menu items grouped by category',
+          description: 'Fetches the complete menu structure including variants and addons for the POS. Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/OrderMenuCategoryGroup' },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
       '/api/v1/meta/types': {
         get: {
           tags: ['Meta'],
