@@ -19,10 +19,10 @@ const MeasurementConfigSchema = new Schema(
 
 const MenuItemVariantSchema = new Schema<MenuItemVariant>(
   {
-    brandId: { type: Schema.Types.ObjectId, required: true, index: true },
-    outletId: { type: Schema.Types.ObjectId, required: true, index: true },
-    menuItemId: { type: Schema.Types.ObjectId, required: true, index: true },
-    variationId: { type: Schema.Types.ObjectId, required: true, index: true },
+    brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
+    outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
+    menuItemId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'MenuItem' },
+    variationId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Variation' },
     basePrice: { type: Number, required: false, min: 0 },
     costPrice: { type: Number, min: 0, default: 0 },
 

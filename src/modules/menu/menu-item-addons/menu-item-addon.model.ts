@@ -4,11 +4,16 @@ import type { MenuItemAddon } from '@modules/menu/menu-item-addons/menu-item-add
 
 const MenuItemAddonSchema = new Schema<MenuItemAddon>(
   {
-    brandId: { type: Schema.Types.ObjectId, required: true, index: true },
-    outletId: { type: Schema.Types.ObjectId, required: true, index: true },
-    menuItemId: { type: Schema.Types.ObjectId, required: true, index: true },
-    addonId: { type: Schema.Types.ObjectId, required: true, index: true },
-    menuItemVariantId: { type: Schema.Types.ObjectId, required: false, index: true },
+    brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
+    outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
+    menuItemId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'MenuItem' },
+    addonId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Addon' },
+    menuItemVariantId: {
+      type: Schema.Types.ObjectId,
+      required: false,
+      index: true,
+      ref: 'MenuItemVariant',
+    },
     allowedItemIds: { type: [Schema.Types.ObjectId], default: [] },
     isSingleSelect: { type: Boolean, required: false },
     min: { type: Number, required: false },

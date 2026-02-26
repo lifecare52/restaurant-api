@@ -6,8 +6,8 @@ export type TableModel = Model<Table>;
 
 const TableSchema = new Schema<Table>(
   {
-    brandId: { type: Schema.Types.ObjectId, required: true, index: true },
-    outletId: { type: Schema.Types.ObjectId, required: true, index: true },
+    brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
+    outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
     zoneId: { type: Schema.Types.ObjectId, ref: 'Zone', index: true },
 
     name: { type: String, required: true, trim: true },

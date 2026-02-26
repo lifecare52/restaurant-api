@@ -6,8 +6,8 @@ export type ZoneModel = Model<Zone>;
 
 const ZoneSchema = new Schema<Zone>(
   {
-    brandId: { type: Schema.Types.ObjectId, required: true, index: true },
-    outletId: { type: Schema.Types.ObjectId, required: true, index: true },
+    brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
+    outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
 
     name: { type: String, required: true, trim: true },
 
