@@ -1,4 +1,4 @@
-import { createZone, listZones, getZone, updateZone, deleteZone } from '@modules/zone/zone.service';
+import { createZone, listZones, listActiveZones, getZone, updateZone, deleteZone } from '@modules/zone/zone.service';
 
 import type { Request, Response, NextFunction } from 'express';
 
@@ -28,6 +28,17 @@ export const listZonesController = async (req: Request, res: Response, next: Nex
     const { brandId, outletId } = getTenant(req);
     const result = await listZones(brandId, outletId, req.query);
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const listActiveZonesController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const items = await listActiveZones(brandId, outletId);
+    res.locals.response = { status: true, code: 200, data: items };
     next();
   } catch (err) {
     next(err);
