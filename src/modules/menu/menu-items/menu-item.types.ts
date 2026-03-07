@@ -22,7 +22,7 @@ export interface MeasurementConfig {
   minValue?: number | null;
   maxValue?: number | null;
   stepValue?: number | null;
-  measurementType: string;
+  baseUnit: string;
 }
 
 export interface MenuItemCreateDTO {

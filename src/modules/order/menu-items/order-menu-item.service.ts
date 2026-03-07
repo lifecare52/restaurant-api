@@ -169,7 +169,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                             $mergeObjects: [
                                 '$measurementConfig',
                                 {
-                                    measurementType: { $arrayElemAt: ['$measurementDoc.measurementType', 0] },
+                                    baseUnit: { $arrayElemAt: ['$measurementDoc.baseUnit', 0] },
                                 },
                             ],
                         },
@@ -211,7 +211,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                                         $mergeObjects: [
                                             '$$v.measurementConfig',
                                             {
-                                                measurementType: {
+                                                baseUnit: {
                                                     $let: {
                                                         vars: {
                                                             mDoc: {
@@ -227,7 +227,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                                                                 ],
                                                             },
                                                         },
-                                                        in: '$$mDoc.measurementType',
+                                                        in: '$$mDoc.baseUnit',
                                                     },
                                                 },
                                             },
