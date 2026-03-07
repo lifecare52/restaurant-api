@@ -126,7 +126,27 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
             },
         },
 
-        /* ─── 9. PROJECT full item shape ─── */
+        /* ─── 9. MEASUREMENT for menu item ─── */
+        {
+            $lookup: {
+                from: 'measurements',
+                localField: 'measurementConfig.measurementId',
+                foreignField: '_id',
+                as: 'measurementDoc',
+            },
+        },
+
+        /* ─── 10. MEASUREMENT for variants ─── */
+        {
+            $lookup: {
+                from: 'measurements',
+                localField: 'variants.measurementConfig.measurementId',
+                foreignField: '_id',
+                as: 'variantMeasurementDocs',
+            },
+        },
+
+        /* ─── 11. PROJECT full item shape ─── */
         {
             $addFields: {
                 /* ----- dietaryShort ----- */
@@ -145,7 +165,14 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                 measurementConfig: {
                     $cond: [
                         { $eq: ['$isMeasurementBased', true] },
-                        '$measurementConfig',
+                        {
+                            $mergeObjects: [
+                                '$measurementConfig',
+                                {
+                                    measurementType: { $arrayElemAt: ['$measurementDoc.measurementType', 0] },
+                                },
+                            ],
+                        },
                         null,
                     ],
                 },
@@ -180,7 +207,32 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                             measurementConfig: {
                                 $cond: [
                                     { $eq: ['$$v.isMeasurementBased', true] },
-                                    '$$v.measurementConfig',
+                                    {
+                                        $mergeObjects: [
+                                            '$$v.measurementConfig',
+                                            {
+                                                measurementType: {
+                                                    $let: {
+                                                        vars: {
+                                                            mDoc: {
+                                                                $arrayElemAt: [
+                                                                    {
+                                                                        $filter: {
+                                                                            input: '$variantMeasurementDocs',
+                                                                            as: 'md',
+                                                                            cond: { $eq: ['$$md._id', '$$v.measurementConfig.measurementId'] },
+                                                                        },
+                                                                    },
+                                                                    0,
+                                                                ],
+                                                            },
+                                                        },
+                                                        in: '$$mDoc.measurementType',
+                                                    },
+                                                },
+                                            },
+                                        ],
+                                    },
                                     null,
                                 ],
                             },
@@ -323,7 +375,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
             },
         },
 
-        /* ─── 10. SHAPE final item (strip internal fields) ─── */
+        /* ─── 12. SHAPE final item (strip internal fields) ─── */
         {
             $project: {
                 /* category fields */
@@ -352,7 +404,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
             },
         },
 
-        /* ─── 11. GROUP by category ─── */
+        /* ─── 13. GROUP by category ─── */
         {
             $group: {
                 _id: '$categoryId',
@@ -361,7 +413,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
             },
         },
 
-        /* ─── 12. CLEAN UP grouped items (remove redundant categoryId/category per-item) ─── */
+        /* ─── 14. CLEAN UP grouped items (remove redundant categoryId/category per-item) ─── */
         {
             $project: {
                 _id: 0,
@@ -396,7 +448,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
             },
         },
 
-        /* ─── 13. SORT by category name ─── */
+        /* ─── 15. SORT by category name ─── */
         { $sort: { category: 1 } },
     ]);
 };
