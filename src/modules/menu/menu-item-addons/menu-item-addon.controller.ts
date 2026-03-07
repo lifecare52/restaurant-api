@@ -6,7 +6,6 @@ import {
   deleteMenuItemAddon,
   createBulkMenuItemAddons,
 } from '@modules/menu/menu-item-addons/menu-item-addon.service';
-import { getAddonMappingAggregationV2 } from '@modules/menu/menu-items/menu-item.service';
 import type {
   MenuItemAddonCreateDTO,
   MenuItemAddonFilterQuery,
@@ -14,6 +13,7 @@ import type {
   MenuItemAddonUpdateDTO,
   BulkMenuItemAddonCreateDTO,
 } from '@modules/menu/menu-item-addons/menu-item-addon.types';
+import { getAddonMappingAggregationV2 } from '@modules/menu/menu-items/menu-item.service';
 
 import { API_MESSAGES } from '@shared/constants';
 

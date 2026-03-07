@@ -63,6 +63,7 @@ const MenuItemSchema = new Schema<MenuItem>(
 
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
+    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null },
   },
   { timestamps: true },
 );
@@ -88,7 +89,7 @@ MenuItemSchema.index(
     collation: { locale: 'en', strength: 2 },
     partialFilterExpression: {
       isDelete: false,
-      shortCodes: { $exists: true, $not: { $size: 0 } }
+      shortCodes: { $exists: true, $not: { $size: 0 } },
     },
   },
 );

@@ -8,6 +8,7 @@ import metaRoutes from '@modules/meta/meta.route';
 import orderRoutes from '@modules/order/order.route';
 import outletRoutes from '@modules/outlet/outlet.route';
 import tableRoutes from '@modules/table/table.route';
+import { TaxRoutes } from '@modules/tax/tax.route';
 import userRoutes from '@modules/user/user.route';
 import zoneRoutes from '@modules/zone/zone.route';
 
@@ -38,6 +39,7 @@ export const createApp = (): express.Express => {
   app.use('/api/v1/order', orderRoutes);
   app.use('/api/v1/zones', zoneRoutes);
   app.use('/api/v1/tables', tableRoutes);
+  app.use('/api/v1/taxes', TaxRoutes);
   app.use(responseMiddleware);
   app.use(notFoundHandler);
   app.use(errorHandler);

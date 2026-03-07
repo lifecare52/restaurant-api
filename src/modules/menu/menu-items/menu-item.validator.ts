@@ -22,6 +22,7 @@ export const createMenuItemSchema = Joi.object({
     .messages({ 'array.unique': 'shortCodes must be unique (case-insensitive)' })
     .optional(),
   categoryId: objectId.required(),
+  taxGroupId: objectId.optional().allow(null),
 
   dietary: Joi.string()
     .valid(...DIETARIES)
@@ -105,6 +106,7 @@ export const updateMenuItemSchema = Joi.object({
     .messages({ 'array.unique': 'shortCodes must be unique (case-insensitive)' })
     .optional(),
   categoryId: objectId,
+  taxGroupId: objectId.optional().allow(null),
 
   dietary: Joi.string().valid(...DIETARIES),
 
@@ -198,4 +200,3 @@ export const bulkUpdateMenuItemAvailabilitySchema = Joi.object({
     )
     .required(),
 });
-

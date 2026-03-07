@@ -20,6 +20,7 @@ const AddonSchema = new Schema<Addon>(
     items: { type: [AddonItemSchema], default: [] },
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
+    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null },
   },
   { timestamps: true },
 );

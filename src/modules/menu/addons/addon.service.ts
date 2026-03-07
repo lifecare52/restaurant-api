@@ -25,6 +25,7 @@ export const createAddon = async (brandId: string, outletId: string, dto: AddonC
         available: i.available ?? true,
       })),
       isActive: dto.isActive ?? true,
+      taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
       isDelete: false,
     });
   } catch (err) {
@@ -104,7 +105,12 @@ export const updateAddon = async (
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
       },
-      { $set: dto },
+      {
+        $set: {
+          ...dto,
+          taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : undefined,
+        },
+      },
       { new: true },
     );
   } catch (err) {

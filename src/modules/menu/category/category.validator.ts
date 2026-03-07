@@ -7,6 +7,7 @@ export const createCategorySchema = Joi.object({
   onlineName: Joi.string().trim().min(2).optional(),
   logo: Joi.string().uri().optional().allow(''),
   isActive: Joi.boolean().default(true),
+  taxGroupId: Joi.string().hex().length(24).optional().allow(null),
 });
 
 export const updateCategorySchema = Joi.object({
@@ -14,6 +15,7 @@ export const updateCategorySchema = Joi.object({
   onlineName: Joi.string().trim().min(2),
   logo: Joi.string().uri().optional().allow(''),
   isActive: Joi.boolean(),
+  taxGroupId: Joi.string().hex().length(24).optional().allow(null),
 });
 
 export const categoryListHeaderSchema = Joi.object({

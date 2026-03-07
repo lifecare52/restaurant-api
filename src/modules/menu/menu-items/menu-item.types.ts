@@ -28,6 +28,7 @@ export interface MenuItemCreateDTO {
   name: string;
   shortCodes?: string[];
   categoryId: string;
+  taxGroupId?: string;
 
   dietary: Dietary;
 
@@ -65,6 +66,7 @@ export interface MenuItem {
   name: string;
   shortCodes?: string[];
   categoryId: Types.ObjectId;
+  taxGroupId?: Types.ObjectId;
 
   dietary: Dietary;
 
@@ -88,6 +90,7 @@ export interface MenuItemUpdateDTO {
   name?: string;
   shortCodes?: string[];
   categoryId?: string;
+  taxGroupId?: string;
 
   dietary?: 'VEG' | 'NON_VEG' | 'EGG';
 

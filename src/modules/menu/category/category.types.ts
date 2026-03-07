@@ -5,6 +5,7 @@ export interface CategoryCreateDTO {
   onlineName?: string;
   logo?: string;
   isActive?: boolean;
+  taxGroupId?: string;
 }
 
 export interface CategoryUpdateDTO {
@@ -12,6 +13,7 @@ export interface CategoryUpdateDTO {
   onlineName?: string;
   logo?: string;
   isActive?: boolean;
+  taxGroupId?: string;
 }
 
 export interface Category {
@@ -22,4 +24,5 @@ export interface Category {
   logo?: string;
   isActive: boolean;
   isDelete: boolean;
+  taxGroupId?: Types.ObjectId;
 }

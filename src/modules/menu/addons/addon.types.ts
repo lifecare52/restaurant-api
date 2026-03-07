@@ -14,12 +14,14 @@ export interface AddonCreateDTO {
   name: string;
   items: AddonItemDTO[];
   isActive?: boolean;
+  taxGroupId?: string;
 }
 
 export interface AddonUpdateDTO {
   name?: string;
   items?: AddonItemDTO[];
   isActive?: boolean;
+  taxGroupId?: string;
 }
 
 export interface AddonItem {
@@ -38,4 +40,5 @@ export interface Addon {
   items: AddonItem[];
   isActive: boolean;
   isDelete: boolean;
+  taxGroupId?: Types.ObjectId;
 }

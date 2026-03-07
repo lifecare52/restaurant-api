@@ -26,6 +26,7 @@ export const createCategory = async (brandId: string, outletId: string, dto: Cat
             onlineName: dto.onlineName,
             logo: dto.logo,
             isActive: dto.isActive ?? true,
+            taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
             isDelete: false,
           },
         },
@@ -44,10 +45,11 @@ export const createCategory = async (brandId: string, outletId: string, dto: Cat
       onlineName: dto.onlineName,
       logo: dto.logo,
       isActive: dto.isActive ?? true,
+      taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
       isDelete: false,
     });
     return CategoryEntity.findById(created._id)
-      .select('name onlineName logo isActive createdAt updatedAt')
+      .select('name onlineName logo isActive taxGroupId createdAt updatedAt')
       .lean();
   } catch (err) {
     const e = err as { code?: number };
@@ -85,7 +87,7 @@ export const listCategories = async (
   const sortOrder = pagination.order === 'DESC' ? -1 : 1;
   const [items, total] = await Promise.all([
     CategoryEntity.find(filter)
-      .select('name onlineName logo isActive createdAt updatedAt')
+      .select('name onlineName logo isActive taxGroupId createdAt updatedAt')
       .lean()
       .sort({ [sortColumn]: sortOrder })
       .skip(skip)
@@ -114,7 +116,7 @@ export const getCategory = async (brandId: string, categoryId: string) => {
     brandId: new Types.ObjectId(brandId),
     isDelete: false,
   })
-    .select('name onlineName logo isActive createdAt updatedAt')
+    .select('name onlineName logo isActive taxGroupId createdAt updatedAt')
     .lean();
 };
 
@@ -126,10 +128,15 @@ export const updateCategory = async (
   try {
     return await CategoryEntity.findOneAndUpdate(
       { _id: new Types.ObjectId(categoryId), brandId: new Types.ObjectId(brandId) },
-      { $set: dto },
+      {
+        $set: {
+          ...dto,
+          taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : undefined,
+        },
+      },
       { new: true },
     )
-      .select('name onlineName logo isActive createdAt updatedAt')
+      .select('name onlineName logo isActive taxGroupId createdAt updatedAt')
       .lean();
   } catch (err) {
     const e = err as { code?: number };

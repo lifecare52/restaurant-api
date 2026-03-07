@@ -100,6 +100,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       name: dto.name,
       shortCodes: (dto.shortCodes || []).map(s => s.trim().toUpperCase()),
       categoryId: new Types.ObjectId(dto.categoryId),
+      taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
 
       dietary: dto.dietary,
 
@@ -109,9 +110,9 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       isMeasurementBased: dto.isMeasurementBased,
       measurementConfig: dto.measurementConfig
         ? {
-          ...dto.measurementConfig,
-          measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
-        }
+            ...dto.measurementConfig,
+            measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+          }
         : undefined,
 
       isVariation: variationsInput.length > 0,
@@ -384,6 +385,9 @@ export const updateMenuItem = async (
         measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
       };
     }
+    if (dto.taxGroupId !== undefined) {
+      updateData.taxGroupId = dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null;
+    }
 
     const updated = await MenuItemEntity.findOneAndUpdate(
       { _id: new Types.ObjectId(menuItemId), brandId: new Types.ObjectId(brandId) },
@@ -399,12 +403,12 @@ export const updateMenuItem = async (
     const normalizeAddonUpdate = (
       arr:
         | Array<{
-          addonId: string;
-          allowedItems?: string[];
-          isSingleSelect?: boolean;
-          min?: number;
-          max?: number;
-        }>
+            addonId: string;
+            allowedItems?: string[];
+            isSingleSelect?: boolean;
+            min?: number;
+            max?: number;
+          }>
         | undefined,
     ) => {
       return (arr || []).map(a => ({
@@ -549,7 +553,7 @@ export const listMenuItemsCategoryWise = async (brandId: string, outletId: strin
         categoryId: cat._id,
         isDelete: false,
       })
-        .select('_id name dietary isActive online takeAway dineIn')
+        .select('_id name dietary isActive online takeAway dineIn taxGroupId')
         .sort({ name: 1 });
       return { category: cat, items };
     }),
@@ -812,31 +816,31 @@ export const getAddonMappingAggregationV2 = async (
 
     ...(addonObjectId
       ? [
-        {
-          $addFields: {
-            items: {
-              $filter: {
-                input: '$items',
-                as: 'i',
-                cond: {
-                  $not: {
-                    $in: [
-                      addonObjectId,
-                      {
-                        $map: {
-                          input: { $ifNull: ['$$i.addons', []] },
-                          as: 'a',
-                          in: '$$a.addonId',
+          {
+            $addFields: {
+              items: {
+                $filter: {
+                  input: '$items',
+                  as: 'i',
+                  cond: {
+                    $not: {
+                      $in: [
+                        addonObjectId,
+                        {
+                          $map: {
+                            input: { $ifNull: ['$$i.addons', []] },
+                            as: 'a',
+                            in: '$$a.addonId',
+                          },
                         },
-                      },
-                    ],
+                      ],
+                    },
                   },
                 },
               },
             },
           },
-        },
-      ]
+        ]
       : []),
 
     /* ---------------- GROUP CATEGORY ---------------- */

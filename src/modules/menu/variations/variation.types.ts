@@ -24,12 +24,14 @@ export interface VariationCreateDTO {
   name: string;
   department: VariationDepartmentType;
   isActive?: boolean;
+  taxGroupId?: string;
 }
 
 export interface VariationUpdateDTO {
   name?: string;
   department?: VariationDepartmentType;
   isActive?: boolean;
+  taxGroupId?: string;
 }
 
 export type VariationSortColumn = 'name' | 'department' | 'createdAt' | 'updatedAt' | 'isActive';
@@ -47,4 +49,5 @@ export interface Variation {
   department: VariationDepartmentType;
   isActive: boolean;
   isDelete: boolean;
+  taxGroupId?: Types.ObjectId;
 }

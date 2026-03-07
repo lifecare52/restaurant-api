@@ -27,6 +27,7 @@ export const createVariation = async (
       name: dto.name,
       department: dto.department,
       isActive: dto.isActive ?? true,
+      taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
       isDelete: false,
     });
   } catch (err) {
@@ -107,7 +108,12 @@ export const updateVariation = async (
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
       },
-      { $set: dto },
+      {
+        $set: {
+          ...dto,
+          taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : undefined,
+        },
+      },
       { new: true },
     );
   } catch (err) {

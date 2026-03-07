@@ -19,6 +19,7 @@ const VariationSchema = new Schema<Variation>(
 
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
+    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null },
   },
   { timestamps: true },
 );

@@ -2,7 +2,10 @@ import type { IApiResponse } from '@shared/interfaces/api';
 
 import type { Request, Response, NextFunction } from 'express';
 
-export const responseMiddleware = (_req: Request, res: Response, _next: NextFunction): void => {
+export const responseMiddleware = (_req: Request, res: Response, next: NextFunction): void => {
+  if (!res.locals.response) {
+    return next();
+  }
   const r = res.locals.response as IApiResponse;
   const code = r?.code;
   const payload: IApiResponse = {

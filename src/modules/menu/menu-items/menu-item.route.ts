@@ -35,8 +35,6 @@ router.post(
   createMenuItemController,
 );
 
-
-
 router.get(
   '/',
   auth,

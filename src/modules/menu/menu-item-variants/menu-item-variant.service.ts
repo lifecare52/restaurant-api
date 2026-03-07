@@ -51,9 +51,9 @@ export const createMenuItemVariant = async (
       isMeasurementBased: dto.isMeasurementBased,
       measurementConfig: dto.measurementConfig
         ? {
-          ...dto.measurementConfig,
-          measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
-        }
+            ...dto.measurementConfig,
+            measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+          }
         : undefined,
 
       isActive: dto.isActive ?? true,
