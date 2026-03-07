@@ -18,6 +18,7 @@ export interface MenuItemVariantCreateDTO {
 }
 
 export interface MenuItemVariantUpdateDTO {
+  variationId?: string;
   basePrice?: number;
   costPrice?: number;
 

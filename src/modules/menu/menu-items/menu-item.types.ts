@@ -6,8 +6,8 @@ import type { Types } from 'mongoose';
 export interface MenuItemAddonInputCreate {
   addonId: string;
   isSingleSelect?: boolean;
-  min?: number;
-  max?: number;
+  min?: number | null;
+  max?: number | null;
 }
 
 export interface MenuItemAddonInputUpdate extends MenuItemAddonInputCreate {
@@ -22,6 +22,7 @@ export interface MeasurementConfig {
   minValue?: number | null;
   maxValue?: number | null;
   stepValue?: number | null;
+  baseUnit: string;
 }
 
 export interface MenuItemCreateDTO {
@@ -105,6 +106,7 @@ export interface MenuItemUpdateDTO {
   measurementConfig?: MeasurementConfig;
 
   variations?: Array<{
+    id?: string;
     variationId: string;
     basePrice?: number;
     costPrice?: number;

@@ -13,6 +13,7 @@ import {
   createMenuItemVariant,
   getAllMenuItemVariants,
   updateMenuItemVariant,
+  deleteMenuItemVariant,
 } from '@modules/menu/menu-item-variants/menu-item-variant.service';
 import type { MenuItemVariant } from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
@@ -38,7 +39,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
   try {
     const normalizeAddonCreate = (
       arr:
-        | Array<{ addonId: string; isSingleSelect?: boolean; min?: number; max?: number }>
+        | Array<{ addonId: string; isSingleSelect?: boolean; min?: number | null; max?: number | null }>
         | undefined,
     ) => {
       return (arr || []).map(a => ({
@@ -98,7 +99,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       outletId: new Types.ObjectId(outletId),
 
       name: dto.name,
-      shortCodes: (dto.shortCodes || []).map(s => s.trim().toUpperCase()),
+      shortCodes: dto.shortCodes && dto.shortCodes.length > 0 ? dto.shortCodes.map(s => s.trim().toUpperCase()) : undefined,
       categoryId: new Types.ObjectId(dto.categoryId),
       taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
 
@@ -107,13 +108,13 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       basePrice: dto.basePrice ?? null,
       costPrice: dto.costPrice ?? 0,
 
-      isMeasurementBased: dto.isMeasurementBased,
-      measurementConfig: dto.measurementConfig
-        ? {
-            ...dto.measurementConfig,
-            measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
-          }
-        : undefined,
+      isMeasurementBased: variationsInput.length > 0 ? false : dto.isMeasurementBased,
+      measurementConfig: (variationsInput.length > 0 || !dto.measurementConfig)
+        ? undefined
+        : {
+          ...dto.measurementConfig,
+          measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+        },
 
       isVariation: variationsInput.length > 0,
 
@@ -270,7 +271,8 @@ const buildMenuItemNested = async (
               };
             }),
         );
-        const varRaw = (v as any).toObject ? (v as any).toObject() : v;
+        const varObj = v as unknown as { toObject?: () => Record<string, unknown> } & Record<string, unknown>;
+        const varRaw = varObj.toObject ? varObj.toObject() : varObj;
         return {
           variationId: String(v.variationId),
           name: variation?.name ?? '',
@@ -376,14 +378,32 @@ export const updateMenuItem = async (
 ) => {
   try {
     const updateData: Record<string, unknown> = { ...dto };
+    let unsetData: Record<string, unknown> | undefined;
+
     if (dto.shortCodes) {
-      updateData.shortCodes = dto.shortCodes.map(s => s.trim().toUpperCase());
+      if (dto.shortCodes.length > 0) {
+        updateData.shortCodes = dto.shortCodes.map(s => s.trim().toUpperCase());
+      } else {
+        updateData.shortCodes = [];
+      }
     }
-    if (dto.measurementConfig) {
+
+    if (dto.variations && dto.variations.length > 0) {
+      updateData.isMeasurementBased = false;
+      delete updateData.measurementConfig;
+      unsetData = { measurementConfig: 1 };
+    } else if (dto.measurementConfig) {
       updateData.measurementConfig = {
         ...dto.measurementConfig,
         measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
       };
+    }
+
+    const updateQuery: Record<string, unknown> = {
+      $set: updateData,
+    };
+    if (unsetData) {
+      updateQuery.$unset = unsetData;
     }
     if (dto.taxGroupId !== undefined) {
       updateData.taxGroupId = dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null;
@@ -391,9 +411,7 @@ export const updateMenuItem = async (
 
     const updated = await MenuItemEntity.findOneAndUpdate(
       { _id: new Types.ObjectId(menuItemId), brandId: new Types.ObjectId(brandId) },
-      {
-        $set: updateData,
-      },
+      updateQuery,
       { new: true },
     );
     if (!updated) return updated;
@@ -403,12 +421,12 @@ export const updateMenuItem = async (
     const normalizeAddonUpdate = (
       arr:
         | Array<{
-            addonId: string;
-            allowedItems?: string[];
-            isSingleSelect?: boolean;
-            min?: number;
-            max?: number;
-          }>
+          addonId: string;
+          allowedItems?: string[];
+          isSingleSelect?: boolean;
+          min?: number | null;
+          max?: number | null;
+        }>
         | undefined,
     ) => {
       return (arr || []).map(a => ({
@@ -431,12 +449,69 @@ export const updateMenuItem = async (
       const byVariationId = new Map<string, string>();
       (variants.items || []).forEach(v => byVariationId.set(String(v.variationId), String(v._id)));
 
+      const processedVariantIds = new Set<string>();
+
       for (const v of dto.variations) {
-        const variantDocId = byVariationId.get(v.variationId);
-        if (!variantDocId) continue;
+        let variantDocId: string | undefined = undefined;
+
+        if (v.id) {
+          const match = (variants.items || []).find(existing => String(existing._id) === v.id);
+          if (match) {
+            variantDocId = String(match._id);
+          }
+        }
+
+        if (!variantDocId) {
+          variantDocId = byVariationId.get(v.variationId);
+        }
+
+        if (!variantDocId) {
+          // It's a new variation explicitly assigned to this menu item during an update call
+          const exists = await getVariation(brandId, outletId, v.variationId);
+          if (!exists) {
+            throw { status: 404, code: 'VARIATION_NOT_FOUND', message: 'Variation not found' };
+          }
+
+          const newVariant = await createMenuItemVariant(brandId, outletId, {
+            menuItemId,
+            variationId: v.variationId,
+            basePrice: v.basePrice,
+            costPrice: v.costPrice,
+            isMeasurementBased: v.isMeasurementBased,
+            measurementConfig: v.measurementConfig,
+            isActive: true,
+            isDefault: false,
+          });
+
+          if (!newVariant) continue;
+          variantDocId = String(newVariant._id);
+
+          processedVariantIds.add(variantDocId);
+
+          const addons = normalizeAddonUpdate(v.addons);
+          for (const a of addons) {
+            const created = await createMenuItemAddon(brandId, outletId, {
+              menuItemId,
+              addonId: a.addonId,
+              menuItemVariantId: variantDocId,
+              isSingleSelect: a.isSingleSelect,
+              min: a.min,
+              max: a.max,
+              isActive: true,
+            });
+            if (created && a.allowedItemIds && a.allowedItemIds.length > 0) {
+              await updateMenuItemAddon(brandId, outletId, String(created._id), {
+                allowedItemIds: a.allowedItemIds,
+              });
+            }
+          }
+          continue; // Finish processing this explicitly newly created variation
+        }
 
         // Update variant details
+        processedVariantIds.add(variantDocId);
         await updateMenuItemVariant(brandId, outletId, variantDocId, {
+          variationId: v.variationId,
           basePrice: v.basePrice,
           costPrice: v.costPrice,
           isMeasurementBased: v.isMeasurementBased,
@@ -475,6 +550,13 @@ export const updateMenuItem = async (
               });
             }
           }
+        }
+      }
+
+      // NO-OP the untouched variations by deleting them since they aren't part of the DTO anymore
+      for (const existing of variants.items || []) {
+        if (!processedVariantIds.has(String(existing._id))) {
+          await deleteMenuItemVariant(brandId, outletId, String(existing._id));
         }
       }
     } else if (dto.addons && dto.addons.length > 0 && !dto.isMeasurementBased) {
@@ -816,31 +898,31 @@ export const getAddonMappingAggregationV2 = async (
 
     ...(addonObjectId
       ? [
-          {
-            $addFields: {
-              items: {
-                $filter: {
-                  input: '$items',
-                  as: 'i',
-                  cond: {
-                    $not: {
-                      $in: [
-                        addonObjectId,
-                        {
-                          $map: {
-                            input: { $ifNull: ['$$i.addons', []] },
-                            as: 'a',
-                            in: '$$a.addonId',
-                          },
+        {
+          $addFields: {
+            items: {
+              $filter: {
+                input: '$items',
+                as: 'i',
+                cond: {
+                  $not: {
+                    $in: [
+                      addonObjectId,
+                      {
+                        $map: {
+                          input: { $ifNull: ['$$i.addons', []] },
+                          as: 'a',
+                          in: '$$a.addonId',
                         },
-                      ],
-                    },
+                      },
+                    ],
                   },
                 },
               },
             },
           },
-        ]
+        },
+      ]
       : []),
 
     /* ---------------- GROUP CATEGORY ---------------- */

@@ -19,6 +19,219 @@ export const getOpenApiSpec = () => {
         outletIdHeader: { type: 'apiKey', in: 'header', name: 'outlet-id' },
       },
       schemas: {
+        Tax: {
+          type: 'object',
+          properties: {
+            _id: {
+              type: 'string',
+            },
+            brandId: {
+              type: 'string',
+            },
+            outletId: {
+              type: 'string',
+            },
+            name: {
+              type: 'string',
+            },
+            rate: {
+              type: 'number',
+            },
+            type: {
+              type: 'string',
+              enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
+            },
+            isInclusive: {
+              type: 'boolean',
+            },
+            calculationMethod: {
+              type: 'string',
+              enum: ['STANDARD', 'CUMULATIVE'],
+            },
+            applicableOrderTypes: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
+              },
+            },
+            isActive: {
+              type: 'boolean',
+            },
+            isDelete: {
+              type: 'boolean',
+            },
+            createdAt: {
+              type: 'string',
+            },
+            updatedAt: {
+              type: 'string',
+            },
+          },
+          required: [
+            '_id',
+            'brandId',
+            'outletId',
+            'name',
+            'rate',
+            'type',
+            'isInclusive',
+            'calculationMethod',
+            'applicableOrderTypes',
+            'isActive',
+            'isDelete',
+          ],
+        },
+        TaxGroup: {
+          type: 'object',
+          properties: {
+            _id: {
+              type: 'string',
+            },
+            brandId: {
+              type: 'string',
+            },
+            outletId: {
+              type: 'string',
+            },
+            name: {
+              type: 'string',
+            },
+            taxes: {
+              type: 'array',
+              items: {
+                $ref: '#/components/schemas/Tax',
+              },
+            },
+            isActive: {
+              type: 'boolean',
+            },
+            isDelete: {
+              type: 'boolean',
+            },
+            createdAt: {
+              type: 'string',
+            },
+            updatedAt: {
+              type: 'string',
+            },
+          },
+          required: ['_id', 'brandId', 'outletId', 'name', 'taxes', 'isActive', 'isDelete'],
+        },
+        CreateTaxRequest: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              minLength: 1,
+            },
+            rate: {
+              type: 'number',
+              minimum: 0,
+            },
+            type: {
+              type: 'string',
+              enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
+              default: 'PERCENTAGE',
+            },
+            isInclusive: {
+              type: 'boolean',
+              default: false,
+            },
+            calculationMethod: {
+              type: 'string',
+              enum: ['STANDARD', 'CUMULATIVE'],
+              default: 'STANDARD',
+            },
+            applicableOrderTypes: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
+              },
+              default: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
+            },
+            isActive: {
+              type: 'boolean',
+              default: true,
+            },
+          },
+          required: ['name', 'rate'],
+        },
+        UpdateTaxRequest: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              minLength: 1,
+            },
+            rate: {
+              type: 'number',
+              minimum: 0,
+            },
+            type: {
+              type: 'string',
+              enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
+            },
+            isInclusive: {
+              type: 'boolean',
+            },
+            calculationMethod: {
+              type: 'string',
+              enum: ['STANDARD', 'CUMULATIVE'],
+            },
+            applicableOrderTypes: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
+              },
+            },
+            isActive: {
+              type: 'boolean',
+            },
+          },
+        },
+        CreateTaxGroupRequest: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              minLength: 1,
+            },
+            taxes: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              minItems: 1,
+            },
+            isActive: {
+              type: 'boolean',
+              default: true,
+            },
+          },
+          required: ['name', 'taxes'],
+        },
+        UpdateTaxGroupRequest: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+              minLength: 1,
+            },
+            taxes: {
+              type: 'array',
+              items: {
+                type: 'string',
+              },
+              minItems: 1,
+            },
+            isActive: {
+              type: 'boolean',
+            },
+          },
+        },
         Zone: {
           type: 'object',
           properties: {
@@ -1055,7 +1268,8 @@ export const getOpenApiSpec = () => {
         },
         OrderMenuCategoryGroup: {
           type: 'object',
-          description: 'A category with its active menu items, variants, and addons for POS ordering',
+          description:
+            'A category with its active menu items, variants, and addons for POS ordering',
           properties: {
             categoryId: { type: 'string' },
             category: { type: 'string' },
@@ -1100,11 +1314,420 @@ export const getOpenApiSpec = () => {
       },
     ],
     paths: {
+      '/api/v1/taxes': {
+        get: {
+          tags: ['Tax'],
+          summary: 'Get all active taxes',
+          security: [
+            {
+              bearerAuth: [],
+            },
+            {
+              brandIdHeader: [],
+            },
+            {
+              outletIdHeader: [],
+            },
+          ],
+          parameters: [
+            {
+              name: 'page',
+              in: 'query',
+              schema: {
+                type: 'number',
+                default: 1,
+              },
+            },
+            {
+              name: 'limit',
+              in: 'query',
+              schema: {
+                type: 'number',
+                default: 20,
+              },
+            },
+            {
+              name: 'isActive',
+              in: 'query',
+              schema: {
+                type: 'boolean',
+              },
+            },
+            {
+              name: 'column',
+              in: 'query',
+              schema: {
+                type: 'string',
+                enum: ['name', 'rate', 'type', 'isActive', 'createdAt', 'updatedAt'],
+                default: 'name',
+              },
+            },
+            {
+              name: 'order',
+              in: 'query',
+              schema: {
+                type: 'string',
+                enum: ['ASC', 'DESC'],
+                default: 'ASC',
+              },
+            },
+          ],
+          responses: {
+            '200': {
+              description: 'Success',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/ApiResponse',
+                  },
+                },
+              },
+            },
+          },
+        },
+        post: {
+          tags: ['Tax'],
+          summary: 'Create a new tax',
+          security: [
+            {
+              bearerAuth: [],
+            },
+            {
+              brandIdHeader: [],
+            },
+            {
+              outletIdHeader: [],
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/CreateTaxRequest',
+                },
+              },
+            },
+          },
+          responses: {
+            '201': {
+              description: 'Created',
+              content: {
+                'application/json': {
+                  schema: {
+                    $ref: '#/components/schemas/ApiResponse',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      '/api/v1/taxes/{id}': {
+        get: {
+          tags: ['Tax'],
+          summary: 'Get a specific tax by ID',
+          security: [
+            {
+              bearerAuth: [],
+            },
+            {
+              brandIdHeader: [],
+            },
+            {
+              outletIdHeader: [],
+            },
+          ],
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string',
+              },
+            },
+          ],
+          responses: {
+            '200': {
+              description: 'Success',
+            },
+            '404': {
+              description: 'Not Found',
+            },
+          },
+        },
+        patch: {
+          tags: ['Tax'],
+          summary: 'Update a specific tax',
+          security: [
+            {
+              bearerAuth: [],
+            },
+            {
+              brandIdHeader: [],
+            },
+            {
+              outletIdHeader: [],
+            },
+          ],
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string',
+              },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UpdateTaxRequest',
+                },
+              },
+            },
+          },
+          responses: {
+            '200': {
+              description: 'Success',
+            },
+            '404': {
+              description: 'Not Found',
+            },
+          },
+        },
+        delete: {
+          tags: ['Tax'],
+          summary: 'Delete a specific tax',
+          security: [
+            {
+              bearerAuth: [],
+            },
+            {
+              brandIdHeader: [],
+            },
+            {
+              outletIdHeader: [],
+            },
+          ],
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string',
+              },
+            },
+          ],
+          responses: {
+            '200': {
+              description: 'Success',
+            },
+            '404': {
+              description: 'Not Found',
+            },
+          },
+        },
+      },
+      '/api/v1/taxes/groups': {
+        get: {
+          tags: ['TaxGroup'],
+          summary: 'Get all active tax groups',
+          security: [
+            {
+              bearerAuth: [],
+            },
+            {
+              brandIdHeader: [],
+            },
+            {
+              outletIdHeader: [],
+            },
+          ],
+          parameters: [
+            {
+              name: 'page',
+              in: 'query',
+              schema: {
+                type: 'number',
+                default: 1,
+              },
+            },
+            {
+              name: 'limit',
+              in: 'query',
+              schema: {
+                type: 'number',
+                default: 20,
+              },
+            },
+            {
+              name: 'isActive',
+              in: 'query',
+              schema: {
+                type: 'boolean',
+              },
+            },
+          ],
+          responses: {
+            '200': {
+              description: 'Success',
+            },
+          },
+        },
+        post: {
+          tags: ['TaxGroup'],
+          summary: 'Create a new tax group',
+          security: [
+            {
+              bearerAuth: [],
+            },
+            {
+              brandIdHeader: [],
+            },
+            {
+              outletIdHeader: [],
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/CreateTaxGroupRequest',
+                },
+              },
+            },
+          },
+          responses: {
+            '201': {
+              description: 'Created',
+            },
+          },
+        },
+      },
+      '/api/v1/taxes/groups/{id}': {
+        get: {
+          tags: ['TaxGroup'],
+          summary: 'Get a specific tax group by ID',
+          security: [
+            {
+              bearerAuth: [],
+            },
+            {
+              brandIdHeader: [],
+            },
+            {
+              outletIdHeader: [],
+            },
+          ],
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string',
+              },
+            },
+          ],
+          responses: {
+            '200': {
+              description: 'Success',
+            },
+            '404': {
+              description: 'Not Found',
+            },
+          },
+        },
+        patch: {
+          tags: ['TaxGroup'],
+          summary: 'Update a specific tax group',
+          security: [
+            {
+              bearerAuth: [],
+            },
+            {
+              brandIdHeader: [],
+            },
+            {
+              outletIdHeader: [],
+            },
+          ],
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string',
+              },
+            },
+          ],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  $ref: '#/components/schemas/UpdateTaxGroupRequest',
+                },
+              },
+            },
+          },
+          responses: {
+            '200': {
+              description: 'Success',
+            },
+            '404': {
+              description: 'Not Found',
+            },
+          },
+        },
+        delete: {
+          tags: ['TaxGroup'],
+          summary: 'Delete a specific tax group',
+          security: [
+            {
+              bearerAuth: [],
+            },
+            {
+              brandIdHeader: [],
+            },
+            {
+              outletIdHeader: [],
+            },
+          ],
+          parameters: [
+            {
+              name: 'id',
+              in: 'path',
+              required: true,
+              schema: {
+                type: 'string',
+              },
+            },
+          ],
+          responses: {
+            '200': {
+              description: 'Success',
+            },
+            '404': {
+              description: 'Not Found',
+            },
+          },
+        },
+      },
       '/api/v1/order/menu-items': {
         get: {
           tags: ['Orders'],
           summary: 'List active POS menu items grouped by category',
-          description: 'Fetches the complete menu structure including variants and addons for the POS. Mandatory headers: brand-id, outlet-id.',
+          description:
+            'Fetches the complete menu structure including variants and addons for the POS. Mandatory headers: brand-id, outlet-id.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           responses: {
             200: {

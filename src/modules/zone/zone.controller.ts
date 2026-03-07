@@ -1,4 +1,11 @@
-import { createZone, listZones, listActiveZones, getZone, updateZone, deleteZone } from '@modules/zone/zone.service';
+import {
+  createZone,
+  listZones,
+  listActiveZones,
+  getZone,
+  updateZone,
+  deleteZone,
+} from '@modules/zone/zone.service';
 
 import type { Request, Response, NextFunction } from 'express';
 
@@ -34,7 +41,11 @@ export const listZonesController = async (req: Request, res: Response, next: Nex
   }
 };
 
-export const listActiveZonesController = async (req: Request, res: Response, next: NextFunction) => {
+export const listActiveZonesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const items = await listActiveZones(brandId, outletId);

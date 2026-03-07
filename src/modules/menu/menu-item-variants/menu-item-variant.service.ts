@@ -160,6 +160,9 @@ export const updateMenuItemVariant = async (
     }
 
     const updateData: Record<string, unknown> = { ...dto };
+    if (dto.variationId) {
+      updateData.variationId = new Types.ObjectId(dto.variationId);
+    }
     if (dto.measurementConfig) {
       updateData.measurementConfig = {
         ...dto.measurementConfig,
