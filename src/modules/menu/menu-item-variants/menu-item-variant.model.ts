@@ -23,7 +23,7 @@ const MenuItemVariantSchema = new Schema<MenuItemVariant>(
     outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
     menuItemId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'MenuItem' },
     variationId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Variation' },
-    basePrice: { type: Number, required: false, min: 0 },
+    basePrice: { type: Number, default: null, min: 0 },
     costPrice: { type: Number, min: 0, default: 0 },
 
     isMeasurementBased: { type: Boolean, default: false },

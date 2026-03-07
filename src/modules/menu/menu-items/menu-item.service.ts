@@ -13,6 +13,7 @@ import {
   createMenuItemVariant,
   getAllMenuItemVariants,
   updateMenuItemVariant,
+  deleteMenuItemVariant,
 } from '@modules/menu/menu-item-variants/menu-item-variant.service';
 import type { MenuItemVariant } from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
@@ -38,7 +39,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
   try {
     const normalizeAddonCreate = (
       arr:
-        | Array<{ addonId: string; isSingleSelect?: boolean; min?: number; max?: number }>
+        | Array<{ addonId: string; isSingleSelect?: boolean; min?: number | null; max?: number | null }>
         | undefined,
     ) => {
       return (arr || []).map(a => ({
@@ -98,7 +99,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       outletId: new Types.ObjectId(outletId),
 
       name: dto.name,
-      shortCodes: (dto.shortCodes || []).map(s => s.trim().toUpperCase()),
+      shortCodes: dto.shortCodes && dto.shortCodes.length > 0 ? dto.shortCodes.map(s => s.trim().toUpperCase()) : undefined,
       categoryId: new Types.ObjectId(dto.categoryId),
 
       dietary: dto.dietary,
@@ -379,7 +380,11 @@ export const updateMenuItem = async (
     let unsetData: Record<string, unknown> | undefined;
 
     if (dto.shortCodes) {
-      updateData.shortCodes = dto.shortCodes.map(s => s.trim().toUpperCase());
+      if (dto.shortCodes.length > 0) {
+        updateData.shortCodes = dto.shortCodes.map(s => s.trim().toUpperCase());
+      } else {
+        updateData.shortCodes = [];
+      }
     }
 
     if (dto.variations && dto.variations.length > 0) {
@@ -415,8 +420,8 @@ export const updateMenuItem = async (
           addonId: string;
           allowedItems?: string[];
           isSingleSelect?: boolean;
-          min?: number;
-          max?: number;
+          min?: number | null;
+          max?: number | null;
         }>
         | undefined,
     ) => {
@@ -440,8 +445,21 @@ export const updateMenuItem = async (
       const byVariationId = new Map<string, string>();
       (variants.items || []).forEach(v => byVariationId.set(String(v.variationId), String(v._id)));
 
+      const processedVariantIds = new Set<string>();
+
       for (const v of dto.variations) {
-        let variantDocId = byVariationId.get(v.variationId);
+        let variantDocId: string | undefined = undefined;
+
+        if (v.id) {
+          const match = (variants.items || []).find(existing => String(existing._id) === v.id);
+          if (match) {
+            variantDocId = String(match._id);
+          }
+        }
+
+        if (!variantDocId) {
+          variantDocId = byVariationId.get(v.variationId);
+        }
 
         if (!variantDocId) {
           // It's a new variation explicitly assigned to this menu item during an update call
@@ -464,6 +482,8 @@ export const updateMenuItem = async (
           if (!newVariant) continue;
           variantDocId = String(newVariant._id);
 
+          processedVariantIds.add(variantDocId);
+
           const addons = normalizeAddonUpdate(v.addons);
           for (const a of addons) {
             const created = await createMenuItemAddon(brandId, outletId, {
@@ -485,7 +505,9 @@ export const updateMenuItem = async (
         }
 
         // Update variant details
+        processedVariantIds.add(variantDocId);
         await updateMenuItemVariant(brandId, outletId, variantDocId, {
+          variationId: v.variationId,
           basePrice: v.basePrice,
           costPrice: v.costPrice,
           isMeasurementBased: v.isMeasurementBased,
@@ -524,6 +546,13 @@ export const updateMenuItem = async (
               });
             }
           }
+        }
+      }
+
+      // NO-OP the untouched variations by deleting them since they aren't part of the DTO anymore
+      for (const existing of variants.items || []) {
+        if (!processedVariantIds.has(String(existing._id))) {
+          await deleteMenuItemVariant(brandId, outletId, String(existing._id));
         }
       }
     } else if (dto.addons && dto.addons.length > 0 && !dto.isMeasurementBased) {

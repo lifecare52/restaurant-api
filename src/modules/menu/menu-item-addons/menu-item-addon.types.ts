@@ -8,8 +8,8 @@ export interface MenuItemAddonCreateDTO {
   allowedItemIds?: string[];
   menuItemVariantId?: string;
   isSingleSelect?: boolean;
-  min?: number;
-  max?: number;
+  min?: number | null;
+  max?: number | null;
   isActive?: boolean;
 }
 
@@ -22,8 +22,8 @@ export interface BulkMenuItemAddonCreateDTO {
   addonId: string;
   allowedItemsId?: string[];
   isSingleSelect?: boolean;
-  min?: number;
-  max?: number;
+  min?: number | null;
+  max?: number | null;
   isActive?: boolean;
   items: BulkMenuItemAddonItemDTO[];
 }
@@ -36,8 +36,8 @@ export interface MenuItemAddon {
   menuItemVariantId?: Types.ObjectId;
   allowedItemIds?: Types.ObjectId[];
   isSingleSelect?: boolean;
-  min?: number;
-  max?: number;
+  min?: number | null;
+  max?: number | null;
   isActive: boolean;
   isDelete: boolean;
 }
@@ -45,8 +45,8 @@ export interface MenuItemAddon {
 export interface MenuItemAddonUpdateDTO {
   allowedItemIds?: string[];
   isSingleSelect?: boolean;
-  min?: number;
-  max?: number;
+  min?: number | null;
+  max?: number | null;
   isActive?: boolean;
 }
 

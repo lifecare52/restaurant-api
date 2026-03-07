@@ -9,8 +9,8 @@ export const createMenuItemAddonSchema = Joi.object({
   allowedItemIds: Joi.array().items(objectId).optional(),
   menuItemVariantId: objectId.optional(),
   isSingleSelect: Joi.boolean().optional(),
-  min: Joi.number().integer().min(0).optional(),
-  max: Joi.number().integer().optional(),
+  min: Joi.number().integer().min(0).allow(null).optional(),
+  max: Joi.number().integer().min(0).allow(null).optional(),
   isActive: Joi.boolean().default(true),
 });
 
@@ -18,8 +18,8 @@ export const createBulkMenuItemAddonSchema = Joi.object({
   addonId: objectId.required(),
   allowedItemsId: Joi.array().items(objectId).optional(),
   isSingleSelect: Joi.boolean().optional(),
-  min: Joi.number().integer().min(0).optional(),
-  max: Joi.number().integer().optional(),
+  min: Joi.number().integer().min(0).allow(null).optional(),
+  max: Joi.number().integer().min(0).allow(null).optional(),
   isActive: Joi.boolean().default(true),
   items: Joi.array()
     .items(
@@ -35,8 +35,8 @@ export const createBulkMenuItemAddonSchema = Joi.object({
 export const updateMenuItemAddonSchema = Joi.object({
   allowedItemIds: Joi.array().items(objectId).optional(),
   isSingleSelect: Joi.boolean().optional(),
-  min: Joi.number().integer().min(0).optional(),
-  max: Joi.number().integer().optional(),
+  min: Joi.number().integer().min(0).allow(null).optional(),
+  max: Joi.number().integer().min(0).allow(null).optional(),
   isActive: Joi.boolean(),
 });
 

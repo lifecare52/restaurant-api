@@ -20,6 +20,7 @@ export const createMenuItemSchema = Joi.object({
     .max(2)
     .unique((a, b) => a.toLowerCase() === b.toLowerCase())
     .messages({ 'array.unique': 'shortCodes must be unique (case-insensitive)' })
+    .allow(null)
     .optional(),
   categoryId: objectId.required(),
 
@@ -31,7 +32,7 @@ export const createMenuItemSchema = Joi.object({
   costPrice: Joi.number().min(0).optional(),
 
   isMeasurementBased: Joi.boolean().default(false),
-  measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
+  measurementConfig: measurementConfigSchema.allow(null).when('isMeasurementBased', {
     is: true,
     then: Joi.required(),
     otherwise: Joi.optional(),
@@ -49,7 +50,7 @@ export const createMenuItemSchema = Joi.object({
         costPrice: Joi.number().min(0).optional(),
 
         isMeasurementBased: Joi.boolean().default(false),
-        measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
+        measurementConfig: measurementConfigSchema.allow(null).when('isMeasurementBased', {
           is: true,
           then: Joi.required(),
           otherwise: Joi.optional(),
@@ -60,32 +61,33 @@ export const createMenuItemSchema = Joi.object({
             Joi.object({
               addonId: objectId.required(),
               isSingleSelect: Joi.boolean().optional(),
-              min: Joi.number().integer().min(0).optional(),
-              max: Joi.number().integer().min(0).optional(),
+              min: Joi.number().integer().min(0).allow(null).optional(),
+              max: Joi.number().integer().min(0).allow(null).optional(),
               allowedItems: Joi.any().forbidden(),
             }),
           )
           .when('isMeasurementBased', {
             is: true,
-            then: Joi.forbidden(),
+            then: Joi.array().max(0).optional(),
             otherwise: Joi.optional(),
           }),
       }),
     )
+    .allow(null)
     .optional(),
   addons: Joi.array()
     .items(
       Joi.object({
         addonId: objectId.required(),
         isSingleSelect: Joi.boolean().optional(),
-        min: Joi.number().integer().min(0).optional(),
-        max: Joi.number().integer().min(0).optional(),
+        min: Joi.number().integer().min(0).allow(null).optional(),
+        max: Joi.number().integer().min(0).allow(null).optional(),
         allowedItems: Joi.any().forbidden(),
       }),
     )
     .when('isMeasurementBased', {
       is: true,
-      then: Joi.forbidden(),
+      then: Joi.array().max(0).optional(),
       otherwise: Joi.optional(),
     }),
 
@@ -103,6 +105,7 @@ export const updateMenuItemSchema = Joi.object({
     .max(2)
     .unique((a, b) => a.toLowerCase() === b.toLowerCase())
     .messages({ 'array.unique': 'shortCodes must be unique (case-insensitive)' })
+    .allow(null)
     .optional(),
   categoryId: objectId,
 
@@ -116,7 +119,7 @@ export const updateMenuItemSchema = Joi.object({
   dineIn: Joi.boolean().default(false),
 
   isMeasurementBased: Joi.boolean(),
-  measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
+  measurementConfig: measurementConfigSchema.allow(null).when('isMeasurementBased', {
     is: true,
     then: Joi.required(),
     otherwise: Joi.optional(),
@@ -125,12 +128,13 @@ export const updateMenuItemSchema = Joi.object({
   variations: Joi.array()
     .items(
       Joi.object({
+        id: objectId.optional(),
         variationId: objectId.required(),
         basePrice: Joi.number().min(0).optional(),
         costPrice: Joi.number().min(0).optional(),
         // Measurement fields for variation
         isMeasurementBased: Joi.boolean().optional(),
-        measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
+        measurementConfig: measurementConfigSchema.allow(null).when('isMeasurementBased', {
           is: true,
           then: Joi.required(),
           otherwise: Joi.optional(),
@@ -141,32 +145,33 @@ export const updateMenuItemSchema = Joi.object({
             Joi.object({
               addonId: objectId.required(),
               isSingleSelect: Joi.boolean().optional(),
-              min: Joi.number().integer().min(0).optional(),
-              max: Joi.number().integer().min(0).optional(),
+              min: Joi.number().integer().min(0).allow(null).optional(),
+              max: Joi.number().integer().min(0).allow(null).optional(),
               allowedItems: Joi.array().items(objectId).optional(),
             }),
           )
           .when('isMeasurementBased', {
             is: true,
-            then: Joi.forbidden(),
+            then: Joi.array().max(0).optional(),
             otherwise: Joi.optional(),
           }),
       }),
     )
+    .allow(null)
     .optional(),
   addons: Joi.array()
     .items(
       Joi.object({
         addonId: objectId.required(),
         isSingleSelect: Joi.boolean().optional(),
-        min: Joi.number().integer().min(0).optional(),
-        max: Joi.number().integer().min(0).optional(),
+        min: Joi.number().integer().min(0).allow(null).optional(),
+        max: Joi.number().integer().min(0).allow(null).optional(),
         allowedItems: Joi.array().items(objectId).optional(),
       }),
     )
     .when('isMeasurementBased', {
       is: true,
-      then: Joi.forbidden(),
+      then: Joi.array().max(0).optional(),
       otherwise: Joi.optional(),
     }),
 
