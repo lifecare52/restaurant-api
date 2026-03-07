@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Types, type FilterQuery, type SortOrder } from 'mongoose';
 
 import MeasurementEntity from './measurement.model';
 
@@ -19,7 +19,7 @@ export const createMeasurement = async (dto: MeasurementCreateDTO) => {
 export const listMeasurements = async (query: MeasurementListQuery) => {
   const { searchText, column = 'name', order = 'ASC' } = query;
 
-  const match: any = { isDelete: false, isActive: true };
+  const match: FilterQuery<unknown> = { isDelete: false, isActive: true };
 
   if (searchText) {
     match.$or = [
@@ -29,7 +29,7 @@ export const listMeasurements = async (query: MeasurementListQuery) => {
     ];
   }
 
-  const sort: any = {};
+  const sort: Record<string, SortOrder> = {};
   sort[column] = order === 'ASC' ? 1 : -1;
 
   const items = await MeasurementEntity.find(match)
