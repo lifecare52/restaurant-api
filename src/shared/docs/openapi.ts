@@ -509,10 +509,14 @@ export const getOpenApiSpec = () => {
             settings: {
               type: 'object',
               properties: {
+                gstEnabled: { type: 'boolean', default: false },
                 gstNo: { type: 'string' },
+                gstScheme: {
+                  type: 'string',
+                  enum: ['REGULAR', 'COMPOSITION', 'NONE'],
+                  default: 'NONE',
+                },
                 currency: { type: 'string' },
-                CGST: { type: 'number', minimum: 0, maximum: 100 },
-                SGST: { type: 'number', minimum: 0, maximum: 100 },
               },
             },
           },
@@ -550,10 +554,10 @@ export const getOpenApiSpec = () => {
             settings: {
               type: 'object',
               properties: {
+                gstEnabled: { type: 'boolean' },
                 gstNo: { type: 'string' },
+                gstScheme: { type: 'string', enum: ['REGULAR', 'COMPOSITION', 'NONE'] },
                 currency: { type: 'string' },
-                CGST: { type: 'number', minimum: 0, maximum: 100 },
-                SGST: { type: 'number', minimum: 0, maximum: 100 },
               },
             },
           },
@@ -587,10 +591,10 @@ export const getOpenApiSpec = () => {
             settings: {
               type: 'object',
               properties: {
+                gstEnabled: { type: 'boolean' },
                 gstNo: { type: 'string' },
+                gstScheme: { type: 'string', enum: ['REGULAR', 'COMPOSITION', 'NONE'] },
                 currency: { type: 'string' },
-                CGST: { type: 'number' },
-                SGST: { type: 'number' },
               },
             },
             createdAt: { type: 'string' },

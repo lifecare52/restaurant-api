@@ -39,7 +39,12 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
   try {
     const normalizeAddonCreate = (
       arr:
-        | Array<{ addonId: string; isSingleSelect?: boolean; min?: number | null; max?: number | null }>
+        | Array<{
+            addonId: string;
+            isSingleSelect?: boolean;
+            min?: number | null;
+            max?: number | null;
+          }>
         | undefined,
     ) => {
       return (arr || []).map(a => ({
@@ -99,7 +104,10 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       outletId: new Types.ObjectId(outletId),
 
       name: dto.name,
-      shortCodes: dto.shortCodes && dto.shortCodes.length > 0 ? dto.shortCodes.map(s => s.trim().toUpperCase()) : undefined,
+      shortCodes:
+        dto.shortCodes && dto.shortCodes.length > 0
+          ? dto.shortCodes.map(s => s.trim().toUpperCase())
+          : undefined,
       categoryId: new Types.ObjectId(dto.categoryId),
       taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
 
@@ -109,12 +117,13 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       costPrice: dto.costPrice ?? 0,
 
       isMeasurementBased: variationsInput.length > 0 ? false : dto.isMeasurementBased,
-      measurementConfig: (variationsInput.length > 0 || !dto.measurementConfig)
-        ? undefined
-        : {
-          ...dto.measurementConfig,
-          measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
-        },
+      measurementConfig:
+        variationsInput.length > 0 || !dto.measurementConfig
+          ? undefined
+          : {
+              ...dto.measurementConfig,
+              measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+            },
 
       isVariation: variationsInput.length > 0,
 
@@ -271,7 +280,10 @@ const buildMenuItemNested = async (
               };
             }),
         );
-        const varObj = v as unknown as { toObject?: () => Record<string, unknown> } & Record<string, unknown>;
+        const varObj = v as unknown as { toObject?: () => Record<string, unknown> } & Record<
+          string,
+          unknown
+        >;
         const varRaw = varObj.toObject ? varObj.toObject() : varObj;
         return {
           variationId: String(v.variationId),
@@ -421,12 +433,12 @@ export const updateMenuItem = async (
     const normalizeAddonUpdate = (
       arr:
         | Array<{
-          addonId: string;
-          allowedItems?: string[];
-          isSingleSelect?: boolean;
-          min?: number | null;
-          max?: number | null;
-        }>
+            addonId: string;
+            allowedItems?: string[];
+            isSingleSelect?: boolean;
+            min?: number | null;
+            max?: number | null;
+          }>
         | undefined,
     ) => {
       return (arr || []).map(a => ({
@@ -898,31 +910,31 @@ export const getAddonMappingAggregationV2 = async (
 
     ...(addonObjectId
       ? [
-        {
-          $addFields: {
-            items: {
-              $filter: {
-                input: '$items',
-                as: 'i',
-                cond: {
-                  $not: {
-                    $in: [
-                      addonObjectId,
-                      {
-                        $map: {
-                          input: { $ifNull: ['$$i.addons', []] },
-                          as: 'a',
-                          in: '$$a.addonId',
+          {
+            $addFields: {
+              items: {
+                $filter: {
+                  input: '$items',
+                  as: 'i',
+                  cond: {
+                    $not: {
+                      $in: [
+                        addonObjectId,
+                        {
+                          $map: {
+                            input: { $ifNull: ['$$i.addons', []] },
+                            as: 'a',
+                            in: '$$a.addonId',
+                          },
                         },
-                      },
-                    ],
+                      ],
+                    },
                   },
                 },
               },
             },
           },
-        },
-      ]
+        ]
       : []),
 
     /* ---------------- GROUP CATEGORY ---------------- */

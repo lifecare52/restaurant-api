@@ -1,6 +1,7 @@
 import Joi from 'joi';
 
-import { OUTLET_TYPES, CUISINE_TYPES } from '@shared/constants';
+import { CUISINE_TYPES, OUTLET_TYPES } from '@shared/constants';
+import { GstScheme } from '@shared/enum';
 
 export const createOutletSchema = Joi.object({
   basicInfo: Joi.object({
@@ -22,10 +23,21 @@ export const createOutletSchema = Joi.object({
     address: Joi.string().trim().required(),
   }).required(),
   settings: Joi.object({
-    gstNo: Joi.string().trim().optional(),
+    gstEnabled: Joi.boolean().default(false),
+    gstNo: Joi.string().trim().when('gstEnabled', {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional().allow(''),
+    }),
+    gstScheme: Joi.string()
+      .valid(...Object.values(GstScheme))
+      .when('gstEnabled', {
+        is: true,
+        then: Joi.invalid(GstScheme.NONE).required(),
+        otherwise: Joi.optional(),
+      })
+      .default(GstScheme.NONE),
     currency: Joi.string().trim().optional(),
-    CGST: Joi.number().integer().min(0).max(100).optional(),
-    SGST: Joi.number().integer().min(0).max(100).optional(),
   }).optional(),
 });
 
@@ -45,10 +57,16 @@ export const updateOutletSchema = Joi.object({
     address: Joi.string().trim(),
   }),
   settings: Joi.object({
-    gstNo: Joi.string().trim(),
+    gstEnabled: Joi.boolean(),
+    gstNo: Joi.string().trim().allow(''),
+    gstScheme: Joi.string().valid(...Object.values(GstScheme)),
     currency: Joi.string().trim(),
-    CGST: Joi.number().integer().min(0).max(100),
-    SGST: Joi.number().integer().min(0).max(100),
+  }).when('.gstEnabled', {
+    is: true,
+    then: Joi.object({
+      gstNo: Joi.string().trim().required(),
+      gstScheme: Joi.string().valid(...Object.values(GstScheme)).invalid(GstScheme.NONE).required(),
+    }),
   }),
 });
 

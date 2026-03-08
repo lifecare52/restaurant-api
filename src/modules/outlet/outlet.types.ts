@@ -1,3 +1,5 @@
+import { GstScheme } from '@shared/enum';
+
 export interface OutletCreateDTO {
   basicInfo: {
     name: string;
@@ -14,10 +16,10 @@ export interface OutletCreateDTO {
     address: string;
   };
   settings?: {
+    gstEnabled: boolean;
     gstNo?: string;
+    gstScheme: GstScheme;
     currency?: string;
-    CGST?: number;
-    SGST?: number;
   };
 }
 
@@ -37,9 +39,9 @@ export interface OutletUpdateDTO {
     address?: string;
   };
   settings?: {
+    gstEnabled?: boolean;
     gstNo?: string;
+    gstScheme?: GstScheme;
     currency?: string;
-    CGST?: number;
-    SGST?: number;
   };
 }
