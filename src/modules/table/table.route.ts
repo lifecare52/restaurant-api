@@ -7,6 +7,7 @@ import {
   updateTableController,
   updateTableStatusController,
   deleteTableController,
+  getTableLiveOrdersController,
 } from '@modules/table/table.controller';
 import {
   createTableSchema,
@@ -95,6 +96,16 @@ router.delete(
   requireOutletAccess,
   requireRole(ADMIN_RLS),
   deleteTableController,
+);
+
+router.get(
+  '/live-orders',
+  auth,
+  validateRequest(commonHeaderSchema, 'headers'),
+  validateRequest(tableIdQuerySchema, 'query'),
+  requireBrandAccess,
+  requireOutletAccess,
+  getTableLiveOrdersController,
 );
 
 export default router;

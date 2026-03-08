@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Types, type FilterQuery, type SortOrder } from 'mongoose';
 
 import { ROLES, PERMISSIONS } from '@shared/constants';
 import { signToken } from '@shared/utils/jwt';
@@ -73,7 +73,7 @@ export const getUsers = async (brandId: string, query: UserListQueryDTO) => {
   const limit = query.limit || 20;
   const skip = (page - 1) * limit;
 
-  const filter: Record<string, any> = {
+  const filter: FilterQuery<unknown> = {
     brandId: new Types.ObjectId(brandId),
     isDelete: false,
     role: { $in: [ROLES.PARTNER, ROLES.STAFF] },
@@ -88,7 +88,7 @@ export const getUsers = async (brandId: string, query: UserListQueryDTO) => {
     filter.$or = [{ name: regex }, { username: regex }, { email: regex }];
   }
 
-  const sort: Record<string, any> = {};
+  const sort: Record<string, SortOrder> = {};
   if (query.column) {
     sort[query.column] = query.order === 'ASC' ? 1 : -1;
   } else {

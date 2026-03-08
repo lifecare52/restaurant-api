@@ -5,6 +5,7 @@ import {
   updateTable,
   updateTableStatus,
   deleteTable,
+  getTableLiveOrders,
 } from '@modules/table/table.service';
 
 import type { Request, Response, NextFunction } from 'express';
@@ -119,3 +120,16 @@ export const deleteTableController = async (req: Request, res: Response, next: N
     next(err);
   }
 };
+
+export const getTableLiveOrdersController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const { tableId } = req.query as { tableId: string };
+    const items = await getTableLiveOrders(brandId, outletId, tableId);
+    res.locals.response = { status: true, code: 200, data: items };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+

@@ -274,6 +274,7 @@ const buildMenuItemNested = async (
         const varObj = v as unknown as { toObject?: () => Record<string, unknown> } & Record<string, unknown>;
         const varRaw = varObj.toObject ? varObj.toObject() : varObj;
         return {
+          id: String(v._id),
           variationId: String(v.variationId),
           name: variation?.name ?? '',
           basePrice: v.basePrice,

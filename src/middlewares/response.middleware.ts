@@ -9,13 +9,13 @@ export const responseMiddleware = (_req: Request, res: Response, next: NextFunct
   const r = res.locals.response as IApiResponse;
   const code = r?.code;
   const payload: IApiResponse = {
-    status: r?.status ?? true,
+    status: r.status ?? true,
     code,
-    message: r?.message,
-    data: r?.data,
-    errors: r?.errors,
-    validationMessages: r?.validationMessages,
-    total: r?.total,
+    message: r.message,
+    data: r.data,
+    errors: r.errors,
+    validationMessages: r.validationMessages,
+    total: r.total
   };
   res.status(code).json(payload);
 };

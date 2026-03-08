@@ -6,7 +6,10 @@ import type {
   TableUpdateDTO,
   TableListQuery,
   TABLE_STATUS,
+  Table,
 } from '@modules/table/table.types';
+import type { FilterQuery, UpdateQuery } from 'mongoose';
+import type { Order, OrderItem } from '@modules/order/order.types';
 
 export const createTable = async (brandId: string, outletId: string, dto: TableCreateDTO) => {
   try {
@@ -21,8 +24,8 @@ export const createTable = async (brandId: string, outletId: string, dto: TableC
       isDelete: false,
     });
     return created.toObject();
-  } catch (err: any) {
-    if (err?.code === 11000) {
+  } catch (err: unknown) {
+    if ((err as { code?: number })?.code === 11000) {
       throw { status: 409, code: 'DUPLICATE_TABLE', message: 'Table name already exists' };
     }
     throw err;
@@ -34,7 +37,7 @@ export const listTables = async (brandId: string, outletId: string, query: Table
   const limit = query.limit && query.limit > 0 ? query.limit : 20;
   const skip = (page - 1) * limit;
 
-  const filter: any = {
+  const filter: FilterQuery<Table> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
@@ -90,7 +93,7 @@ export const updateTable = async (
   dto: TableUpdateDTO,
 ) => {
   try {
-    const updateData: any = { ...dto };
+    const updateData: UpdateQuery<Table> = { ...dto };
     if (dto.zoneId !== undefined) {
       updateData.zoneId = dto.zoneId ? new Types.ObjectId(dto.zoneId) : null;
     }
@@ -107,8 +110,8 @@ export const updateTable = async (
     ).populate('zoneId', 'name');
 
     return updated;
-  } catch (err: any) {
-    if (err?.code === 11000) {
+  } catch (err: unknown) {
+    if ((err as { code?: number })?.code === 11000) {
       throw { status: 409, code: 'DUPLICATE_TABLE', message: 'Table name already exists' };
     }
     throw err;
@@ -145,3 +148,32 @@ export const deleteTable = async (brandId: string, outletId: string, tableId: st
     { new: true },
   );
 };
+
+export const getTableLiveOrders = async (brandId: string, outletId: string, tableId: string) => {
+  // Needs to be imported dynamically or we just use mongoose model lookup
+  // But we can just use mongoose connection or import OrderEntity
+  const { OrderEntity, OrderItemEntity } = require('@modules/order/order.model');
+
+  const orders = await OrderEntity.find({
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    tableId: new Types.ObjectId(tableId),
+    status: { $in: ['OPEN', 'IN_PROGRESS'] }, // ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS
+    isDelete: false,
+  }).lean();
+
+  if (!orders.length) return [];
+
+  const orderIds = orders.map((o: Order) => o._id);
+
+  const items = await OrderItemEntity.find({
+    orderId: { $in: orderIds },
+    isDelete: false,
+  }).lean();
+
+  return orders.map((order: Order) => ({
+    ...order,
+    items: items.filter((item: OrderItem) => String(item.orderId) === String(order._id)),
+  }));
+};
+
