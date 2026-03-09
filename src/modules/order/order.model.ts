@@ -35,7 +35,6 @@ const OrderSchema = new Schema<Order>(
         },
         // Financials
         subtotal: { type: Number, required: true, min: 0 },
-        taxAmount: { type: Number, required: true, min: 0, default: 0 },
         discountAmount: { type: Number, required: true, min: 0, default: 0 },
         discountType: { type: Number, default: null },
         discountValue: { type: Number, default: null },

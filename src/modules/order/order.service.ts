@@ -173,16 +173,6 @@ const processItems = (
   return { processedItems, processedAddons, subtotal };
 };
 
-/** Compute tax amount from outlet settings */
-const computeTax = async (outletId: string, subtotal: number) => {
-  const outlet = await OutletEntity.findById(outletId).lean();
-  let taxRate = 0;
-  if (outlet?.settings) {
-    taxRate = ((outlet.settings.CGST || 0) + (outlet.settings.SGST || 0)) / 100;
-  }
-  return subtotal * taxRate;
-};
-
 // ─── Service Functions ────────────────────────────────────────────────────────
 
 export const createOrder = async (
@@ -210,9 +200,7 @@ export const createOrder = async (
     dto.items, brandId, outletId, menuItemMap, variantMap, addonMap,
   );
 
-  // Tax calculation
-  const taxAmount = await computeTax(outletId, subtotal);
-  const totalAmount = subtotal + taxAmount;
+  const totalAmount = subtotal;
 
   // Atomic IDs and sequences
   const orderId = new Types.ObjectId();
@@ -250,7 +238,6 @@ export const createOrder = async (
       tableId: dto.tableId ? new Types.ObjectId(dto.tableId) : null,
       status: ORDER_STATUS.OPEN,
       subtotal,
-      taxAmount,
       discountAmount: 0,
       totalAmount,
       isActive: true,
@@ -330,12 +317,6 @@ export const addItemsToOrder = async (
     dto.items, brandId, outletId, menuItemMap, variantMap, addonMap,
   );
 
-  const outlet = await OutletEntity.findById(outletId).lean();
-  let taxRate = 0;
-  if (outlet?.settings) {
-    taxRate = ((outlet.settings.CGST || 0) + (outlet.settings.SGST || 0)) / 100;
-  }
-
   const now = new Date();
 
   const session = await mongoose.startSession();
@@ -357,14 +338,12 @@ export const addItemsToOrder = async (
     }
 
     // Atomic total update — no read-modify-write race condition
-    const newTaxOnNewItems = newSubtotal * taxRate;
     await OrderEntity.updateOne(
       { _id: order._id },
       {
         $inc: {
           subtotal: newSubtotal,
-          taxAmount: newTaxOnNewItems,
-          totalAmount: newSubtotal + newTaxOnNewItems,
+          totalAmount: newSubtotal,
         },
       },
       { session },
@@ -456,21 +435,14 @@ export const removeItemFromOrder = async (
     );
 
     // Recalculate order totals (subtract this item's price)
-    const outlet = await OutletEntity.findById(outletId).lean();
-    let taxRate = 0;
-    if (outlet?.settings) {
-      taxRate = ((outlet.settings.CGST || 0) + (outlet.settings.SGST || 0)) / 100;
-    }
     const removedSubtotal = orderItem.totalPrice;
-    const removedTax = removedSubtotal * taxRate;
 
     await OrderEntity.updateOne(
       { _id: order._id },
       {
         $inc: {
           subtotal: -removedSubtotal,
-          taxAmount: -removedTax,
-          totalAmount: -(removedSubtotal + removedTax),
+          totalAmount: -removedSubtotal,
         },
       },
       { session },
@@ -547,13 +519,6 @@ export const updateOrderItem = async (
     updateFields.totalPrice = newTotal;
   }
 
-  const outlet = await OutletEntity.findById(outletId).lean();
-  let taxRate = 0;
-  if (outlet?.settings) {
-    taxRate = ((outlet.settings.CGST || 0) + (outlet.settings.SGST || 0)) / 100;
-  }
-  const taxDelta = priceDelta * taxRate;
-
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -563,7 +528,7 @@ export const updateOrderItem = async (
     if (priceDelta !== 0) {
       await OrderEntity.updateOne(
         { _id: order._id },
-        { $inc: { subtotal: priceDelta, taxAmount: taxDelta, totalAmount: priceDelta + taxDelta } },
+        { $inc: { subtotal: priceDelta, totalAmount: priceDelta } },
         { session },
       );
     }

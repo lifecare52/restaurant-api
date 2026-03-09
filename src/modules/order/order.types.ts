@@ -26,7 +26,6 @@ export interface Order {
   status: ORDER_STATUS;
   // Financials
   subtotal: number;
-  taxAmount: number;
   discountAmount: number;
   discountType?: number | null;    // FLAT=1, PERCENTAGE=2
   discountValue?: number | null;   // the raw input value (e.g. 50 or 10%)

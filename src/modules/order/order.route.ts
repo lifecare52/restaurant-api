@@ -28,7 +28,11 @@ import { validateRequest } from '@shared/utils/validateRequest';
 import { auth } from '@middlewares/auth.middleware';
 import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
 
+import orderMenuItemsRouter from './menu-items/order-menu-item.route';
+
 const router = Router({ mergeParams: true });
+
+router.use('/menu-items', orderMenuItemsRouter);
 
 const tenantMiddleware = [
     auth,
