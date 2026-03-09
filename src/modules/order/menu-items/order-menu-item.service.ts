@@ -220,7 +220,9 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                                     $filter: {
                                       input: '$variantMeasurementDocs',
                                       as: 'md',
-                                      cond: { $eq: ['$$md._id', '$$v.measurementConfig.measurementId'] },
+                                      cond: {
+                                        $eq: ['$$md._id', '$$v.measurementConfig.measurementId'],
+                                      },
                                     },
                                   },
                                   0,
@@ -284,10 +286,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                         in: {
                           $cond: [
                             {
-                              $gt: [
-                                { $size: { $ifNull: ['$$al.allowedItemIds', []] } },
-                                0,
-                              ],
+                              $gt: [{ $size: { $ifNull: ['$$al.allowedItemIds', []] } }, 0],
                             },
                             /* only allowed items */
                             {

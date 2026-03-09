@@ -1,4 +1,5 @@
 import { Schema, model, type Model, Types } from 'mongoose';
+import { GstScheme } from '@shared/enum';
 
 export interface Outlet {
   brandId: Types.ObjectId;
@@ -17,10 +18,10 @@ export interface Outlet {
     address: string;
   };
   settings?: {
+    gstEnabled: boolean;
     gstNo?: string;
+    gstScheme: GstScheme;
     currency?: string;
-    CGST?: number;
-    SGST?: number;
   };
 }
 
@@ -44,10 +45,14 @@ const OutletSchema = new Schema<Outlet>(
       address: { type: String, required: true, trim: true },
     },
     settings: {
-      gstNo: { type: String },
+      gstEnabled: { type: Boolean, default: false },
+      gstNo: { type: String, trim: true },
+      gstScheme: {
+        type: String,
+        enum: Object.values(GstScheme),
+        default: GstScheme.NONE,
+      },
       currency: { type: String },
-      CGST: { type: Number },
-      SGST: { type: Number },
     },
   },
   { timestamps: true },
