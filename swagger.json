@@ -6912,6 +6912,34 @@
         }
       }
     },
+    "/api/v1/tables/active": {
+      "get": {
+        "tags": [
+          "Tables"
+        ],
+        "summary": "List active tables (no pagination)",
+        "description": "Returns all tables where isDelete=false and isActive=true. Mandatory headers: brand-id, outlet-id (set via Authorize).",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/tables": {
       "post": {
         "tags": [
