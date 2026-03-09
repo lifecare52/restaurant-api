@@ -169,7 +169,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
               $mergeObjects: [
                 '$measurementConfig',
                 {
-                  baseUnit: { $arrayElemAt: ['$measurementDoc.baseUnit', 0] },
+                  name: { $arrayElemAt: ['$measurementDoc.name', 0] },
+                  unit: { $arrayElemAt: ['$measurementDoc.unit', 0] },
                 },
               ],
             },
@@ -211,25 +212,26 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                     $mergeObjects: [
                       '$$v.measurementConfig',
                       {
-                        baseUnit: {
-                          $let: {
-                            vars: {
-                              mDoc: {
-                                $arrayElemAt: [
-                                  {
-                                    $filter: {
-                                      input: '$variantMeasurementDocs',
-                                      as: 'md',
-                                      cond: {
-                                        $eq: ['$$md._id', '$$v.measurementConfig.measurementId'],
-                                      },
+                        $let: {
+                          vars: {
+                            mDoc: {
+                              $arrayElemAt: [
+                                {
+                                  $filter: {
+                                    input: '$variantMeasurementDocs',
+                                    as: 'md',
+                                    cond: {
+                                      $eq: ['$$md._id', '$$v.measurementConfig.measurementId'],
                                     },
                                   },
-                                  0,
-                                ],
-                              },
+                                },
+                                0,
+                              ],
                             },
-                            in: '$$mDoc.baseUnit',
+                          },
+                          in: {
+                            name: '$$mDoc.name',
+                            unit: '$$mDoc.unit',
                           },
                         },
                       },
