@@ -4561,6 +4561,22 @@
           }
         }
       },
+      '/api/v1/tables/active': {
+        get: {
+          tags: ['Tables'],
+          summary: 'List active tables',
+          description: 'Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
       '/api/v1/tables': {
         post: {
           tags: ['Tables'],

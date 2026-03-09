@@ -3,6 +3,7 @@ import { Router } from 'express';
 import {
   createTableController,
   listTablesController,
+  listActiveTablesController,
   getTableController,
   updateTableController,
   updateTableStatusController,
@@ -51,6 +52,15 @@ router.get(
   requireOutletAccess,
   validateRequest(tableListQuerySchema, 'query'),
   listTablesController,
+);
+
+router.get(
+  '/active',
+  auth,
+  validateRequest(commonHeaderSchema, 'headers'),
+  requireBrandAccess,
+  requireOutletAccess,
+  listActiveTablesController,
 );
 
 router.get(

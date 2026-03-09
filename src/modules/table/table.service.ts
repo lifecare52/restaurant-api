@@ -75,6 +75,20 @@ export const listTables = async (brandId: string, outletId: string, query: Table
   return { items, total };
 };
 
+export const listActiveTables = async (brandId: string, outletId: string) => {
+  const items = await TableEntity.find({
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false,
+    isActive: true,
+  })
+    .select('name capacity status zoneId')
+    .populate('zoneId', 'name')
+    .lean()
+    .sort({ name: 1 });
+  return items;
+};
+
 export const getTable = async (brandId: string, outletId: string, tableId: string) => {
   return TableEntity.findOne({
     _id: new Types.ObjectId(tableId),

@@ -1,6 +1,7 @@
 import {
   createTable,
   listTables,
+  listActiveTables,
   getTable,
   updateTable,
   updateTableStatus,
@@ -36,6 +37,21 @@ export const listTablesController = async (req: Request, res: Response, next: Ne
     const { brandId, outletId } = getTenant(req);
     const result = await listTables(brandId, outletId, req.query);
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const listActiveTablesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const items = await listActiveTables(brandId, outletId);
+    res.locals.response = { status: true, code: 200, data: items };
     next();
   } catch (err) {
     next(err);
