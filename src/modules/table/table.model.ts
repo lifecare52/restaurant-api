@@ -15,18 +15,18 @@ const TableSchema = new Schema<Table>(
     status: {
       type: String,
       enum: Object.values(TABLE_STATUS),
-      default: TABLE_STATUS.AVAILABLE,
+      default: TABLE_STATUS.AVAILABLE
     },
 
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false },
+    isDelete: { type: Boolean, default: false }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 TableSchema.index(
   { brandId: 1, outletId: 1, name: 1 },
-  { unique: true, partialFilterExpression: { isDelete: false } },
+  { unique: true, partialFilterExpression: { isDelete: false } }
 );
 
 export const TableEntity = model<Table, TableModel>('Table', TableSchema, 'tables');

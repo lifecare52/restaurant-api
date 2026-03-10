@@ -26,8 +26,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         brandId: brandObjectId,
         outletId: outletObjectId,
         isActive: true,
-        isDelete: false,
-      },
+        isDelete: false
+      }
     },
 
     /* ─── 2. CATEGORY ─── */
@@ -36,8 +36,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         from: 'categories',
         localField: 'categoryId',
         foreignField: '_id',
-        as: 'categoryDoc',
-      },
+        as: 'categoryDoc'
+      }
     },
     { $unwind: { path: '$categoryDoc', preserveNullAndEmptyArrays: false } },
 
@@ -51,12 +51,12 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
             $match: {
               $expr: { $eq: ['$menuItemId', '$$menuItemId'] },
               isActive: true,
-              isDelete: false,
-            },
-          },
+              isDelete: false
+            }
+          }
         ],
-        as: 'variants',
-      },
+        as: 'variants'
+      }
     },
 
     /* ─── 4. VARIATION MASTER ─── */
@@ -65,8 +65,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         from: 'variations',
         localField: 'variants.variationId',
         foreignField: '_id',
-        as: 'variationDocs',
-      },
+        as: 'variationDocs'
+      }
     },
 
     /* ─── 5. VARIANT-LEVEL ADDONS (active, non-deleted) ─── */
@@ -79,12 +79,12 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
             $match: {
               $expr: { $in: ['$menuItemVariantId', '$$variantIds'] },
               isActive: true,
-              isDelete: false,
-            },
-          },
+              isDelete: false
+            }
+          }
         ],
-        as: 'variantAddonLinks',
-      },
+        as: 'variantAddonLinks'
+      }
     },
 
     /* ─── 6. ADDON MASTER for variant-level addons ─── */
@@ -93,8 +93,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         from: 'addons',
         localField: 'variantAddonLinks.addonId',
         foreignField: '_id',
-        as: 'variantAddonDocs',
-      },
+        as: 'variantAddonDocs'
+      }
     },
 
     /* ─── 7. TOP-LEVEL ADDON LINKS (no variant, active, non-deleted) ─── */
@@ -108,12 +108,12 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
               $expr: { $eq: ['$menuItemId', '$$menuItemId'] },
               menuItemVariantId: { $exists: false },
               isActive: true,
-              isDelete: false,
-            },
-          },
+              isDelete: false
+            }
+          }
         ],
-        as: 'topAddonLinks',
-      },
+        as: 'topAddonLinks'
+      }
     },
 
     /* ─── 8. ADDON MASTER for top-level addons ─── */
@@ -122,8 +122,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         from: 'addons',
         localField: 'topAddonLinks.addonId',
         foreignField: '_id',
-        as: 'topAddonDocs',
-      },
+        as: 'topAddonDocs'
+      }
     },
 
     /* ─── 9. MEASUREMENT for menu item ─── */
@@ -132,8 +132,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         from: 'measurements',
         localField: 'measurementConfig.measurementId',
         foreignField: '_id',
-        as: 'measurementDoc',
-      },
+        as: 'measurementDoc'
+      }
     },
 
     /* ─── 10. MEASUREMENT for variants ─── */
@@ -142,8 +142,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         from: 'measurements',
         localField: 'variants.measurementConfig.measurementId',
         foreignField: '_id',
-        as: 'variantMeasurementDocs',
-      },
+        as: 'variantMeasurementDocs'
+      }
     },
 
     /* ─── 11. PROJECT full item shape ─── */
@@ -155,10 +155,10 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
             branches: [
               { case: { $eq: ['$dietary', 'VEG'] }, then: 'V' },
               { case: { $eq: ['$dietary', 'NON_VEG'] }, then: 'NV' },
-              { case: { $eq: ['$dietary', 'EGG'] }, then: 'E' },
+              { case: { $eq: ['$dietary', 'EGG'] }, then: 'E' }
             ],
-            default: null,
-          },
+            default: null
+          }
         },
 
         /* ----- measurementConfig (nested) ----- */
@@ -170,12 +170,12 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                 '$measurementConfig',
                 {
                   name: { $arrayElemAt: ['$measurementDoc.name', 0] },
-                  unit: { $arrayElemAt: ['$measurementDoc.unit', 0] },
-                },
-              ],
+                  unit: { $arrayElemAt: ['$measurementDoc.unit', 0] }
+                }
+              ]
             },
-            null,
-          ],
+            null
+          ]
         },
 
         /* ----- VARIATIONS (with addons) ----- */
@@ -194,13 +194,13 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                         $filter: {
                           input: '$variationDocs',
                           as: 'vd',
-                          cond: { $eq: ['$$vd._id', '$$v.variationId'] },
-                        },
-                      },
-                    },
+                          cond: { $eq: ['$$vd._id', '$$v.variationId'] }
+                        }
+                      }
+                    }
                   },
-                  in: '$$vDoc.name',
-                },
+                  in: '$$vDoc.name'
+                }
               },
               basePrice: '$$v.basePrice',
               costPrice: '$$v.costPrice',
@@ -221,24 +221,24 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                                     input: '$variantMeasurementDocs',
                                     as: 'md',
                                     cond: {
-                                      $eq: ['$$md._id', '$$v.measurementConfig.measurementId'],
-                                    },
-                                  },
+                                      $eq: ['$$md._id', '$$v.measurementConfig.measurementId']
+                                    }
+                                  }
                                 },
-                                0,
-                              ],
-                            },
+                                0
+                              ]
+                            }
                           },
                           in: {
                             name: '$$mDoc.name',
-                            unit: '$$mDoc.unit',
-                          },
-                        },
-                      },
-                    ],
+                            unit: '$$mDoc.unit'
+                          }
+                        }
+                      }
+                    ]
                   },
-                  null,
-                ],
+                  null
+                ]
               },
               isDefault: '$$v.isDefault',
               addons: {
@@ -247,8 +247,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                     $filter: {
                       input: '$variantAddonLinks',
                       as: 'al',
-                      cond: { $eq: ['$$al.menuItemVariantId', '$$v._id'] },
-                    },
+                      cond: { $eq: ['$$al.menuItemVariantId', '$$v._id'] }
+                    }
                   },
                   as: 'al',
                   in: {
@@ -264,13 +264,13 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                               $filter: {
                                 input: '$variantAddonDocs',
                                 as: 'ad',
-                                cond: { $eq: ['$$ad._id', '$$al.addonId'] },
-                              },
-                            },
-                          },
+                                cond: { $eq: ['$$ad._id', '$$al.addonId'] }
+                              }
+                            }
+                          }
                         },
-                        in: '$$adDoc.name',
-                      },
+                        in: '$$adDoc.name'
+                      }
                     },
                     items: {
                       $let: {
@@ -280,35 +280,35 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                               $filter: {
                                 input: '$variantAddonDocs',
                                 as: 'ad',
-                                cond: { $eq: ['$$ad._id', '$$al.addonId'] },
-                              },
-                            },
-                          },
+                                cond: { $eq: ['$$ad._id', '$$al.addonId'] }
+                              }
+                            }
+                          }
                         },
                         in: {
                           $cond: [
                             {
-                              $gt: [{ $size: { $ifNull: ['$$al.allowedItemIds', []] } }, 0],
+                              $gt: [{ $size: { $ifNull: ['$$al.allowedItemIds', []] } }, 0]
                             },
                             /* only allowed items */
                             {
                               $filter: {
                                 input: { $ifNull: ['$$adDoc.items', []] },
                                 as: 'ai',
-                                cond: { $in: ['$$ai._id', '$$al.allowedItemIds'] },
-                              },
+                                cond: { $in: ['$$ai._id', '$$al.allowedItemIds'] }
+                              }
                             },
                             /* all items */
-                            { $ifNull: ['$$adDoc.items', []] },
-                          ],
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
+                            { $ifNull: ['$$adDoc.items', []] }
+                          ]
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         },
 
         /* ----- TOP-LEVEL ADDONS (non-variation items) ----- */
@@ -329,13 +329,13 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                         $filter: {
                           input: '$topAddonDocs',
                           as: 'ad',
-                          cond: { $eq: ['$$ad._id', '$$al.addonId'] },
-                        },
-                      },
-                    },
+                          cond: { $eq: ['$$ad._id', '$$al.addonId'] }
+                        }
+                      }
+                    }
                   },
-                  in: '$$adDoc.name',
-                },
+                  in: '$$adDoc.name'
+                }
               },
               items: {
                 $let: {
@@ -345,32 +345,32 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
                         $filter: {
                           input: '$topAddonDocs',
                           as: 'ad',
-                          cond: { $eq: ['$$ad._id', '$$al.addonId'] },
-                        },
-                      },
-                    },
+                          cond: { $eq: ['$$ad._id', '$$al.addonId'] }
+                        }
+                      }
+                    }
                   },
                   in: {
                     $cond: [
                       {
-                        $gt: [{ $size: { $ifNull: ['$$al.allowedItemIds', []] } }, 0],
+                        $gt: [{ $size: { $ifNull: ['$$al.allowedItemIds', []] } }, 0]
                       },
                       {
                         $filter: {
                           input: { $ifNull: ['$$adDoc.items', []] },
                           as: 'ai',
-                          cond: { $in: ['$$ai._id', '$$al.allowedItemIds'] },
-                        },
+                          cond: { $in: ['$$ai._id', '$$al.allowedItemIds'] }
+                        }
                       },
-                      { $ifNull: ['$$adDoc.items', []] },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+                      { $ifNull: ['$$adDoc.items', []] }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
 
     /* ─── 12. SHAPE final item (strip internal fields) ─── */
@@ -398,8 +398,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         variations: 1,
         addons: 1,
         createdAt: 1,
-        updatedAt: 1,
-      },
+        updatedAt: 1
+      }
     },
 
     /* ─── 13. GROUP by category ─── */
@@ -407,8 +407,8 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
       $group: {
         _id: '$categoryId',
         category: { $first: '$category' },
-        items: { $push: '$$ROOT' },
-      },
+        items: { $push: '$$ROOT' }
+      }
     },
 
     /* ─── 14. CLEAN UP grouped items (remove redundant categoryId/category per-item) ─── */
@@ -439,14 +439,14 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
               variations: '$$it.variations',
               addons: '$$it.addons',
               createdAt: '$$it.createdAt',
-              updatedAt: '$$it.updatedAt',
-            },
-          },
-        },
-      },
+              updatedAt: '$$it.updatedAt'
+            }
+          }
+        }
+      }
     },
 
     /* ─── 15. SORT by category name ─── */
-    { $sort: { category: 1 } },
+    { $sort: { category: 1 } }
   ]);
 };

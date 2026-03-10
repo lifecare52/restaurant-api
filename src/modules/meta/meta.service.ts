@@ -5,7 +5,7 @@ import { OUTLET_TYPES, CUISINE_TYPES } from '@shared/constants';
 export const getConstants = (): ConstantsResponse => {
   return {
     outletTypes: OUTLET_TYPES,
-    cuisineTypes: CUISINE_TYPES,
+    cuisineTypes: CUISINE_TYPES
   };
 };
 

@@ -13,14 +13,14 @@ const CategorySchema = new Schema<Category>(
     logo: { type: String },
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
-    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null },
+    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 CategorySchema.index(
   { brandId: 1, outletId: 1, name: 1 },
-  { unique: true, partialFilterExpression: { isDelete: false } },
+  { unique: true, partialFilterExpression: { isDelete: false } }
 );
 
 export const CategoryEntity = model<Category, CategoryModel>('Category', CategorySchema);

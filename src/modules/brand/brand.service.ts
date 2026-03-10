@@ -4,7 +4,7 @@ import type { BrandCreateDTO, BrandUpdateDTO } from '@modules/brand/brand.types'
 export const createBrand = async (dto: BrandCreateDTO) => {
   const brand = await BrandEntity.create({
     name: dto.name,
-    plan: dto.plan,
+    plan: dto.plan
   });
   return brand;
 };
@@ -20,5 +20,5 @@ export const updateBrand = async (brandId: string, dto: BrandUpdateDTO) => {
 export default {
   createBrand,
   getBrandById,
-  updateBrand,
+  updateBrand
 };

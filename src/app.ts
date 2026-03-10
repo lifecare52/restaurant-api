@@ -2,13 +2,13 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
 import brandRoutes from '@modules/brand/brand.route';
+import kotRoutes from '@modules/kot/kot.route';
 import measurementRoutes from '@modules/measurement/measurement.route';
 import menuRoutes from '@modules/menu/menu.route';
 import metaRoutes from '@modules/meta/meta.route';
 import orderRoutes from '@modules/order/order.route';
-import kotRoutes from '@modules/kot/kot.route';
-import reportRoutes from '@modules/report/report.route';
 import outletRoutes from '@modules/outlet/outlet.route';
+import reportRoutes from '@modules/report/report.route';
 import tableRoutes from '@modules/table/table.route';
 import { TaxRoutes } from '@modules/tax/tax.route';
 import userRoutes from '@modules/user/user.route';

@@ -14,7 +14,7 @@ import type { MenuItemAddonListQuery, MenuItemAddonFilterQuery } from './menu-it
 import type {
   MenuItemAddonCreateDTO,
   MenuItemAddonUpdateDTO,
-  BulkMenuItemAddonCreateDTO,
+  BulkMenuItemAddonCreateDTO
 } from './menu-item-addon.types';
 
 type ResolvedAddonItem = {
@@ -29,7 +29,7 @@ type ResolvedAddonItem = {
 export const createMenuItemAddon = async (
   brandId: string,
   outletId: string,
-  dto: MenuItemAddonCreateDTO,
+  dto: MenuItemAddonCreateDTO
 ) => {
   const brand = await getBrandById(brandId);
   if (!brand) return null;
@@ -69,7 +69,7 @@ export const createMenuItemAddon = async (
       min: dto.min,
       max: dto.max,
       isActive: dto.isActive ?? true,
-      isDelete: false,
+      isDelete: false
     });
   } catch (err) {
     const e = err as { code?: number };
@@ -83,7 +83,7 @@ export const createMenuItemAddon = async (
 export const createBulkMenuItemAddons = async (
   brandId: string,
   outletId: string,
-  dto: BulkMenuItemAddonCreateDTO,
+  dto: BulkMenuItemAddonCreateDTO
 ) => {
   const results = [];
   const errors = [];
@@ -98,7 +98,7 @@ export const createBulkMenuItemAddons = async (
         isSingleSelect: dto.isSingleSelect,
         min: dto.min,
         max: dto.max,
-        isActive: dto.isActive,
+        isActive: dto.isActive
       };
 
       const result = await createMenuItemAddon(brandId, outletId, createDto);
@@ -111,7 +111,7 @@ export const createBulkMenuItemAddons = async (
       errors.push({
         item,
         error: e.message || 'Unknown error',
-        code: e.code,
+        code: e.code
       });
     }
   }
@@ -123,7 +123,7 @@ export const listMenuItemAddons = async (
   brandId: string,
   outletId: string,
   pagination: MenuItemAddonListQuery,
-  filterInput: MenuItemAddonFilterQuery,
+  filterInput: MenuItemAddonFilterQuery
 ) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;
@@ -131,7 +131,7 @@ export const listMenuItemAddons = async (
   const filter: Record<string, unknown> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   };
   if (filterInput.menuItemId) filter.menuItemId = new Types.ObjectId(filterInput.menuItemId);
   if (filterInput.addonId) filter.addonId = new Types.ObjectId(filterInput.addonId);
@@ -145,7 +145,7 @@ export const listMenuItemAddons = async (
       .sort({ [sortColumn]: sortOrder })
       .skip(skip)
       .limit(limit),
-    MenuItemAddonEntity.countDocuments(filter),
+    MenuItemAddonEntity.countDocuments(filter)
   ]);
   const enriched = await Promise.all(
     items.map(async m => {
@@ -158,7 +158,7 @@ export const listMenuItemAddons = async (
       const idSet = new Set((m.allowedItemIds || []).map(id => String(id)));
       const filtered = addonItems.filter(ai => idSet.has(String(ai._id)));
       return { ...m.toObject(), allowedItems: filtered };
-    }),
+    })
   );
   return { items: enriched, total };
 };
@@ -166,13 +166,13 @@ export const listMenuItemAddons = async (
 export const getMenuItemAddon = async (
   brandId: string,
   outletId: string,
-  menuItemAddonId: string,
+  menuItemAddonId: string
 ) => {
   const doc = await MenuItemAddonEntity.findOne({
     _id: new Types.ObjectId(menuItemAddonId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   });
   if (!doc) return null;
   const addon = await getAddon(brandId, outletId, String(doc.addonId));
@@ -189,7 +189,7 @@ export const updateMenuItemAddon = async (
   brandId: string,
   outletId: string,
   menuItemAddonId: string,
-  dto: MenuItemAddonUpdateDTO,
+  dto: MenuItemAddonUpdateDTO
 ) => {
   try {
     let patch: Record<string, unknown> = { ...dto };
@@ -199,20 +199,20 @@ export const updateMenuItemAddon = async (
         _id: new Types.ObjectId(menuItemAddonId),
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
-        isDelete: false,
+        isDelete: false
       });
       if (current) {
         const addon = await getAddon(brandId, outletId, String(current.addonId));
         if (addon) {
           const allowedIds = new Set(
-            (addon.items || []).map(i => String(i._id || '')).filter(Boolean),
+            (addon.items || []).map(i => String(i._id || '')).filter(Boolean)
           );
           const allowedItemIds =
             (dto.allowedItemIds || [])
               .map(s => (s ?? '').trim())
               .filter(Boolean)
               .filter(
-                (id, idx, arr) => arr.findIndex(n => n.toLowerCase() === id.toLowerCase()) === idx,
+                (id, idx, arr) => arr.findIndex(n => n.toLowerCase() === id.toLowerCase()) === idx
               )
               .filter(id => allowedIds.has(id)) || [];
           patch.allowedItemIds = allowedItemIds.map(id => new Types.ObjectId(id));
@@ -223,10 +223,10 @@ export const updateMenuItemAddon = async (
       {
         _id: new Types.ObjectId(menuItemAddonId),
         brandId: new Types.ObjectId(brandId),
-        outletId: new Types.ObjectId(outletId),
+        outletId: new Types.ObjectId(outletId)
       },
       { $set: patch },
-      { new: true },
+      { new: true }
     );
     if (!updated) return updated;
     const addon = await getAddon(brandId, outletId, String(updated.addonId));
@@ -249,16 +249,16 @@ export const updateMenuItemAddon = async (
 export const deleteMenuItemAddon = async (
   brandId: string,
   outletId: string,
-  menuItemAddonId: string,
+  menuItemAddonId: string
 ) => {
   return MenuItemAddonEntity.findOneAndUpdate(
     {
       _id: new Types.ObjectId(menuItemAddonId),
       brandId: new Types.ObjectId(brandId),
-      outletId: new Types.ObjectId(outletId),
+      outletId: new Types.ObjectId(outletId)
     },
     { $set: { isDelete: true } },
-    { new: true },
+    { new: true }
   );
 };
 
@@ -267,5 +267,5 @@ export default {
   listMenuItemAddons,
   getMenuItemAddon,
   updateMenuItemAddon,
-  deleteMenuItemAddon,
+  deleteMenuItemAddon
 };

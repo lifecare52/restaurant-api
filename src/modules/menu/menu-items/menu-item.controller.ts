@@ -5,7 +5,7 @@ import {
   getMenuItemWithNested,
   updateMenuItem,
   deleteMenuItem,
-  bulkUpdateMenuItemAvailability,
+  bulkUpdateMenuItemAvailability
 } from '@modules/menu/menu-items/menu-item.service';
 
 import { API_MESSAGES } from '@shared/constants';
@@ -15,7 +15,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || '',
+  outletId: (req.headers['outlet-id'] as string | undefined) || ''
 });
 
 export const createMenuItemController = async (req: Request, res: Response, next: NextFunction) => {
@@ -27,14 +27,14 @@ export const createMenuItemController = async (req: Request, res: Response, next
       res.locals.response = {
         status: false,
         code: 400,
-        message: 'Brand or outlet not found',
+        message: 'Brand or outlet not found'
       };
     } else {
       res.locals.response = {
         status: true,
         code: 201,
         message: API_MESSAGES.MENU_ITEM_CREATED,
-        data: item,
+        data: item
       };
     }
     next();
@@ -52,7 +52,7 @@ export const listMenuItemsController = async (req: Request, res: Response, next:
       status: true,
       code: 200,
       data: result.items,
-      total: result.total,
+      total: result.total
     };
     next();
   } catch (err) {
@@ -63,7 +63,7 @@ export const listMenuItemsController = async (req: Request, res: Response, next:
 export const listMenuItemsCategoryWiseController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -72,7 +72,7 @@ export const listMenuItemsCategoryWiseController = async (
     res.locals.response = {
       status: true,
       code: 200,
-      data: result,
+      data: result
     };
     next();
   } catch (err) {
@@ -112,14 +112,14 @@ export const updateMenuItemController = async (req: Request, res: Response, next
         page: 1,
         limit: 20,
         column: 'name',
-        order: 'ASC',
+        order: 'ASC'
       });
       res.locals.response = {
         status: true,
         code: 200,
         message: API_MESSAGES.MENU_ITEM_UPDATED,
         data: result.items,
-        total: result.total,
+        total: result.total
       };
     }
     next();
@@ -139,13 +139,13 @@ export const deleteMenuItemController = async (req: Request, res: Response, next
       res.locals.response = {
         status: false,
         code: 404,
-        message: API_MESSAGES.MENU_ITEM_NOT_FOUND,
+        message: API_MESSAGES.MENU_ITEM_NOT_FOUND
       };
     } else {
       res.locals.response = {
         status: true,
         code: 200,
-        message: API_MESSAGES.MENU_ITEM_DELETED,
+        message: API_MESSAGES.MENU_ITEM_DELETED
       };
     }
     next();
@@ -157,7 +157,7 @@ export const deleteMenuItemController = async (req: Request, res: Response, next
 export const bulkUpdateMenuItemAvailabilityController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -169,7 +169,7 @@ export const bulkUpdateMenuItemAvailabilityController = async (
       res.locals.response = {
         status: true,
         code: 200,
-        message: 'Menu items availability updated successfully',
+        message: 'Menu items availability updated successfully'
       };
     }
     next();
@@ -185,5 +185,5 @@ export default {
   getMenuItemController,
   updateMenuItemController,
   deleteMenuItemController,
-  bulkUpdateMenuItemAvailabilityController,
+  bulkUpdateMenuItemAvailabilityController
 };

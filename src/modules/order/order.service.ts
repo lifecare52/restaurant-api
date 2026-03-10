@@ -1,6 +1,16 @@
 import mongoose, { Types, type FilterQuery } from 'mongoose';
-import { OrderEntity, OrderItemEntity, OrderItemAddonEntity } from '@modules/order/order.model';
+
+import { KOTEntity } from '@modules/kot/kot.model';
+import { generateKOT } from '@modules/kot/kot.service';
+import { KOT_STATUS, KOT_TYPE, type KOT } from '@modules/kot/kot.types';
+import AddonEntity from '@modules/menu/addons/addon.model';
+import type { AddonItem } from '@modules/menu/addons/addon.types';
+import MenuItemVariantEntity from '@modules/menu/menu-item-variants/menu-item-variant.model';
+import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
 import DailySequenceEntity from '@modules/order/daily-sequence.model';
+import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
+import { logOrderAction } from '@modules/order/order-audit.service';
+import { OrderEntity, OrderItemEntity, OrderItemAddonEntity } from '@modules/order/order.model';
 import OutletEntity from '@modules/outlet/outlet.model';
 import {
   ORDER_STATUS,
@@ -17,21 +27,14 @@ import {
   type OrderListQuery,
   type OrderItemAddon,
   type ProcessedOrderItem,
-  type ProcessedOrderItemAddon,
+  type ProcessedOrderItemAddon
 } from '@modules/order/order.types';
-import { TABLE_STATUS } from '@modules/table/table.types';
 import TableEntity from '@modules/table/table.model';
-import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
-import MenuItemVariantEntity from '@modules/menu/menu-item-variants/menu-item-variant.model';
-import AddonEntity from '@modules/menu/addons/addon.model';
-import type { AddonItem } from '@modules/menu/addons/addon.types';
-import { generateKOT } from '@modules/kot/kot.service';
-import { KOTEntity } from '@modules/kot/kot.model';
-import { KOT_STATUS, KOT_TYPE, type KOT } from '@modules/kot/kot.types';
-import type { TokenDisplayItem, TokenDisplayResponse } from '@shared/interfaces';
-import { logOrderAction } from '@modules/order/order-audit.service';
-import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
+import { TABLE_STATUS } from '@modules/table/table.types';
+
 import { orderEvents } from '@shared/events/order.events';
+import type { TokenDisplayItem, TokenDisplayResponse } from '@shared/interfaces';
+
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -41,17 +44,17 @@ const getTodayStr = () => new Date().toISOString().split('T')[0];
 const getNextSequence = async (
   brandId: string,
   outletId: string,
-  type: 'ORDER' | 'KOT' | 'TOKEN',
+  type: 'ORDER' | 'KOT' | 'TOKEN'
 ): Promise<number> => {
   const doc = await DailySequenceEntity.findOneAndUpdate(
     {
       brandId: new Types.ObjectId(brandId),
       outletId: new Types.ObjectId(outletId),
       date: getTodayStr(),
-      type,
+      type
     },
     { $inc: { seq: 1 } },
-    { new: true, upsert: true },
+    { new: true, upsert: true }
   );
   return doc.seq;
 };
@@ -61,28 +64,24 @@ const getNextSequence = async (
  * Returns lookup Maps keyed by string ID — eliminates N+1 queries.
  */
 const batchFetchMenuData = async (items: AddItemToOrderDTO[]) => {
-  const menuItemIds = [...new Set(items.map((i) => i.menuItemId))];
-  const variantIds = [...new Set(items.filter((i) => i.variationId).map((i) => i.variationId!))];
-  const addonIds = [
-    ...new Set(
-      items.flatMap((i) => (i.addons ?? []).map((a) => a.addonId)),
-    ),
-  ];
+  const menuItemIds = [...new Set(items.map(i => i.menuItemId))];
+  const variantIds = [...new Set(items.filter(i => i.variationId).map(i => i.variationId!))];
+  const addonIds = [...new Set(items.flatMap(i => (i.addons ?? []).map(a => a.addonId)))];
 
   const [menuItems, variants, addons] = await Promise.all([
     MenuItemEntity.find({ _id: { $in: menuItemIds }, isDelete: false }).lean(),
     variantIds.length
       ? MenuItemVariantEntity.find({ _id: { $in: variantIds } })
-        .populate('variationId', 'name')
-        .lean()
+          .populate('variationId', 'name')
+          .lean()
       : [],
-    addonIds.length ? AddonEntity.find({ _id: { $in: addonIds } }).lean() : [],
+    addonIds.length ? AddonEntity.find({ _id: { $in: addonIds } }).lean() : []
   ]);
 
   return {
-    menuItemMap: new Map(menuItems.map((m) => [String(m._id), m])),
+    menuItemMap: new Map(menuItems.map(m => [String(m._id), m])),
     variantMap: new Map(variants.map((v: any) => [String(v._id), v])),
-    addonMap: new Map(addons.map((a: any) => [String(a._id), a])),
+    addonMap: new Map(addons.map((a: any) => [String(a._id), a]))
   };
 };
 
@@ -95,8 +94,12 @@ const processItems = (
   outletId: string,
   menuItemMap: Map<string, any>,
   variantMap: Map<string, any>,
-  addonMap: Map<string, any>,
-): { processedItems: ProcessedOrderItem[]; processedAddons: ProcessedOrderItemAddon[]; subtotal: number } => {
+  addonMap: Map<string, any>
+): {
+  processedItems: ProcessedOrderItem[];
+  processedAddons: ProcessedOrderItemAddon[];
+  subtotal: number;
+} => {
   let subtotal = 0;
   const processedItems: ProcessedOrderItem[] = [];
   const processedAddons: ProcessedOrderItemAddon[] = [];
@@ -124,10 +127,13 @@ const processItems = (
         if (!addonDoc) throw { status: 404, message: `Addon ${addonDto.addonId} not found` };
 
         const addonItemDoc = addonDoc.items?.find(
-          (i: AddonItem) => String(i._id) === String(addonDto.addonItemId),
+          (i: AddonItem) => String(i._id) === String(addonDto.addonItemId)
         );
         if (!addonItemDoc)
-          throw { status: 404, message: `AddonItem ${addonDto.addonItemId} not found in addon ${addonDto.addonId}` };
+          throw {
+            status: 404,
+            message: `AddonItem ${addonDto.addonItemId} not found in addon ${addonDto.addonId}`
+          };
 
         const addonPrice = addonItemDoc.price || 0;
         itemTotal += addonPrice * addonDto.quantity * item.quantity;
@@ -144,7 +150,7 @@ const processItems = (
           price: addonPrice,
           quantity: addonDto.quantity,
           isActive: true,
-          isDelete: false,
+          isDelete: false
         });
       }
     }
@@ -166,7 +172,7 @@ const processItems = (
       itemStatus: ITEM_STATUS.PENDING,
       kotSentAt: null,
       isActive: true,
-      isDelete: false,
+      isDelete: false
     });
   }
 
@@ -179,7 +185,7 @@ export const createOrder = async (
   brandId: string,
   outletId: string,
   userId: string,
-  dto: CreateOrderDTO,
+  dto: CreateOrderDTO
 ) => {
   // Validation
   if (dto.orderType === ORDER_TYPE.DINE_IN && !dto.tableId) {
@@ -197,7 +203,12 @@ export const createOrder = async (
 
   // Process items
   const { processedItems, processedAddons, subtotal } = processItems(
-    dto.items, brandId, outletId, menuItemMap, variantMap, addonMap,
+    dto.items,
+    brandId,
+    outletId,
+    menuItemMap,
+    variantMap,
+    addonMap
   );
 
   const totalAmount = subtotal;
@@ -241,21 +252,21 @@ export const createOrder = async (
       discountAmount: 0,
       totalAmount,
       isActive: true,
-      isDelete: false,
+      isDelete: false
     };
 
     await OrderEntity.create([orderDoc], { session });
 
     const now = new Date();
-    const finalItems = processedItems.map((pi) => ({
+    const finalItems = processedItems.map(pi => ({
       ...pi,
       orderId,
-      kotSentAt: now,
+      kotSentAt: now
     }));
     await OrderItemEntity.insertMany(finalItems, { session });
 
     if (processedAddons.length > 0) {
-      const finalAddons = processedAddons.map((pa) => ({ ...pa, orderId }));
+      const finalAddons = processedAddons.map(pa => ({ ...pa, orderId }));
       await OrderItemAddonEntity.insertMany(finalAddons, { session });
     }
 
@@ -264,7 +275,7 @@ export const createOrder = async (
       await TableEntity.findByIdAndUpdate(
         dto.tableId,
         { status: TABLE_STATUS.OCCUPIED },
-        { session },
+        { session }
       );
     }
 
@@ -278,16 +289,29 @@ export const createOrder = async (
   // ─────────────────────────────────────────────────────────────────────────
 
   // Generate KOT (outside transaction — KOT failure should not roll back order)
-  const kotItemsData = processedItems.map((fi) => ({
+  const kotItemsData = processedItems.map(fi => ({
     orderItemId: String(fi._id),
-    quantity: fi.quantity,
+    quantity: fi.quantity
   }));
-  await generateKOT(brandId, outletId, String(orderId), kotItemsData, tokenNo, tableName, userId, KOT_TYPE.REGULAR);
+  await generateKOT(
+    brandId,
+    outletId,
+    String(orderId),
+    kotItemsData,
+    tokenNo,
+    tableName,
+    userId,
+    KOT_TYPE.REGULAR
+  );
 
   // Audit + events (fire and forget)
   logOrderAction({
-    brandId, outletId, orderId: String(orderId), action: ORDER_AUDIT_ACTION.ORDER_CREATED,
-    performedBy: userId, metadata: { orderType: dto.orderType, itemCount: processedItems.length },
+    brandId,
+    outletId,
+    orderId: String(orderId),
+    action: ORDER_AUDIT_ACTION.ORDER_CREATED,
+    performedBy: userId,
+    metadata: { orderType: dto.orderType, itemCount: processedItems.length }
   });
   orderEvents.emit('order.created', { orderId: String(orderId), brandId, outletId, orderNumber });
 
@@ -299,23 +323,26 @@ export const createOrder = async (
 export const addItemsToOrder = async (
   brandId: string,
   outletId: string,
-  dto: AddItemsToOrderDTO,
+  dto: AddItemsToOrderDTO
 ) => {
   const order = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
+    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] }
   }).lean();
 
   if (!order) throw { status: 404, message: 'Active order not found' };
-  if (!dto.items || dto.items.length === 0) throw { status: 400, message: 'At least one item required' };
+  if (!dto.items || dto.items.length === 0)
+    throw { status: 400, message: 'At least one item required' };
 
   const { menuItemMap, variantMap, addonMap } = await batchFetchMenuData(dto.items);
-  const { processedItems, processedAddons, subtotal: newSubtotal } = processItems(
-    dto.items, brandId, outletId, menuItemMap, variantMap, addonMap,
-  );
+  const {
+    processedItems,
+    processedAddons,
+    subtotal: newSubtotal
+  } = processItems(dto.items, brandId, outletId, menuItemMap, variantMap, addonMap);
 
   const now = new Date();
 
@@ -323,17 +350,17 @@ export const addItemsToOrder = async (
   try {
     session.startTransaction();
 
-    const finalItems = processedItems.map((pi) => ({
+    const finalItems = processedItems.map(pi => ({
       ...pi,
       orderId: order._id,
-      kotSentAt: now,
+      kotSentAt: now
     }));
     await OrderItemEntity.insertMany(finalItems, { session });
 
     if (processedAddons.length > 0) {
       await OrderItemAddonEntity.insertMany(
-        processedAddons.map((pa) => ({ ...pa, orderId: order._id })),
-        { session },
+        processedAddons.map(pa => ({ ...pa, orderId: order._id })),
+        { session }
       );
     }
 
@@ -343,10 +370,10 @@ export const addItemsToOrder = async (
       {
         $inc: {
           subtotal: newSubtotal,
-          totalAmount: newSubtotal,
-        },
+          totalAmount: newSubtotal
+        }
       },
-      { session },
+      { session }
     );
 
     await session.commitTransaction();
@@ -364,20 +391,28 @@ export const addItemsToOrder = async (
     if (table) tableName = table.name;
   }
 
-  const kotItemsData = processedItems.map((fi) => ({
+  const kotItemsData = processedItems.map(fi => ({
     orderItemId: String(fi._id),
-    quantity: fi.quantity,
+    quantity: fi.quantity
   }));
   await generateKOT(
-    brandId, outletId, String(order._id), kotItemsData,
-    order.tokenNo, tableName,
-    order.waiterId ? String(order.waiterId) : undefined, KOT_TYPE.REGULAR,
+    brandId,
+    outletId,
+    String(order._id),
+    kotItemsData,
+    order.tokenNo,
+    tableName,
+    order.waiterId ? String(order.waiterId) : undefined,
+    KOT_TYPE.REGULAR
   );
 
   logOrderAction({
-    brandId, outletId, orderId: dto.orderId, action: ORDER_AUDIT_ACTION.ITEMS_ADDED,
+    brandId,
+    outletId,
+    orderId: dto.orderId,
+    action: ORDER_AUDIT_ACTION.ITEMS_ADDED,
     performedBy: order.waiterId ? String(order.waiterId) : null,
-    metadata: { addedCount: processedItems.length },
+    metadata: { addedCount: processedItems.length }
   });
   orderEvents.emit('order.items.added', { orderId: dto.orderId, brandId, outletId });
 
@@ -390,21 +425,21 @@ export const removeItemFromOrder = async (
   brandId: string,
   outletId: string,
   dto: RemoveOrderItemDTO,
-  performedBy?: string,
+  performedBy?: string
 ) => {
   const order = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
+    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] }
   }).lean();
   if (!order) throw { status: 404, message: 'Active order not found' };
 
   const orderItem = await OrderItemEntity.findOne({
     _id: new Types.ObjectId(dto.orderItemId),
     orderId: order._id,
-    isDelete: false,
+    isDelete: false
   }).lean();
   if (!orderItem) throw { status: 404, message: 'Order item not found' };
   if (orderItem.itemStatus === ITEM_STATUS.CANCELLED) {
@@ -428,10 +463,10 @@ export const removeItemFromOrder = async (
           itemStatus: ITEM_STATUS.CANCELLED,
           cancelReason: dto.cancelReason || null,
           cancelledAt: now,
-          cancelledBy: performedBy ? new Types.ObjectId(performedBy) : null,
-        },
+          cancelledBy: performedBy ? new Types.ObjectId(performedBy) : null
+        }
       },
-      { session },
+      { session }
     );
 
     // Recalculate order totals (subtract this item's price)
@@ -442,10 +477,10 @@ export const removeItemFromOrder = async (
       {
         $inc: {
           subtotal: -removedSubtotal,
-          totalAmount: -removedSubtotal,
-        },
+          totalAmount: -removedSubtotal
+        }
       },
-      { session },
+      { session }
     );
 
     await session.commitTransaction();
@@ -458,18 +493,34 @@ export const removeItemFromOrder = async (
 
   // Generate VOID KOT to signal kitchen to stop
   await generateKOT(
-    brandId, outletId, dto.orderId,
+    brandId,
+    outletId,
+    dto.orderId,
     [{ orderItemId: dto.orderItemId, quantity: orderItem.quantity }],
-    order.tokenNo, null,
-    performedBy, KOT_TYPE.VOID,
+    order.tokenNo,
+    null,
+    performedBy,
+    KOT_TYPE.VOID
   );
 
   logOrderAction({
-    brandId, outletId, orderId: dto.orderId, action: ORDER_AUDIT_ACTION.ITEM_CANCELLED,
+    brandId,
+    outletId,
+    orderId: dto.orderId,
+    action: ORDER_AUDIT_ACTION.ITEM_CANCELLED,
     performedBy: performedBy || null,
-    metadata: { orderItemId: dto.orderItemId, reason: dto.cancelReason, itemName: orderItem.itemName },
+    metadata: {
+      orderItemId: dto.orderItemId,
+      reason: dto.cancelReason,
+      itemName: orderItem.itemName
+    }
   });
-  orderEvents.emit('order.item.cancelled', { orderId: dto.orderId, orderItemId: dto.orderItemId, brandId, outletId });
+  orderEvents.emit('order.item.cancelled', {
+    orderId: dto.orderId,
+    orderItemId: dto.orderItemId,
+    brandId,
+    outletId
+  });
 
   return getOrderById(brandId, outletId, dto.orderId);
 };
@@ -480,21 +531,21 @@ export const updateOrderItem = async (
   brandId: string,
   outletId: string,
   dto: UpdateOrderItemDTO,
-  performedBy?: string,
+  performedBy?: string
 ) => {
   const order = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
+    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] }
   }).lean();
   if (!order) throw { status: 404, message: 'Active order not found' };
 
   const orderItem = await OrderItemEntity.findOne({
     _id: new Types.ObjectId(dto.orderItemId),
     orderId: order._id,
-    isDelete: false,
+    isDelete: false
   }).lean();
   if (!orderItem) throw { status: 404, message: 'Order item not found' };
   if (orderItem.itemStatus !== ITEM_STATUS.PENDING) {
@@ -529,7 +580,7 @@ export const updateOrderItem = async (
       await OrderEntity.updateOne(
         { _id: order._id },
         { $inc: { subtotal: priceDelta, totalAmount: priceDelta } },
-        { session },
+        { session }
       );
     }
 
@@ -552,19 +603,32 @@ export const updateOrderItem = async (
     const kotQty = Math.abs(quantityDelta);
 
     await generateKOT(
-      brandId, outletId, String(order._id),
+      brandId,
+      outletId,
+      String(order._id),
       [{ orderItemId: String(orderItem._id), quantity: kotQty }],
-      order.tokenNo, tableName,
-      performedBy, kotType,
+      order.tokenNo,
+      tableName,
+      performedBy,
+      kotType
     );
   }
 
   logOrderAction({
-    brandId, outletId, orderId: dto.orderId, action: ORDER_AUDIT_ACTION.ITEM_UPDATED,
+    brandId,
+    outletId,
+    orderId: dto.orderId,
+    action: ORDER_AUDIT_ACTION.ITEM_UPDATED,
     performedBy: performedBy || null,
-    metadata: { orderItemId: dto.orderItemId, changes: dto, quantityDelta },
+    metadata: { orderItemId: dto.orderItemId, changes: dto, quantityDelta }
   });
-  orderEvents.emit('order.item.updated', { orderId: dto.orderId, orderItemId: dto.orderItemId, brandId, outletId, quantityDelta });
+  orderEvents.emit('order.item.updated', {
+    orderId: dto.orderId,
+    orderItemId: dto.orderItemId,
+    brandId,
+    outletId,
+    quantityDelta
+  });
 
   return getOrderById(brandId, outletId, dto.orderId);
 };
@@ -576,7 +640,7 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
     _id: new Types.ObjectId(orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   })
     .populate('tableId', 'name')
     .populate('waiterId', 'name role')
@@ -587,12 +651,12 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
 
   const [items, addons] = await Promise.all([
     OrderItemEntity.find({ orderId: order._id, isDelete: false }).lean(),
-    OrderItemAddonEntity.find({ orderId: order._id, isDelete: false }).lean(),
+    OrderItemAddonEntity.find({ orderId: order._id, isDelete: false }).lean()
   ]);
 
-  const formattedItems = items.map((item) => ({
+  const formattedItems = items.map(item => ({
     ...item,
-    addons: addons.filter((addon) => String(addon.orderItemId) === String(item._id)),
+    addons: addons.filter(addon => String(addon.orderItemId) === String(item._id))
   }));
 
   return { ...order, items: formattedItems };
@@ -604,40 +668,43 @@ export const closeOrder = async (
   brandId: string,
   outletId: string,
   dto: CloseOrderDTO,
-  performedBy?: string,
+  performedBy?: string
 ) => {
   const currentOrder = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   }).lean();
 
   if (!currentOrder) throw { status: 404, message: 'Order not found' };
 
   // Status guard
   if (![ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS].includes(currentOrder.status)) {
-    throw { status: 400, message: `Cannot close an order with status: ${ORDER_STATUS[currentOrder.status]}` };
+    throw {
+      status: 400,
+      message: `Cannot close an order with status: ${ORDER_STATUS[currentOrder.status]}`
+    };
   }
 
   // Payment guard — allow close only if payment is recorded
   if (currentOrder.paymentStatus === 1 /* UNPAID */) {
     throw {
       status: 400,
-      message: 'Order cannot be closed without payment. Record payment first.',
+      message: 'Order cannot be closed without payment. Record payment first.'
     };
   }
 
   const updateFields: Record<string, unknown> = {
     status: ORDER_STATUS.COMPLETED,
-    closedAt: new Date(),
+    closedAt: new Date()
   };
   if (dto.paymentMethod !== undefined) updateFields.paymentMethod = dto.paymentMethod;
 
   const order = await OrderEntity.findOneAndUpdate(
     { _id: new Types.ObjectId(dto.orderId) },
     { $set: updateFields },
-    { new: true },
+    { new: true }
   ).lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
@@ -647,7 +714,7 @@ export const closeOrder = async (
     const openOrdersCount = await OrderEntity.countDocuments({
       tableId: order.tableId,
       status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
-      isDelete: false,
+      isDelete: false
     });
     if (openOrdersCount === 0) {
       await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.AVAILABLE });
@@ -655,8 +722,11 @@ export const closeOrder = async (
   }
 
   logOrderAction({
-    brandId, outletId, orderId: dto.orderId, action: ORDER_AUDIT_ACTION.ORDER_CLOSED,
-    performedBy: performedBy || null,
+    brandId,
+    outletId,
+    orderId: dto.orderId,
+    action: ORDER_AUDIT_ACTION.ORDER_CLOSED,
+    performedBy: performedBy || null
   });
   orderEvents.emit('order.closed', { orderId: dto.orderId, brandId, outletId });
 
@@ -669,13 +739,13 @@ export const cancelOrder = async (
   brandId: string,
   outletId: string,
   dto: CancelOrderDTO,
-  performedBy?: string,
+  performedBy?: string
 ) => {
   const currentOrder = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   }).lean();
 
   if (!currentOrder) throw { status: 404, message: 'Order not found' };
@@ -684,7 +754,7 @@ export const cancelOrder = async (
   if (![ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS].includes(currentOrder.status)) {
     throw {
       status: 400,
-      message: `Cannot cancel an order with status: ${ORDER_STATUS[currentOrder.status]}`,
+      message: `Cannot cancel an order with status: ${ORDER_STATUS[currentOrder.status]}`
     };
   }
 
@@ -695,10 +765,10 @@ export const cancelOrder = async (
         status: ORDER_STATUS.CANCELLED,
         cancellationReason: dto.cancellationReason || null,
         cancelledBy: performedBy ? new Types.ObjectId(performedBy) : null,
-        closedAt: new Date(),
-      },
+        closedAt: new Date()
+      }
     },
-    { new: true },
+    { new: true }
   ).lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
@@ -707,7 +777,7 @@ export const cancelOrder = async (
     const openOrdersCount = await OrderEntity.countDocuments({
       tableId: order.tableId,
       status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
-      isDelete: false,
+      isDelete: false
     });
     if (openOrdersCount === 0) {
       await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.AVAILABLE });
@@ -719,15 +789,18 @@ export const cancelOrder = async (
     {
       orderId: new Types.ObjectId(dto.orderId),
       brandId: new Types.ObjectId(brandId),
-      status: { $in: [KOT_STATUS.PENDING, KOT_STATUS.PREPARING] },
+      status: { $in: [KOT_STATUS.PENDING, KOT_STATUS.PREPARING] }
     },
-    { $set: { status: KOT_STATUS.CANCELLED } },
+    { $set: { status: KOT_STATUS.CANCELLED } }
   );
 
   logOrderAction({
-    brandId, outletId, orderId: dto.orderId, action: ORDER_AUDIT_ACTION.ORDER_CANCELLED,
+    brandId,
+    outletId,
+    orderId: dto.orderId,
+    action: ORDER_AUDIT_ACTION.ORDER_CANCELLED,
     performedBy: performedBy || null,
-    metadata: { reason: dto.cancellationReason },
+    metadata: { reason: dto.cancellationReason }
   });
   orderEvents.emit('order.cancelled', { orderId: dto.orderId, brandId, outletId });
 
@@ -739,19 +812,20 @@ export const cancelOrder = async (
 export const listOrders = async (
   brandId: string,
   outletId: string,
-  query: OrderListQuery | Record<string, never> = {},
+  query: OrderListQuery | Record<string, never> = {}
 ) => {
   const filter: FilterQuery<Order> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   };
 
   if (query.status) filter.status = Number(query.status);
   if (query.orderType) filter.orderType = Number(query.orderType);
   if (query.tableId) filter.tableId = new Types.ObjectId(query.tableId);
   if (query.waiterId) filter.waiterId = new Types.ObjectId(query.waiterId);
-  if (query.orderNumber) filter.orderNumber = { $regex: new RegExp(String(query.orderNumber), 'i') };
+  if (query.orderNumber)
+    filter.orderNumber = { $regex: new RegExp(String(query.orderNumber), 'i') };
 
   // Date range filter
   if (query.fromDate || query.toDate) {
@@ -771,7 +845,7 @@ export const listOrders = async (
       .skip(skip)
       .limit(limit)
       .lean(),
-    OrderEntity.countDocuments(filter),
+    OrderEntity.countDocuments(filter)
   ]);
 
   return { items, total };
@@ -785,15 +859,15 @@ export const getTokenDisplay = async (brandId: string, outletId: string) => {
     outletId: new Types.ObjectId(outletId),
     orderType: ORDER_TYPE.TAKEAWAY,
     status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
-    isDelete: false,
+    isDelete: false
   }).lean();
 
   if (!activeOrders.length) return { preparing: [], ready: [] };
 
-  const orderIds = activeOrders.map((o) => o._id);
+  const orderIds = activeOrders.map(o => o._id);
   const kots = await KOTEntity.find({
     orderId: { $in: orderIds },
-    isDelete: false,
+    isDelete: false
   }).lean();
 
   const preparing: TokenDisplayItem[] = [];
@@ -804,11 +878,15 @@ export const getTokenDisplay = async (brandId: string, outletId: string) => {
     if (orderKots.length === 0) continue;
 
     const isPreparing = orderKots.some(
-      (k: KOT) => k.status === KOT_STATUS.PENDING || k.status === KOT_STATUS.PREPARING,
+      (k: KOT) => k.status === KOT_STATUS.PENDING || k.status === KOT_STATUS.PREPARING
     );
 
     if (isPreparing) {
-      preparing.push({ tokenNo: order.tokenNo, orderId: order._id, orderNumber: order.orderNumber });
+      preparing.push({
+        tokenNo: order.tokenNo,
+        orderId: order._id,
+        orderNumber: order.orderNumber
+      });
     } else {
       ready.push({ tokenNo: order.tokenNo, orderId: order._id, orderNumber: order.orderNumber });
     }

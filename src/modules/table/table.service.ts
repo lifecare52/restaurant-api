@@ -1,15 +1,16 @@
 import { Types } from 'mongoose';
 
+import type { Order, OrderItem } from '@modules/order/order.types';
 import TableEntity from '@modules/table/table.model';
 import type {
   TableCreateDTO,
   TableUpdateDTO,
   TableListQuery,
   TABLE_STATUS,
-  Table,
+  Table
 } from '@modules/table/table.types';
+
 import type { FilterQuery, UpdateQuery } from 'mongoose';
-import type { Order, OrderItem } from '@modules/order/order.types';
 
 export const createTable = async (brandId: string, outletId: string, dto: TableCreateDTO) => {
   try {
@@ -21,7 +22,7 @@ export const createTable = async (brandId: string, outletId: string, dto: TableC
       capacity: dto.capacity ?? 4,
       status: dto.status ?? 'AVAILABLE',
       isActive: dto.isActive ?? true,
-      isDelete: false,
+      isDelete: false
     });
     return created.toObject();
   } catch (err: unknown) {
@@ -40,7 +41,7 @@ export const listTables = async (brandId: string, outletId: string, query: Table
   const filter: FilterQuery<Table> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   };
 
   if (query.searchText) {
@@ -69,7 +70,7 @@ export const listTables = async (brandId: string, outletId: string, query: Table
       .skip(skip)
       .limit(limit)
       .lean(),
-    TableEntity.countDocuments(filter),
+    TableEntity.countDocuments(filter)
   ]);
 
   return { items, total };
@@ -80,7 +81,7 @@ export const listActiveTables = async (brandId: string, outletId: string) => {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    isActive: true,
+    isActive: true
   })
     .select('name capacity status zoneId')
     .populate('zoneId', 'name')
@@ -94,7 +95,7 @@ export const getTable = async (brandId: string, outletId: string, tableId: strin
     _id: new Types.ObjectId(tableId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   })
     .populate('zoneId', 'name')
     .lean();
@@ -104,7 +105,7 @@ export const updateTable = async (
   brandId: string,
   outletId: string,
   tableId: string,
-  dto: TableUpdateDTO,
+  dto: TableUpdateDTO
 ) => {
   try {
     const updateData: UpdateQuery<Table> = { ...dto };
@@ -117,10 +118,10 @@ export const updateTable = async (
         _id: new Types.ObjectId(tableId),
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
-        isDelete: false,
+        isDelete: false
       },
       { $set: updateData },
-      { new: true },
+      { new: true }
     ).populate('zoneId', 'name');
 
     return updated;
@@ -136,17 +137,17 @@ export const updateTableStatus = async (
   brandId: string,
   outletId: string,
   tableId: string,
-  status: TABLE_STATUS,
+  status: TABLE_STATUS
 ) => {
   return TableEntity.findOneAndUpdate(
     {
       _id: new Types.ObjectId(tableId),
       brandId: new Types.ObjectId(brandId),
       outletId: new Types.ObjectId(outletId),
-      isDelete: false,
+      isDelete: false
     },
     { $set: { status } },
-    { new: true },
+    { new: true }
   ).populate('zoneId', 'name');
 };
 
@@ -156,10 +157,10 @@ export const deleteTable = async (brandId: string, outletId: string, tableId: st
       _id: new Types.ObjectId(tableId),
       brandId: new Types.ObjectId(brandId),
       outletId: new Types.ObjectId(outletId),
-      isDelete: false,
+      isDelete: false
     },
     { $set: { isDelete: true } },
-    { new: true },
+    { new: true }
   );
 };
 
@@ -173,7 +174,7 @@ export const getTableLiveOrders = async (brandId: string, outletId: string, tabl
     outletId: new Types.ObjectId(outletId),
     tableId: new Types.ObjectId(tableId),
     status: { $in: ['OPEN', 'IN_PROGRESS'] }, // ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS
-    isDelete: false,
+    isDelete: false
   }).lean();
 
   if (!orders.length) return [];
@@ -182,12 +183,11 @@ export const getTableLiveOrders = async (brandId: string, outletId: string, tabl
 
   const items = await OrderItemEntity.find({
     orderId: { $in: orderIds },
-    isDelete: false,
+    isDelete: false
   }).lean();
 
   return orders.map((order: Order) => ({
     ...order,
-    items: items.filter((item: OrderItem) => String(item.orderId) === String(order._id)),
+    items: items.filter((item: OrderItem) => String(item.orderId) === String(order._id))
   }));
 };
-

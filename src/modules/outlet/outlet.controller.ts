@@ -2,7 +2,7 @@ import {
   createOutlet,
   listOutlets,
   updateOutlet,
-  getOutletById,
+  getOutletById
 } from '@modules/outlet/outlet.service';
 
 import type { Request, Response, NextFunction } from 'express';
@@ -15,13 +15,13 @@ export const createOutletController = async (req: Request, res: Response, next: 
       res.locals.response = {
         status: false,
         code: 400,
-        message: 'Outlet limit reached or brand not found',
+        message: 'Outlet limit reached or brand not found'
       };
     } else {
       res.locals.response = {
         status: true,
         code: 201,
-        data: outlet,
+        data: outlet
       };
     }
     next();
@@ -37,7 +37,7 @@ export const listOutletsController = async (req: Request, res: Response, next: N
     res.locals.response = {
       status: true,
       code: 200,
-      data: outlets,
+      data: outlets
     };
     next();
   } catch (err) {
@@ -53,13 +53,13 @@ export const updateOutletController = async (req: Request, res: Response, next: 
       res.locals.response = {
         status: false,
         code: 404,
-        message: 'Not Found',
+        message: 'Not Found'
       };
     } else {
       res.locals.response = {
         status: true,
         code: 200,
-        data: outlet,
+        data: outlet
       };
     }
     next();
@@ -71,7 +71,7 @@ export const updateOutletController = async (req: Request, res: Response, next: 
 export const getOutletDetailController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const brandId = (req.headers['brand-id'] as string) || '';

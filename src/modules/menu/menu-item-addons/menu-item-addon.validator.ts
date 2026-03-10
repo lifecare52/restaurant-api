@@ -11,7 +11,7 @@ export const createMenuItemAddonSchema = Joi.object({
   isSingleSelect: Joi.boolean().optional(),
   min: Joi.number().integer().min(0).allow(null).optional(),
   max: Joi.number().integer().min(0).allow(null).optional(),
-  isActive: Joi.boolean().default(true),
+  isActive: Joi.boolean().default(true)
 });
 
 export const createBulkMenuItemAddonSchema = Joi.object({
@@ -25,11 +25,11 @@ export const createBulkMenuItemAddonSchema = Joi.object({
     .items(
       Joi.object({
         menuId: objectId.required(),
-        variationId: objectId.optional(),
-      }),
+        variationId: objectId.optional()
+      })
     )
     .min(1)
-    .required(),
+    .required()
 });
 
 export const updateMenuItemAddonSchema = Joi.object({
@@ -37,11 +37,11 @@ export const updateMenuItemAddonSchema = Joi.object({
   isSingleSelect: Joi.boolean().optional(),
   min: Joi.number().integer().min(0).allow(null).optional(),
   max: Joi.number().integer().min(0).allow(null).optional(),
-  isActive: Joi.boolean(),
+  isActive: Joi.boolean()
 });
 
 export const menuItemAddonIdQuerySchema = Joi.object({
-  menuItemAddonId: objectId.required(),
+  menuItemAddonId: objectId.required()
 });
 
 export const menuItemAddonListQuerySchema = Joi.object({
@@ -54,9 +54,9 @@ export const menuItemAddonListQuerySchema = Joi.object({
   column: Joi.string().valid('createdAt', 'updatedAt', 'isActive').default('createdAt'),
   order: Joi.string()
     .valid(...SORT_ORDERS)
-    .default(SortOrder.ASC),
+    .default(SortOrder.ASC)
 });
 
 export const addonMappingQuerySchema = Joi.object({
-  addonId: objectId.optional(),
+  addonId: objectId.optional()
 });

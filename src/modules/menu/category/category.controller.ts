@@ -6,7 +6,7 @@ import {
   listActiveCategories,
   getCategory,
   updateCategory,
-  deleteCategory,
+  deleteCategory
 } from './category.service';
 
 import type { Request, Response, NextFunction } from 'express';
@@ -23,7 +23,7 @@ export const createCategoryController = async (req: Request, res: Response, next
         status: true,
         code: 201,
         message: API_MESSAGES.CATEGORY_CREATED,
-        data: category,
+        data: category
       };
     }
     next();
@@ -48,7 +48,7 @@ export const listCategoriesController = async (req: Request, res: Response, next
       limit,
       searchText,
       column,
-      order,
+      order
     });
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
     next();
@@ -60,7 +60,7 @@ export const listCategoriesController = async (req: Request, res: Response, next
 export const listActiveCategoriesController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const brandId = (req.headers['brand-id'] as string | undefined) || '';
@@ -101,7 +101,7 @@ export const updateCategoryController = async (req: Request, res: Response, next
         status: true,
         code: 200,
         message: API_MESSAGES.CATEGORY_UPDATED,
-        data: category,
+        data: category
       };
     }
     next();
@@ -132,5 +132,5 @@ export default {
   listActiveCategoriesController,
   getCategoryController,
   updateCategoryController,
-  deleteCategoryController,
+  deleteCategoryController
 };

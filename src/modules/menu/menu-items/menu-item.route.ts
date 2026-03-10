@@ -13,14 +13,14 @@ import {
   listMenuItemsController,
   listMenuItemsCategoryWiseController,
   updateMenuItemController,
-  bulkUpdateMenuItemAvailabilityController,
+  bulkUpdateMenuItemAvailabilityController
 } from './menu-item.controller';
 import {
   createMenuItemSchema,
   updateMenuItemSchema,
   menuItemListQuerySchema,
   menuItemIdQuerySchema,
-  bulkUpdateMenuItemAvailabilitySchema,
+  bulkUpdateMenuItemAvailabilitySchema
 } from './menu-item.validator';
 
 const router = Router();
@@ -32,7 +32,7 @@ router.post(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createMenuItemSchema),
-  createMenuItemController,
+  createMenuItemController
 );
 
 router.get(
@@ -42,7 +42,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemListQuerySchema, 'query'),
-  listMenuItemsController,
+  listMenuItemsController
 );
 
 router.get(
@@ -51,7 +51,7 @@ router.get(
   validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  listMenuItemsCategoryWiseController,
+  listMenuItemsCategoryWiseController
 );
 
 router.get(
@@ -61,7 +61,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemIdQuerySchema, 'query'),
-  getMenuItemController,
+  getMenuItemController
 );
 
 router.patch(
@@ -72,7 +72,7 @@ router.patch(
   requireOutletAccess,
   validateRequest(menuItemIdQuerySchema, 'query'),
   validateRequest(updateMenuItemSchema),
-  updateMenuItemController,
+  updateMenuItemController
 );
 
 router.delete(
@@ -82,7 +82,7 @@ router.delete(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemIdQuerySchema, 'query'),
-  deleteMenuItemController,
+  deleteMenuItemController
 );
 
 router.patch(
@@ -92,7 +92,7 @@ router.patch(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(bulkUpdateMenuItemAvailabilitySchema),
-  bulkUpdateMenuItemAvailabilityController,
+  bulkUpdateMenuItemAvailabilityController
 );
 
 export default router;

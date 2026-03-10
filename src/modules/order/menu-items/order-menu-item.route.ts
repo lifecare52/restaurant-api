@@ -20,7 +20,7 @@ router.get(
   validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  getPosMenuController,
+  getPosMenuController
 );
 
 export default router;

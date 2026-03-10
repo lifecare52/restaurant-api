@@ -10,7 +10,7 @@ import {
   taxListQuerySchema,
   taxGroupListQuerySchema,
   taxGetQuerySchema,
-  taxGroupGetQuerySchema,
+  taxGroupGetQuerySchema
 } from '@modules/tax/tax.validator';
 
 import { validateRequest } from '@shared/utils/validateRequest';
@@ -30,7 +30,7 @@ router.get(
   validateRequest(taxHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  taxController.listActiveTaxGroups,
+  taxController.listActiveTaxGroups
 );
 
 router.get(
@@ -38,7 +38,7 @@ router.get(
   validateRequest(taxHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  taxController.listActiveTaxes,
+  taxController.listActiveTaxes
 );
 
 // ==========================================
@@ -52,7 +52,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(taxGroupGetQuerySchema, 'query'),
-  taxController.getTaxGroupById,
+  taxController.getTaxGroupById
 );
 
 // Update
@@ -63,7 +63,7 @@ router.patch(
   requireOutletAccess,
   validateRequest(taxGroupGetQuerySchema, 'query'),
   validateRequest(updateTaxGroupSchema),
-  taxController.updateTaxGroup,
+  taxController.updateTaxGroup
 );
 
 // Delete
@@ -73,7 +73,7 @@ router.delete(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(taxGroupGetQuerySchema, 'query'),
-  taxController.deleteTaxGroup,
+  taxController.deleteTaxGroup
 );
 
 // List/Create (After specific detail/action routes if using same base path)
@@ -83,7 +83,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(taxGroupListQuerySchema, 'query'),
-  taxController.getTaxGroups,
+  taxController.getTaxGroups
 );
 
 router.post(
@@ -92,7 +92,7 @@ router.post(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createTaxGroupSchema),
-  taxController.createTaxGroup,
+  taxController.createTaxGroup
 );
 
 // ==========================================
@@ -106,7 +106,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(taxGetQuerySchema, 'query'),
-  taxController.getTaxById,
+  taxController.getTaxById
 );
 
 // Update
@@ -117,7 +117,7 @@ router.patch(
   requireOutletAccess,
   validateRequest(taxGetQuerySchema, 'query'),
   validateRequest(updateTaxSchema),
-  taxController.updateTax,
+  taxController.updateTax
 );
 
 // Delete
@@ -127,7 +127,7 @@ router.delete(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(taxGetQuerySchema, 'query'),
-  taxController.deleteTax,
+  taxController.deleteTax
 );
 
 // List/Create
@@ -137,7 +137,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(taxListQuerySchema, 'query'),
-  taxController.getTaxes,
+  taxController.getTaxes
 );
 
 router.post(
@@ -146,7 +146,7 @@ router.post(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createTaxSchema),
-  taxController.createTax,
+  taxController.createTax
 );
 
 export const TaxRoutes = router;

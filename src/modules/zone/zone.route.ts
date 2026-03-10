@@ -6,13 +6,13 @@ import {
   listActiveZonesController,
   getZoneController,
   updateZoneController,
-  deleteZoneController,
+  deleteZoneController
 } from '@modules/zone/zone.controller';
 import {
   createZoneSchema,
   updateZoneSchema,
   zoneListQuerySchema,
-  zoneIdQuerySchema,
+  zoneIdQuerySchema
 } from '@modules/zone/zone.validator';
 
 import { ROLES, PERMISSIONS } from '@shared/constants';
@@ -24,7 +24,7 @@ import {
   requireBrandAccess,
   requireOutletAccess,
   requireRole,
-  requirePermissionsOrAdmin,
+  requirePermissionsOrAdmin
 } from '@middlewares/guard.middleware';
 
 const router = Router({ mergeParams: true });
@@ -41,7 +41,7 @@ router.post(
   requireRole(RLS),
   requirePermissionsOrAdmin(PERM),
   validateRequest(createZoneSchema),
-  createZoneController,
+  createZoneController
 );
 
 router.get(
@@ -51,7 +51,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(zoneListQuerySchema, 'query'),
-  listZonesController,
+  listZonesController
 );
 
 router.get(
@@ -60,7 +60,7 @@ router.get(
   validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  listActiveZonesController,
+  listActiveZonesController
 );
 
 router.get(
@@ -70,7 +70,7 @@ router.get(
   validateRequest(zoneIdQuerySchema, 'query'),
   requireBrandAccess,
   requireOutletAccess,
-  getZoneController,
+  getZoneController
 );
 
 router.patch(
@@ -83,7 +83,7 @@ router.patch(
   requireRole(RLS),
   requirePermissionsOrAdmin(PERM),
   validateRequest(updateZoneSchema),
-  updateZoneController,
+  updateZoneController
 );
 
 router.delete(
@@ -95,7 +95,7 @@ router.delete(
   requireOutletAccess,
   requireRole(RLS),
   requirePermissionsOrAdmin(PERM),
-  deleteZoneController,
+  deleteZoneController
 );
 
 export default router;

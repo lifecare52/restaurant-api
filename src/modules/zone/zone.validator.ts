@@ -4,12 +4,12 @@ import { objectId } from '@shared/utils/common.validation';
 
 export const createZoneSchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
-  isActive: Joi.boolean().default(true),
+  isActive: Joi.boolean().default(true)
 });
 
 export const updateZoneSchema = Joi.object({
   name: Joi.string().trim().min(2).optional(),
-  isActive: Joi.boolean().optional(),
+  isActive: Joi.boolean().optional()
 }).min(1);
 
 export const zoneListQuerySchema = Joi.object({
@@ -18,9 +18,9 @@ export const zoneListQuerySchema = Joi.object({
   searchText: Joi.string().allow('').optional(),
   column: Joi.string().optional(),
   order: Joi.string().valid('ASC', 'DESC').optional(),
-  isActive: Joi.boolean().optional(),
+  isActive: Joi.boolean().optional()
 });
 
 export const zoneIdQuerySchema = Joi.object({
-  zoneId: objectId.required(),
+  zoneId: objectId.required()
 });

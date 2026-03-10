@@ -4,14 +4,14 @@ import {
   createOutletController,
   listOutletsController,
   updateOutletController,
-  getOutletDetailController,
+  getOutletDetailController
 } from '@modules/outlet/outlet.controller';
 import {
   createOutletSchema,
   updateOutletSchema,
   outletBrandHeaderSchema,
   outletUpdateQuerySchema,
-  outletDetailHeaderSchema,
+  outletDetailHeaderSchema
 } from '@modules/outlet/outlet.validator';
 
 import { ROLES, PERMISSIONS } from '@shared/constants';
@@ -22,7 +22,7 @@ import {
   requireBrandAccess,
   requireOutletAccess,
   requireRole,
-  requirePermissionsOrAdmin,
+  requirePermissionsOrAdmin
 } from '@middlewares/guard.middleware';
 
 const router = Router({ mergeParams: true });
@@ -35,7 +35,7 @@ router.post(
   requireRole([ROLES.ADMIN, ROLES.OWNER]),
   requirePermissionsOrAdmin([PERMISSIONS.OUTLET_MANAGEMENT]),
   validateRequest(createOutletSchema),
-  createOutletController,
+  createOutletController
 );
 
 router.get(
@@ -43,7 +43,7 @@ router.get(
   auth,
   validateRequest(outletBrandHeaderSchema, 'headers'),
   requireBrandAccess,
-  listOutletsController,
+  listOutletsController
 );
 
 router.get(
@@ -52,7 +52,7 @@ router.get(
   validateRequest(outletDetailHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  getOutletDetailController,
+  getOutletDetailController
 );
 
 router.patch(
@@ -64,7 +64,7 @@ router.patch(
   requireRole([ROLES.ADMIN, ROLES.OWNER]),
   requirePermissionsOrAdmin([PERMISSIONS.OUTLET_MANAGEMENT]),
   validateRequest(updateOutletSchema),
-  updateOutletController,
+  updateOutletController
 );
 
 export default router;

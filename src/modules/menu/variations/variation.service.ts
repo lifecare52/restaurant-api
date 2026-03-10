@@ -5,14 +5,14 @@ import { VariationEntity } from '@modules/menu/variations/variation.model';
 import type {
   VariationListQuery,
   VariationCreateDTO,
-  VariationUpdateDTO,
+  VariationUpdateDTO
 } from '@modules/menu/variations/variation.types';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 export const createVariation = async (
   brandId: string,
   outletId: string,
-  dto: VariationCreateDTO,
+  dto: VariationCreateDTO
 ) => {
   const brand = await getBrandById(brandId);
   if (!brand) return null;
@@ -28,7 +28,7 @@ export const createVariation = async (
       department: dto.department,
       isActive: dto.isActive ?? true,
       taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
-      isDelete: false,
+      isDelete: false
     });
   } catch (err) {
     const e = err as { code?: number };
@@ -42,7 +42,7 @@ export const createVariation = async (
 export const listVariations = async (
   brandId: string,
   outletId: string,
-  pagination: VariationListQuery,
+  pagination: VariationListQuery
 ) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;
@@ -51,7 +51,7 @@ export const listVariations = async (
   const filter: Record<string, unknown> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   };
 
   if (pagination.searchText) {
@@ -69,7 +69,7 @@ export const listVariations = async (
       .sort({ [sortColumn]: sortOrder })
       .skip(skip)
       .limit(limit),
-    VariationEntity.countDocuments(filter),
+    VariationEntity.countDocuments(filter)
   ]);
 
   return { items, total };
@@ -80,7 +80,7 @@ export const listActiveVariations = async (brandId: string, outletId: string) =>
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    isActive: true,
+    isActive: true
   };
   const items = await VariationEntity.find(filter).select('name').sort({ name: 1 }).lean();
   return items;
@@ -91,7 +91,7 @@ export const getVariation = async (brandId: string, outletId: string, variationI
     _id: new Types.ObjectId(variationId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   });
 };
 
@@ -99,22 +99,22 @@ export const updateVariation = async (
   brandId: string,
   outletId: string,
   variationId: string,
-  dto: VariationUpdateDTO,
+  dto: VariationUpdateDTO
 ) => {
   try {
     return await VariationEntity.findOneAndUpdate(
       {
         _id: new Types.ObjectId(variationId),
         brandId: new Types.ObjectId(brandId),
-        outletId: new Types.ObjectId(outletId),
+        outletId: new Types.ObjectId(outletId)
       },
       {
         $set: {
           ...dto,
-          taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : undefined,
-        },
+          taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : undefined
+        }
       },
-      { new: true },
+      { new: true }
     );
   } catch (err) {
     const e = err as { code?: number };
@@ -130,10 +130,10 @@ export const deleteVariation = async (brandId: string, outletId: string, variati
     {
       _id: new Types.ObjectId(variationId),
       brandId: new Types.ObjectId(brandId),
-      outletId: new Types.ObjectId(outletId),
+      outletId: new Types.ObjectId(outletId)
     },
     { $set: { isDelete: true } },
-    { new: true },
+    { new: true }
   );
 };
 
@@ -143,5 +143,5 @@ export default {
   listActiveVariations,
   getVariation,
   updateVariation,
-  deleteVariation,
+  deleteVariation
 };

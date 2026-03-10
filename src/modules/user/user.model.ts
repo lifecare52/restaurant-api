@@ -35,7 +35,7 @@ const UserSchema = new Schema<User, UserModel, UserMethods>(
     permissions: [{ type: String }],
     isActive: { type: Boolean, default: true },
     salary: { type: Number },
-    isDelete: { type: Boolean, default: false },
+    isDelete: { type: Boolean, default: false }
   },
   {
     timestamps: true,
@@ -44,9 +44,9 @@ const UserSchema = new Schema<User, UserModel, UserMethods>(
         delete (ret as { password?: unknown }).password;
         delete (ret as { isDelete?: unknown }).isDelete;
         return ret;
-      },
-    },
-  },
+      }
+    }
+  }
 );
 
 UserSchema.index({ username: 1 }, { unique: true, partialFilterExpression: { isDelete: false } });

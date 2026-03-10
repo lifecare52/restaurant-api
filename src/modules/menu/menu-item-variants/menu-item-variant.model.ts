@@ -12,9 +12,9 @@ const MeasurementConfigSchema = new Schema(
     baseValue: { type: Number, min: 0, default: null },
     minValue: { type: Number, default: null },
     maxValue: { type: Number, default: null },
-    stepValue: { type: Number, default: null },
+    stepValue: { type: Number, default: null }
   },
-  { _id: false },
+  { _id: false }
 );
 
 const MenuItemVariantSchema = new Schema<MenuItemVariant>(
@@ -31,25 +31,25 @@ const MenuItemVariantSchema = new Schema<MenuItemVariant>(
 
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
-    isDefault: { type: Boolean, default: false },
+    isDefault: { type: Boolean, default: false }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 MenuItemVariantSchema.index(
   { brandId: 1, outletId: 1, menuItemId: 1, variationId: 1 },
-  { unique: true, partialFilterExpression: { isDelete: false } },
+  { unique: true, partialFilterExpression: { isDelete: false } }
 );
 
 MenuItemVariantSchema.index(
   { brandId: 1, outletId: 1, menuItemId: 1, isDefault: 1 },
-  { unique: true, partialFilterExpression: { isDefault: true, isDelete: false } },
+  { unique: true, partialFilterExpression: { isDefault: true, isDelete: false } }
 );
 
 export const MenuItemVariantEntity = model<MenuItemVariant, MenuItemVariantModel>(
   'MenuItemVariant',
   MenuItemVariantSchema,
-  'menu_item_variants',
+  'menu_item_variants'
 );
 
 export default MenuItemVariantEntity;

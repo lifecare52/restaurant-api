@@ -3,17 +3,17 @@ import { Schema, model, type Model, type Types } from 'mongoose';
 // ─── Action Enum ──────────────────────────────────────────────────────────────
 
 export const ORDER_AUDIT_ACTION = {
-    ORDER_CREATED: 'ORDER_CREATED',
-    ORDER_CONFIRMED: 'ORDER_CONFIRMED',
-    ORDER_CLOSED: 'ORDER_CLOSED',
-    ORDER_CANCELLED: 'ORDER_CANCELLED',
-    ITEMS_ADDED: 'ITEMS_ADDED',
-    ITEM_CANCELLED: 'ITEM_CANCELLED',
-    ITEM_UPDATED: 'ITEM_UPDATED',
-    KOT_CREATED: 'KOT_CREATED',
-    KOT_STATUS_UPDATED: 'KOT_STATUS_UPDATED',
-    KOT_ITEM_STATUS_UPDATED: 'KOT_ITEM_STATUS_UPDATED',
-    PAYMENT_RECORDED: 'PAYMENT_RECORDED',
+  ORDER_CREATED: 'ORDER_CREATED',
+  ORDER_CONFIRMED: 'ORDER_CONFIRMED',
+  ORDER_CLOSED: 'ORDER_CLOSED',
+  ORDER_CANCELLED: 'ORDER_CANCELLED',
+  ITEMS_ADDED: 'ITEMS_ADDED',
+  ITEM_CANCELLED: 'ITEM_CANCELLED',
+  ITEM_UPDATED: 'ITEM_UPDATED',
+  KOT_CREATED: 'KOT_CREATED',
+  KOT_STATUS_UPDATED: 'KOT_STATUS_UPDATED',
+  KOT_ITEM_STATUS_UPDATED: 'KOT_ITEM_STATUS_UPDATED',
+  PAYMENT_RECORDED: 'PAYMENT_RECORDED'
 } as const;
 
 export type OrderAuditAction = (typeof ORDER_AUDIT_ACTION)[keyof typeof ORDER_AUDIT_ACTION];
@@ -21,14 +21,14 @@ export type OrderAuditAction = (typeof ORDER_AUDIT_ACTION)[keyof typeof ORDER_AU
 // ─── Interface ────────────────────────────────────────────────────────────────
 
 export interface OrderAuditLog {
-    _id?: Types.ObjectId;
-    brandId: Types.ObjectId;
-    outletId: Types.ObjectId;
-    orderId: Types.ObjectId;
-    action: OrderAuditAction;
-    performedBy?: Types.ObjectId | null;
-    metadata?: Record<string, unknown>;
-    timestamp: Date;
+  _id?: Types.ObjectId;
+  brandId: Types.ObjectId;
+  outletId: Types.ObjectId;
+  orderId: Types.ObjectId;
+  action: OrderAuditAction;
+  performedBy?: Types.ObjectId | null;
+  metadata?: Record<string, unknown>;
+  timestamp: Date;
 }
 
 export type OrderAuditLogModel = Model<OrderAuditLog>;
@@ -36,23 +36,23 @@ export type OrderAuditLogModel = Model<OrderAuditLog>;
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
 const OrderAuditLogSchema = new Schema<OrderAuditLog>(
-    {
-        brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
-        outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
-        orderId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Order' },
-        action: {
-            type: String,
-            enum: Object.values(ORDER_AUDIT_ACTION),
-            required: true,
-        },
-        performedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
-        metadata: { type: Schema.Types.Mixed, default: {} },
-        timestamp: { type: Date, required: true, default: () => new Date() },
+  {
+    brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
+    outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
+    orderId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Order' },
+    action: {
+      type: String,
+      enum: Object.values(ORDER_AUDIT_ACTION),
+      required: true
     },
-    {
-        timestamps: false, // using custom `timestamp` field
-        versionKey: false,
-    },
+    performedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    metadata: { type: Schema.Types.Mixed, default: {} },
+    timestamp: { type: Date, required: true, default: () => new Date() }
+  },
+  {
+    timestamps: false, // using custom `timestamp` field
+    versionKey: false
+  }
 );
 
 // Quick lookup by order; TTL cleanup after 90 days
@@ -60,9 +60,9 @@ OrderAuditLogSchema.index({ orderId: 1, timestamp: -1 });
 OrderAuditLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 90 });
 
 export const OrderAuditLogEntity = model<OrderAuditLog, OrderAuditLogModel>(
-    'OrderAuditLog',
-    OrderAuditLogSchema,
-    'order_audit_logs',
+  'OrderAuditLog',
+  OrderAuditLogSchema,
+  'order_audit_logs'
 );
 
 export default OrderAuditLogEntity;

@@ -16,57 +16,57 @@
           bearerFormat: 'JWT'
         },
         brandIdHeader: { type: 'apiKey', in: 'header', name: 'brand-id' },
-        outletIdHeader: { type: 'apiKey', in: 'header', name: 'outlet-id' },
+        outletIdHeader: { type: 'apiKey', in: 'header', name: 'outlet-id' }
       },
       schemas: {
         Tax: {
           type: 'object',
           properties: {
             _id: {
-              type: 'string',
+              type: 'string'
             },
             brandId: {
-              type: 'string',
+              type: 'string'
             },
             outletId: {
-              type: 'string',
+              type: 'string'
             },
             name: {
-              type: 'string',
+              type: 'string'
             },
             rate: {
-              type: 'number',
+              type: 'number'
             },
             type: {
               type: 'string',
-              enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
+              enum: ['PERCENTAGE', 'FLAT_AMOUNT']
             },
             isInclusive: {
-              type: 'boolean',
+              type: 'boolean'
             },
             calculationMethod: {
               type: 'string',
-              enum: ['STANDARD', 'CUMULATIVE'],
+              enum: ['STANDARD', 'CUMULATIVE']
             },
             applicableOrderTypes: {
               type: 'array',
               items: {
                 type: 'string',
-                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
-              },
+                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE']
+              }
             },
             isActive: {
-              type: 'boolean',
+              type: 'boolean'
             },
             isDelete: {
-              type: 'boolean',
+              type: 'boolean'
             },
             createdAt: {
-              type: 'string',
+              type: 'string'
             },
             updatedAt: {
-              type: 'string',
-            },
+              type: 'string'
+            }
           },
           required: [
             '_id',
@@ -79,158 +79,158 @@
             'calculationMethod',
             'applicableOrderTypes',
             'isActive',
-            'isDelete',
-          ],
+            'isDelete'
+          ]
         },
         TaxGroup: {
           type: 'object',
           properties: {
             _id: {
-              type: 'string',
+              type: 'string'
             },
             brandId: {
-              type: 'string',
+              type: 'string'
             },
             outletId: {
-              type: 'string',
+              type: 'string'
             },
             name: {
-              type: 'string',
+              type: 'string'
             },
             taxes: {
               type: 'array',
               items: {
-                $ref: '#/components/schemas/Tax',
-              },
+                $ref: '#/components/schemas/Tax'
+              }
             },
             isActive: {
-              type: 'boolean',
+              type: 'boolean'
             },
             isDelete: {
-              type: 'boolean',
+              type: 'boolean'
             },
             createdAt: {
-              type: 'string',
+              type: 'string'
             },
             updatedAt: {
-              type: 'string',
-            },
+              type: 'string'
+            }
           },
-          required: ['_id', 'brandId', 'outletId', 'name', 'taxes', 'isActive', 'isDelete'],
+          required: ['_id', 'brandId', 'outletId', 'name', 'taxes', 'isActive', 'isDelete']
         },
         CreateTaxRequest: {
           type: 'object',
           properties: {
             name: {
               type: 'string',
-              minLength: 1,
+              minLength: 1
             },
             rate: {
               type: 'number',
-              minimum: 0,
+              minimum: 0
             },
             type: {
               type: 'string',
               enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
-              default: 'PERCENTAGE',
+              default: 'PERCENTAGE'
             },
             isInclusive: {
               type: 'boolean',
-              default: false,
+              default: false
             },
             calculationMethod: {
               type: 'string',
               enum: ['STANDARD', 'CUMULATIVE'],
-              default: 'STANDARD',
+              default: 'STANDARD'
             },
             applicableOrderTypes: {
               type: 'array',
               items: {
                 type: 'string',
-                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
+                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE']
               },
-              default: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
+              default: ['DINE_IN', 'TAKE_AWAY', 'ONLINE']
             },
             isActive: {
               type: 'boolean',
-              default: true,
-            },
+              default: true
+            }
           },
-          required: ['name', 'rate'],
+          required: ['name', 'rate']
         },
         UpdateTaxRequest: {
           type: 'object',
           properties: {
             name: {
               type: 'string',
-              minLength: 1,
+              minLength: 1
             },
             rate: {
               type: 'number',
-              minimum: 0,
+              minimum: 0
             },
             type: {
               type: 'string',
-              enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
+              enum: ['PERCENTAGE', 'FLAT_AMOUNT']
             },
             isInclusive: {
-              type: 'boolean',
+              type: 'boolean'
             },
             calculationMethod: {
               type: 'string',
-              enum: ['STANDARD', 'CUMULATIVE'],
+              enum: ['STANDARD', 'CUMULATIVE']
             },
             applicableOrderTypes: {
               type: 'array',
               items: {
                 type: 'string',
-                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
-              },
+                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE']
+              }
             },
             isActive: {
-              type: 'boolean',
-            },
-          },
+              type: 'boolean'
+            }
+          }
         },
         CreateTaxGroupRequest: {
           type: 'object',
           properties: {
             name: {
               type: 'string',
-              minLength: 1,
+              minLength: 1
             },
             taxes: {
               type: 'array',
               items: {
-                type: 'string',
+                type: 'string'
               },
-              minItems: 1,
+              minItems: 1
             },
             isActive: {
               type: 'boolean',
-              default: true,
-            },
+              default: true
+            }
           },
-          required: ['name', 'taxes'],
+          required: ['name', 'taxes']
         },
         UpdateTaxGroupRequest: {
           type: 'object',
           properties: {
             name: {
               type: 'string',
-              minLength: 1,
+              minLength: 1
             },
             taxes: {
               type: 'array',
               items: {
-                type: 'string',
+                type: 'string'
               },
-              minItems: 1,
+              minItems: 1
             },
             isActive: {
-              type: 'boolean',
-            },
-          },
+              type: 'boolean'
+            }
+          }
         },
         Zone: {
           type: 'object',
@@ -514,13 +514,13 @@
                 gstScheme: {
                   type: 'string',
                   enum: ['REGULAR', 'COMPOSITION', 'NONE'],
-                  default: 'NONE',
+                  default: 'NONE'
                 },
-                currency: { type: 'string' },
-              },
-            },
+                currency: { type: 'string' }
+              }
+            }
           },
-          required: ['basicInfo', 'contact'],
+          required: ['basicInfo', 'contact']
         },
         UpdateOutletRequest: {
           type: 'object',
@@ -557,10 +557,10 @@
                 gstEnabled: { type: 'boolean' },
                 gstNo: { type: 'string' },
                 gstScheme: { type: 'string', enum: ['REGULAR', 'COMPOSITION', 'NONE'] },
-                currency: { type: 'string' },
-              },
-            },
-          },
+                currency: { type: 'string' }
+              }
+            }
+          }
         },
         OutletDetail: {
           type: 'object',
@@ -594,8 +594,8 @@
                 gstEnabled: { type: 'boolean' },
                 gstNo: { type: 'string' },
                 gstScheme: { type: 'string', enum: ['REGULAR', 'COMPOSITION', 'NONE'] },
-                currency: { type: 'string' },
-              },
+                currency: { type: 'string' }
+              }
             },
             createdAt: { type: 'string' },
             updatedAt: { type: 'string' }
@@ -1309,7 +1309,11 @@
             variationName: { type: 'string', nullable: true },
             instruction: { type: 'string', nullable: true },
             totalPrice: { type: 'number' },
-            itemStatus: { type: 'number', enum: [1, 2, 3, 4, 5], description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED' },
+            itemStatus: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED'
+            },
             kotSentAt: { type: 'string', format: 'date-time', nullable: true },
             cancelReason: { type: 'string', nullable: true },
             cancelledAt: { type: 'string', format: 'date-time', nullable: true },
@@ -1318,7 +1322,15 @@
               items: { $ref: '#/components/schemas/OrderItemAddon' }
             }
           },
-          required: ['_id', 'menuItemId', 'itemName', 'basePrice', 'quantity', 'totalPrice', 'itemStatus']
+          required: [
+            '_id',
+            'menuItemId',
+            'itemName',
+            'basePrice',
+            'quantity',
+            'totalPrice',
+            'itemStatus'
+          ]
         },
         OrderSummary: {
           type: 'object',
@@ -1327,15 +1339,32 @@
             _id: { type: 'string' },
             orderNumber: { type: 'string' },
             tokenNo: { type: 'string', nullable: true },
-            orderType: { type: 'number', enum: [1, 2, 3], description: '1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY' },
+            orderType: {
+              type: 'number',
+              enum: [1, 2, 3],
+              description: '1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY'
+            },
             tableId: { type: 'string', nullable: true },
-            status: { type: 'number', enum: [1, 2, 3, 4], description: '1=OPEN, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED' },
+            status: {
+              type: 'number',
+              enum: [1, 2, 3, 4],
+              description: '1=OPEN, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED'
+            },
             subtotal: { type: 'number' },
             taxAmount: { type: 'number' },
             discountAmount: { type: 'number' },
             totalAmount: { type: 'number' },
-            paymentStatus: { type: 'number', enum: [1, 2, 3, 4], description: '1=UNPAID, 2=PARTIAL, 3=PAID, 4=REFUNDED' },
-            paymentMethod: { type: 'number', nullable: true, enum: [1, 2, 3, 4, 5], description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE' },
+            paymentStatus: {
+              type: 'number',
+              enum: [1, 2, 3, 4],
+              description: '1=UNPAID, 2=PARTIAL, 3=PAID, 4=REFUNDED'
+            },
+            paymentMethod: {
+              type: 'number',
+              nullable: true,
+              enum: [1, 2, 3, 4, 5],
+              description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE'
+            },
             waiterId: { type: 'string', nullable: true },
             createdAt: { type: 'string', format: 'date-time' }
           },
@@ -1381,9 +1410,18 @@
         CreateOrderRequest: {
           type: 'object',
           properties: {
-            orderType: { type: 'number', enum: [1, 2, 3], description: '1=DINE_IN (requires tableId), 2=TAKEAWAY, 3=DELIVERY (requires shippingAddress)' },
+            orderType: {
+              type: 'number',
+              enum: [1, 2, 3],
+              description:
+                '1=DINE_IN (requires tableId), 2=TAKEAWAY, 3=DELIVERY (requires shippingAddress)'
+            },
             tableId: { type: 'string', description: 'Required when orderType=1 (DINE_IN)' },
-            items: { type: 'array', items: { $ref: '#/components/schemas/AddItemToOrderItemDTO' }, minItems: 1 },
+            items: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/AddItemToOrderItemDTO' },
+              minItems: 1
+            },
             notes: { type: 'string', maxLength: 500 },
             shippingAddress: { type: 'string', description: 'Required when orderType=3 (DELIVERY)' }
           },
@@ -1393,7 +1431,11 @@
           type: 'object',
           properties: {
             orderId: { type: 'string' },
-            items: { type: 'array', items: { $ref: '#/components/schemas/AddItemToOrderItemDTO' }, minItems: 1 }
+            items: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/AddItemToOrderItemDTO' },
+              minItems: 1
+            }
           },
           required: ['orderId', 'items']
         },
@@ -1408,7 +1450,8 @@
         },
         UpdateOrderItemRequest: {
           type: 'object',
-          description: 'Update quantity or instruction of a PENDING order item. At least one of quantity or instruction must be provided.',
+          description:
+            'Update quantity or instruction of a PENDING order item. At least one of quantity or instruction must be provided.',
           properties: {
             orderId: { type: 'string' },
             orderItemId: { type: 'string' },
@@ -1421,7 +1464,11 @@
           type: 'object',
           properties: {
             orderId: { type: 'string' },
-            paymentMethod: { type: 'number', enum: [1, 2, 3, 4, 5], description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE' }
+            paymentMethod: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE'
+            }
           },
           required: ['orderId']
         },
@@ -1448,7 +1495,11 @@
             _id: { type: 'string' },
             orderItemId: { type: 'string' },
             quantity: { type: 'number' },
-            itemStatus: { type: 'number', enum: [1, 2, 3, 4, 5], description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED' },
+            itemStatus: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED'
+            },
             preparedAt: { type: 'string', format: 'date-time', nullable: true },
             servedAt: { type: 'string', format: 'date-time', nullable: true }
           }
@@ -1459,11 +1510,19 @@
             _id: { type: 'string' },
             orderId: { type: 'string' },
             kotNumber: { type: 'string' },
-            kotType: { type: 'number', enum: [1, 2, 3], description: '1=REGULAR, 2=VOID, 3=REPRINT' },
+            kotType: {
+              type: 'number',
+              enum: [1, 2, 3],
+              description: '1=REGULAR, 2=VOID, 3=REPRINT'
+            },
             waiterId: { type: 'string', nullable: true },
             tokenNo: { type: 'string', nullable: true },
             tableName: { type: 'string', nullable: true },
-            status: { type: 'number', enum: [1, 2, 3, 4, 5], description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED' },
+            status: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED'
+            },
             isPrinted: { type: 'boolean' },
             items: { type: 'array', items: { $ref: '#/components/schemas/KOTItem' } },
             createdAt: { type: 'string', format: 'date-time' }
@@ -1474,7 +1533,12 @@
           type: 'object',
           properties: {
             kotId: { type: 'string' },
-            status: { type: 'number', enum: [1, 2, 3, 4, 5], description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED. State machine enforced.' }
+            status: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description:
+                '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED. State machine enforced.'
+            }
           },
           required: ['kotId', 'status']
         },
@@ -1482,7 +1546,11 @@
           type: 'object',
           properties: {
             kotItemId: { type: 'string' },
-            status: { type: 'number', enum: [1, 2, 3, 4, 5], description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED' }
+            status: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED'
+            }
           },
           required: ['kotItemId', 'status']
         },
@@ -1490,7 +1558,11 @@
           type: 'object',
           properties: {
             date: { type: 'string', format: 'date' },
-            orderType: { type: 'number', enum: [1, 2, 3], description: '1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY' },
+            orderType: {
+              type: 'number',
+              enum: [1, 2, 3],
+              description: '1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY'
+            },
             totalOrders: { type: 'number' },
             totalAmount: { type: 'number' },
             tax: { type: 'number' },
@@ -1556,14 +1628,14 @@
           summary: 'Get all active taxes',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1571,23 +1643,23 @@
               in: 'query',
               schema: {
                 type: 'number',
-                default: 1,
-              },
+                default: 1
+              }
             },
             {
               name: 'limit',
               in: 'query',
               schema: {
                 type: 'number',
-                default: 20,
-              },
+                default: 20
+              }
             },
             {
               name: 'isActive',
               in: 'query',
               schema: {
-                type: 'boolean',
-              },
+                type: 'boolean'
+              }
             },
             {
               name: 'column',
@@ -1595,8 +1667,8 @@
               schema: {
                 type: 'string',
                 enum: ['name', 'rate', 'type', 'isActive', 'createdAt', 'updatedAt'],
-                default: 'name',
-              },
+                default: 'name'
+              }
             },
             {
               name: 'order',
@@ -1604,9 +1676,9 @@
               schema: {
                 type: 'string',
                 enum: ['ASC', 'DESC'],
-                default: 'ASC',
-              },
-            },
+                default: 'ASC'
+              }
+            }
           ],
           responses: {
             '200': {
@@ -1614,36 +1686,36 @@
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/ApiResponse',
-                  },
-                },
-              },
-            },
-          },
+                    $ref: '#/components/schemas/ApiResponse'
+                  }
+                }
+              }
+            }
+          }
         },
         post: {
           tags: ['Tax'],
           summary: 'Create a new tax',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/CreateTaxRequest',
-                },
-              },
-            },
+                  $ref: '#/components/schemas/CreateTaxRequest'
+                }
+              }
+            }
           },
           responses: {
             '201': {
@@ -1651,13 +1723,13 @@
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/ApiResponse',
-                  },
-                },
-              },
-            },
-          },
-        },
+                    $ref: '#/components/schemas/ApiResponse'
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       '/api/v1/taxes/{id}': {
         get: {
@@ -1665,14 +1737,14 @@
           summary: 'Get a specific tax by ID',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1680,32 +1752,32 @@
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
+              description: 'Not Found'
+            }
+          }
         },
         patch: {
           tags: ['Tax'],
           summary: 'Update a specific tax',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1713,42 +1785,42 @@
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/UpdateTaxRequest',
-                },
-              },
-            },
+                  $ref: '#/components/schemas/UpdateTaxRequest'
+                }
+              }
+            }
           },
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
+              description: 'Not Found'
+            }
+          }
         },
         delete: {
           tags: ['Tax'],
           summary: 'Delete a specific tax',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1756,19 +1828,19 @@
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
-        },
+              description: 'Not Found'
+            }
+          }
+        }
       },
       '/api/v1/taxes/groups': {
         get: {
@@ -1776,14 +1848,14 @@
           summary: 'Get all active tax groups',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1791,61 +1863,61 @@
               in: 'query',
               schema: {
                 type: 'number',
-                default: 1,
-              },
+                default: 1
+              }
             },
             {
               name: 'limit',
               in: 'query',
               schema: {
                 type: 'number',
-                default: 20,
-              },
+                default: 20
+              }
             },
             {
               name: 'isActive',
               in: 'query',
               schema: {
-                type: 'boolean',
-              },
-            },
+                type: 'boolean'
+              }
+            }
           ],
           responses: {
             '200': {
-              description: 'Success',
-            },
-          },
+              description: 'Success'
+            }
+          }
         },
         post: {
           tags: ['TaxGroup'],
           summary: 'Create a new tax group',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/CreateTaxGroupRequest',
-                },
-              },
-            },
+                  $ref: '#/components/schemas/CreateTaxGroupRequest'
+                }
+              }
+            }
           },
           responses: {
             '201': {
-              description: 'Created',
-            },
-          },
-        },
+              description: 'Created'
+            }
+          }
+        }
       },
       '/api/v1/taxes/groups/{id}': {
         get: {
@@ -1853,14 +1925,14 @@
           summary: 'Get a specific tax group by ID',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1868,32 +1940,32 @@
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
+              description: 'Not Found'
+            }
+          }
         },
         patch: {
           tags: ['TaxGroup'],
           summary: 'Update a specific tax group',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1901,42 +1973,42 @@
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/UpdateTaxGroupRequest',
-                },
-              },
-            },
+                  $ref: '#/components/schemas/UpdateTaxGroupRequest'
+                }
+              }
+            }
           },
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
+              description: 'Not Found'
+            }
+          }
         },
         delete: {
           tags: ['TaxGroup'],
           summary: 'Delete a specific tax group',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1944,26 +2016,25 @@
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
-        },
+              description: 'Not Found'
+            }
+          }
+        }
       },
       '/api/v1/order/menu-items': {
         get: {
           tags: ['Orders'],
           summary: 'List active POS menu items grouped by category',
           description:
-
             'Fetches the complete menu structure including variants and addons for the POS. Mandatory headers: brand-id, outlet-id.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           responses: {
@@ -4571,11 +4642,11 @@
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/tables': {
         post: {
@@ -4796,14 +4867,27 @@
                   schema: {
                     allOf: [
                       { $ref: '#/components/schemas/ApiResponse' },
-                      { type: 'object', properties: { data: { $ref: '#/components/schemas/OrderDetail' } } }
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
                     ]
                   }
                 }
               }
             },
-            400: { description: 'Validation error (missing tableId for DINE_IN, no items, etc.)', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
-            422: { description: 'Joi validation failed', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } }
+            400: {
+              description: 'Validation error (missing tableId for DINE_IN, no items, etc.)',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            422: {
+              description: 'Joi validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
           }
         },
         get: {
@@ -4813,9 +4897,29 @@
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
             { name: 'page', in: 'query', schema: { type: 'number', minimum: 1, default: 1 } },
-            { name: 'limit', in: 'query', schema: { type: 'number', minimum: 1, maximum: 100, default: 20 } },
-            { name: 'status', in: 'query', schema: { type: 'number', enum: [1, 2, 3, 4], description: '1=OPEN, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED' } },
-            { name: 'orderType', in: 'query', schema: { type: 'number', enum: [1, 2, 3], description: '1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY' } },
+            {
+              name: 'limit',
+              in: 'query',
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
+            },
+            {
+              name: 'status',
+              in: 'query',
+              schema: {
+                type: 'number',
+                enum: [1, 2, 3, 4],
+                description: '1=OPEN, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED'
+              }
+            },
+            {
+              name: 'orderType',
+              in: 'query',
+              schema: {
+                type: 'number',
+                enum: [1, 2, 3],
+                description: '1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY'
+              }
+            },
             { name: 'tableId', in: 'query', schema: { type: 'string' } },
             { name: 'waiterId', in: 'query', schema: { type: 'string' } },
             { name: 'orderNumber', in: 'query', schema: { type: 'string' } },
@@ -4830,7 +4934,16 @@
                   schema: {
                     allOf: [
                       { $ref: '#/components/schemas/ApiResponse' },
-                      { type: 'object', properties: { data: { type: 'array', items: { $ref: '#/components/schemas/OrderSummary' } }, total: { type: 'number' } } }
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/OrderSummary' }
+                          },
+                          total: { type: 'number' }
+                        }
+                      }
                     ]
                   }
                 }
@@ -4843,14 +4956,35 @@
         get: {
           tags: ['Orders'],
           summary: 'Get order detail',
-          description: 'Returns full order with items, addons, and populated waiter info. Mandatory headers: brand-id, outlet-id.',
+          description:
+            'Returns full order with items, addons, and populated waiter info. Mandatory headers: brand-id, outlet-id.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
             { name: 'orderId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
-            200: { description: 'OK', content: { 'application/json': { schema: { allOf: [{ $ref: '#/components/schemas/ApiResponse' }, { type: 'object', properties: { data: { $ref: '#/components/schemas/OrderDetail' } } }] } } } },
-            404: { description: 'Not Found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } }
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
           }
         }
       },
@@ -4858,15 +4992,40 @@
         post: {
           tags: ['Orders'],
           summary: 'Add items to an existing order',
-          description: 'Adds new items to an OPEN or IN_PROGRESS order. Generates a new supplemental KOT. Does NOT replace existing items.',
+          description:
+            'Adds new items to an OPEN or IN_PROGRESS order. Generates a new supplemental KOT. Does NOT replace existing items.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/AddItemsToOrderRequest' } } }
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AddItemsToOrderRequest' }
+              }
+            }
           },
           responses: {
-            200: { description: 'Items added', content: { 'application/json': { schema: { allOf: [{ $ref: '#/components/schemas/ApiResponse' }, { type: 'object', properties: { data: { $ref: '#/components/schemas/OrderDetail' } } }] } } } },
-            404: { description: 'Order not found or not active', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } }
+            200: {
+              description: 'Items added',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Order not found or not active',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
           }
         }
       },
@@ -4874,16 +5033,46 @@
         post: {
           tags: ['Orders'],
           summary: 'Cancel a specific item from an order',
-          description: 'Marks a single OrderItem as CANCELLED and generates a VOID KOT to signal the kitchen to stop preparing it. Recalculates order totals.',
+          description:
+            'Marks a single OrderItem as CANCELLED and generates a VOID KOT to signal the kitchen to stop preparing it. Recalculates order totals.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/RemoveOrderItemRequest' } } }
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/RemoveOrderItemRequest' }
+              }
+            }
           },
           responses: {
-            200: { description: 'Item cancelled', content: { 'application/json': { schema: { allOf: [{ $ref: '#/components/schemas/ApiResponse' }, { type: 'object', properties: { data: { $ref: '#/components/schemas/OrderDetail' } } }] } } } },
-            400: { description: 'Item already cancelled or served', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
-            404: { description: 'Item or order not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } }
+            200: {
+              description: 'Item cancelled',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Item already cancelled or served',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            404: {
+              description: 'Item or order not found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
           }
         }
       },
@@ -4891,15 +5080,40 @@
         patch: {
           tags: ['Orders'],
           summary: 'Update a pending order item',
-          description: 'Change quantity or instruction on a PENDING item only (not yet sent to kitchen). At least one of quantity or instruction must be provided.',
+          description:
+            'Change quantity or instruction on a PENDING item only (not yet sent to kitchen). At least one of quantity or instruction must be provided.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateOrderItemRequest' } } }
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateOrderItemRequest' }
+              }
+            }
           },
           responses: {
-            200: { description: 'Item updated', content: { 'application/json': { schema: { allOf: [{ $ref: '#/components/schemas/ApiResponse' }, { type: 'object', properties: { data: { $ref: '#/components/schemas/OrderDetail' } } }] } } } },
-            400: { description: 'Cannot modify non-PENDING item', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } }
+            200: {
+              description: 'Item updated',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Cannot modify non-PENDING item',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
           }
         }
       },
@@ -4907,15 +5121,28 @@
         post: {
           tags: ['Orders'],
           summary: 'Close (complete) an order',
-          description: 'Marks order as COMPLETED. Requires paymentStatus to be PAID or PARTIAL. Releases table if no other active orders.',
+          description:
+            'Marks order as COMPLETED. Requires paymentStatus to be PAID or PARTIAL. Releases table if no other active orders.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/CloseOrderRequest' } } }
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CloseOrderRequest' } }
+            }
           },
           responses: {
-            200: { description: 'Order closed', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
-            400: { description: 'Order not in valid state or payment not recorded', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } }
+            200: {
+              description: 'Order closed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            400: {
+              description: 'Order not in valid state or payment not recorded',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
           }
         }
       },
@@ -4923,15 +5150,28 @@
         post: {
           tags: ['Orders'],
           summary: 'Cancel an order',
-          description: 'Cancels an OPEN or IN_PROGRESS order. Cancels all active KOTs. Releases table.',
+          description:
+            'Cancels an OPEN or IN_PROGRESS order. Cancels all active KOTs. Releases table.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/CancelOrderRequest' } } }
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CancelOrderRequest' } }
+            }
           },
           responses: {
-            200: { description: 'Order cancelled', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
-            400: { description: 'Cannot cancel a completed order', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } }
+            200: {
+              description: 'Order cancelled',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            400: {
+              description: 'Cannot cancel a completed order',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
           }
         }
       },
@@ -4949,7 +5189,24 @@
                   schema: {
                     allOf: [
                       { $ref: '#/components/schemas/ApiResponse' },
-                      { type: 'object', properties: { data: { type: 'object', properties: { preparing: { type: 'array', items: { $ref: '#/components/schemas/TokenDisplayItem' } }, ready: { type: 'array', items: { $ref: '#/components/schemas/TokenDisplayItem' } } } } } }
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'object',
+                            properties: {
+                              preparing: {
+                                type: 'array',
+                                items: { $ref: '#/components/schemas/TokenDisplayItem' }
+                              },
+                              ready: {
+                                type: 'array',
+                                items: { $ref: '#/components/schemas/TokenDisplayItem' }
+                              }
+                            }
+                          }
+                        }
+                      }
                     ]
                   }
                 }
@@ -4962,7 +5219,8 @@
         get: {
           tags: ['KOTs'],
           summary: 'List KOTs for a specific order',
-          description: 'Returns all KOTs (including VOID KOTs) for a given orderId. Mandatory headers: brand-id, outlet-id.',
+          description:
+            'Returns all KOTs (including VOID KOTs) for a given orderId. Mandatory headers: brand-id, outlet-id.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
             { name: 'orderId', in: 'query', required: true, schema: { type: 'string' } },
@@ -4970,7 +5228,24 @@
             { name: 'limit', in: 'query', schema: { type: 'number', minimum: 1, default: 50 } }
           ],
           responses: {
-            200: { description: 'OK', content: { 'application/json': { schema: { allOf: [{ $ref: '#/components/schemas/ApiResponse' }, { type: 'object', properties: { data: { type: 'array', items: { $ref: '#/components/schemas/KOTDetail' } } } }] } } } }
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { type: 'array', items: { $ref: '#/components/schemas/KOTDetail' } }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
           }
         }
       },
@@ -4978,17 +5253,39 @@
         get: {
           tags: ['KOTs'],
           summary: 'Kitchen Display System (KDS) â€” all active KOTs',
-          description: 'Returns all non-completed KOTs for an outlet, sorted FIFO. Optionally filter by status. For Kitchen Display screens.',
+          description:
+            'Returns all non-completed KOTs for an outlet, sorted FIFO. Optionally filter by status. For Kitchen Display screens.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
             {
               name: 'status',
               in: 'query',
-              schema: { type: 'number', enum: [1, 2, 3], description: '1=PENDING, 2=PREPARING, 3=READY. Omit to get all active KOTs.' }
+              schema: {
+                type: 'number',
+                enum: [1, 2, 3],
+                description: '1=PENDING, 2=PREPARING, 3=READY. Omit to get all active KOTs.'
+              }
             }
           ],
           responses: {
-            200: { description: 'OK', content: { 'application/json': { schema: { allOf: [{ $ref: '#/components/schemas/ApiResponse' }, { type: 'object', properties: { data: { type: 'array', items: { $ref: '#/components/schemas/KOTDetail' } } } }] } } } }
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { type: 'array', items: { $ref: '#/components/schemas/KOTDetail' } }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
           }
         }
       },
@@ -5004,12 +5301,41 @@
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateKOTStatusRequest' } } }
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateKOTStatusRequest' }
+              }
+            }
           },
           responses: {
-            200: { description: 'KOT status updated', content: { 'application/json': { schema: { allOf: [{ $ref: '#/components/schemas/ApiResponse' }, { type: 'object', properties: { data: { $ref: '#/components/schemas/KOTDetail' } } }] } } } },
-            400: { description: 'Invalid state transition', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
-            404: { description: 'KOT not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } }
+            200: {
+              description: 'KOT status updated',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/KOTDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Invalid state transition',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            404: {
+              description: 'KOT not found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
           }
         }
       },
@@ -5017,16 +5343,36 @@
         patch: {
           tags: ['KOTs'],
           summary: 'Update individual KOT item status',
-          description: 'Update status of a single item within a KOT (e.g., mark starter as SERVED while main is still PREPARING). Auto-advances KOT to SERVED when all items are served.',
+          description:
+            'Update status of a single item within a KOT (e.g., mark starter as SERVED while main is still PREPARING). Auto-advances KOT to SERVED when all items are served.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateKOTItemStatusRequest' } } }
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateKOTItemStatusRequest' }
+              }
+            }
           },
           responses: {
-            200: { description: 'KOT item status updated', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
-            403: { description: 'KOT does not belong to your outlet', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } },
-            404: { description: 'KOT item not found', content: { 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } } } }
+            200: {
+              description: 'KOT item status updated',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            403: {
+              description: 'KOT does not belong to your outlet',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            404: {
+              description: 'KOT item not found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
           }
         }
       },

@@ -9,7 +9,7 @@ export const createMeasurementSchema = Joi.object({
   baseUnit: Joi.string().trim().required(),
   conversionFactor: Joi.number().min(0.0001).default(1),
   isDecimalAllowed: Joi.boolean().default(true),
-  isActive: Joi.boolean().default(true),
+  isActive: Joi.boolean().default(true)
 });
 
 export const updateMeasurementSchema = Joi.object({
@@ -20,7 +20,7 @@ export const updateMeasurementSchema = Joi.object({
   baseUnit: Joi.string().trim().optional(),
   conversionFactor: Joi.number().min(0.0001).optional(),
   isDecimalAllowed: Joi.boolean().optional(),
-  isActive: Joi.boolean().optional(),
+  isActive: Joi.boolean().optional()
 });
 
 export const measurementListQuerySchema = Joi.object({
@@ -28,9 +28,9 @@ export const measurementListQuerySchema = Joi.object({
   column: Joi.string()
     .valid('name', 'measurementType', 'unit', 'baseUnit', 'createdAt', 'updatedAt', 'isActive')
     .default('name'),
-  order: Joi.string().valid('ASC', 'DESC').default('ASC'),
+  order: Joi.string().valid('ASC', 'DESC').default('ASC')
 });
 
 export const measurementIdSchema = Joi.object({
-  measurementId: objectId.required(),
+  measurementId: objectId.required()
 });

@@ -12,7 +12,7 @@ export const createOutletSchema = Joi.object({
       .optional(),
     outletType: Joi.string()
       .valid(...OUTLET_TYPES)
-      .required(),
+      .required()
   }).required(),
   contact: Joi.object({
     email: Joi.string().email().required(),
@@ -20,7 +20,7 @@ export const createOutletSchema = Joi.object({
     country: Joi.string().trim().required(),
     state: Joi.string().trim().required(),
     city: Joi.string().trim().required(),
-    address: Joi.string().trim().required(),
+    address: Joi.string().trim().required()
   }).required(),
   settings: Joi.object({
     gstEnabled: Joi.boolean().default(false),
@@ -29,18 +29,18 @@ export const createOutletSchema = Joi.object({
       .when('gstEnabled', {
         is: true,
         then: Joi.required(),
-        otherwise: Joi.optional().allow(''),
+        otherwise: Joi.optional().allow('')
       }),
     gstScheme: Joi.string()
       .valid(...Object.values(GstScheme))
       .when('gstEnabled', {
         is: true,
         then: Joi.invalid(GstScheme.NONE).required(),
-        otherwise: Joi.optional(),
+        otherwise: Joi.optional()
       })
       .default(GstScheme.NONE),
-    currency: Joi.string().trim().optional(),
-  }).optional(),
+    currency: Joi.string().trim().optional()
+  }).optional()
 });
 
 export const updateOutletSchema = Joi.object({
@@ -48,7 +48,7 @@ export const updateOutletSchema = Joi.object({
     name: Joi.string().trim().min(2),
     logo: Joi.string().uri(),
     cuisineType: Joi.array().items(Joi.string().valid(...CUISINE_TYPES)),
-    outletType: Joi.string().valid(...OUTLET_TYPES),
+    outletType: Joi.string().valid(...OUTLET_TYPES)
   }),
   contact: Joi.object({
     email: Joi.string().email(),
@@ -56,13 +56,13 @@ export const updateOutletSchema = Joi.object({
     country: Joi.string().trim(),
     state: Joi.string().trim(),
     city: Joi.string().trim(),
-    address: Joi.string().trim(),
+    address: Joi.string().trim()
   }),
   settings: Joi.object({
     gstEnabled: Joi.boolean(),
     gstNo: Joi.string().trim().allow(''),
     gstScheme: Joi.string().valid(...Object.values(GstScheme)),
-    currency: Joi.string().trim(),
+    currency: Joi.string().trim()
   }).when('.gstEnabled', {
     is: true,
     then: Joi.object({
@@ -70,25 +70,25 @@ export const updateOutletSchema = Joi.object({
       gstScheme: Joi.string()
         .valid(...Object.values(GstScheme))
         .invalid(GstScheme.NONE)
-        .required(),
-    }),
-  }),
+        .required()
+    })
+  })
 });
 
 export const outletBrandQuerySchema = Joi.object({
-  brandId: Joi.string().required(),
+  brandId: Joi.string().required()
 });
 
 export const outletUpdateQuerySchema = Joi.object({
   brandId: Joi.string().required(),
-  outletId: Joi.string().required(),
+  outletId: Joi.string().required()
 });
 
 export const outletDetailHeaderSchema = Joi.object({
   'brand-id': Joi.string().required(),
-  'outlet-id': Joi.string().required(),
+  'outlet-id': Joi.string().required()
 });
 
 export const outletBrandHeaderSchema = Joi.object({
-  'brand-id': Joi.string().required(),
+  'brand-id': Joi.string().required()
 });
