@@ -24,11 +24,13 @@ export const createOutletSchema = Joi.object({
   }).required(),
   settings: Joi.object({
     gstEnabled: Joi.boolean().default(false),
-    gstNo: Joi.string().trim().when('gstEnabled', {
-      is: true,
-      then: Joi.required(),
-      otherwise: Joi.optional().allow(''),
-    }),
+    gstNo: Joi.string()
+      .trim()
+      .when('gstEnabled', {
+        is: true,
+        then: Joi.required(),
+        otherwise: Joi.optional().allow(''),
+      }),
     gstScheme: Joi.string()
       .valid(...Object.values(GstScheme))
       .when('gstEnabled', {
@@ -65,7 +67,10 @@ export const updateOutletSchema = Joi.object({
     is: true,
     then: Joi.object({
       gstNo: Joi.string().trim().required(),
-      gstScheme: Joi.string().valid(...Object.values(GstScheme)).invalid(GstScheme.NONE).required(),
+      gstScheme: Joi.string()
+        .valid(...Object.values(GstScheme))
+        .invalid(GstScheme.NONE)
+        .required(),
     }),
   }),
 });
