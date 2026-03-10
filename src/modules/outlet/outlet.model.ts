@@ -1,4 +1,5 @@
 import { Schema, model, type Model, Types } from 'mongoose';
+
 import { GstScheme } from '@shared/enum';
 
 export interface Outlet {

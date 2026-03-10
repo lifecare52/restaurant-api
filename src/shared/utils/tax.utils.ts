@@ -1,5 +1,6 @@
-import { GstScheme } from '@shared/enum';
 import { Outlet } from '@modules/outlet/outlet.model';
+
+import { GstScheme } from '@shared/enum';
 
 /**
  * Checks if tax can be applied for the given outlet.
