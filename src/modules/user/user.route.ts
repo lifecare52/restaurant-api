@@ -10,7 +10,7 @@ import {
   listOutletUsersController,
   getOutletUserController,
   updateOutletUserController,
-  deleteOutletUserController,
+  deleteOutletUserController
 } from '@modules/user/user.controller';
 import {
   createAdminSchema,
@@ -19,7 +19,7 @@ import {
   loginSchema,
   userListQuerySchema,
   userIdQuerySchema,
-  updateUserSchema,
+  updateUserSchema
 } from '@modules/user/user.validator';
 
 import { ROLES, PERMISSIONS } from '@shared/constants';
@@ -37,7 +37,7 @@ router.post('/admins/login', validateRequest(loginSchema), adminLoginController)
 router.post(
   '/admins/bootstrap',
   validateRequest(createAdminSchema),
-  createAdminBootstrapController,
+  createAdminBootstrapController
 );
 
 router.post(
@@ -45,7 +45,7 @@ router.post(
   auth,
   requireRole([ROLES.ADMIN]),
   validateRequest(createAdminSchema),
-  createAdminController,
+  createAdminController
 );
 
 router.post(
@@ -53,7 +53,7 @@ router.post(
   auth,
   requireRole([ROLES.ADMIN]),
   validateRequest(createOwnerSchema),
-  createOwnerController,
+  createOwnerController
 );
 
 router.post(
@@ -62,7 +62,7 @@ router.post(
   requireBrandAccess,
   requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(createUserSchema),
-  createOutletUserController,
+  createOutletUserController
 );
 
 router.get(
@@ -71,7 +71,7 @@ router.get(
   requireBrandAccess,
   requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(userListQuerySchema, 'query'),
-  listOutletUsersController,
+  listOutletUsersController
 );
 
 router.get(
@@ -80,7 +80,7 @@ router.get(
   requireBrandAccess,
   requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(userIdQuerySchema, 'query'),
-  getOutletUserController,
+  getOutletUserController
 );
 
 router.patch(
@@ -90,7 +90,7 @@ router.patch(
   requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(userIdQuerySchema, 'query'),
   validateRequest(updateUserSchema),
-  updateOutletUserController,
+  updateOutletUserController
 );
 
 router.delete(
@@ -99,7 +99,7 @@ router.delete(
   requireBrandAccess,
   requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(userIdQuerySchema, 'query'),
-  deleteOutletUserController,
+  deleteOutletUserController
 );
 
 export default router;

@@ -9,7 +9,7 @@ const AddonItemSchema = new Schema<AddonItem>({
   price: { type: Number, required: true, min: 0 },
   sapCode: { type: String, trim: true },
   dietary: { type: String, enum: DIETARIES },
-  available: { type: Boolean, default: true },
+  available: { type: Boolean, default: true }
 });
 
 const AddonSchema = new Schema<Addon>(
@@ -20,9 +20,9 @@ const AddonSchema = new Schema<Addon>(
     items: { type: [AddonItemSchema], default: [] },
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
-    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null },
+    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 AddonSchema.index(
@@ -30,8 +30,8 @@ AddonSchema.index(
   {
     unique: true,
     partialFilterExpression: { isDelete: false },
-    collation: { locale: 'en', strength: 2 },
-  },
+    collation: { locale: 'en', strength: 2 }
+  }
 );
 
 const AddonEntity = model<Addon>('Addon', AddonSchema);

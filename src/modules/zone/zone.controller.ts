@@ -4,14 +4,14 @@ import {
   listActiveZones,
   getZone,
   updateZone,
-  deleteZone,
+  deleteZone
 } from '@modules/zone/zone.service';
 
 import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || '',
+  outletId: (req.headers['outlet-id'] as string | undefined) || ''
 });
 
 export const createZoneController = async (req: Request, res: Response, next: NextFunction) => {
@@ -22,7 +22,7 @@ export const createZoneController = async (req: Request, res: Response, next: Ne
       status: true,
       code: 201,
       message: 'Zone created successfully',
-      data: item,
+      data: item
     };
     next();
   } catch (err) {
@@ -44,7 +44,7 @@ export const listZonesController = async (req: Request, res: Response, next: Nex
 export const listActiveZonesController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -84,7 +84,7 @@ export const updateZoneController = async (req: Request, res: Response, next: Ne
         status: true,
         code: 200,
         message: 'Zone updated successfully',
-        data: item,
+        data: item
       };
     }
     next();

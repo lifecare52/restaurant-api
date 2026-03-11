@@ -8,14 +8,14 @@ import {
   updateTableController,
   updateTableStatusController,
   deleteTableController,
-  getTableLiveOrdersController,
+  getTableLiveOrdersController
 } from '@modules/table/table.controller';
 import {
   createTableSchema,
   updateTableSchema,
   updateTableStatusSchema,
   tableListQuerySchema,
-  tableIdQuerySchema,
+  tableIdQuerySchema
 } from '@modules/table/table.validator';
 
 import { ROLES } from '@shared/constants';
@@ -26,7 +26,7 @@ import { auth } from '@middlewares/auth.middleware';
 import {
   requireBrandAccess,
   requireOutletAccess,
-  requireRole,
+  requireRole
 } from '@middlewares/guard.middleware';
 
 const router = Router({ mergeParams: true });
@@ -41,7 +41,7 @@ router.post(
   requireOutletAccess,
   requireRole(ADMIN_RLS),
   validateRequest(createTableSchema),
-  createTableController,
+  createTableController
 );
 
 router.get(
@@ -51,7 +51,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(tableListQuerySchema, 'query'),
-  listTablesController,
+  listTablesController
 );
 
 router.get(
@@ -60,7 +60,7 @@ router.get(
   validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  listActiveTablesController,
+  listActiveTablesController
 );
 
 router.get(
@@ -70,7 +70,7 @@ router.get(
   validateRequest(tableIdQuerySchema, 'query'),
   requireBrandAccess,
   requireOutletAccess,
-  getTableController,
+  getTableController
 );
 
 router.patch(
@@ -82,7 +82,7 @@ router.patch(
   requireOutletAccess,
   requireRole(ADMIN_RLS),
   validateRequest(updateTableSchema),
-  updateTableController,
+  updateTableController
 );
 
 // This endpoint could be accessed by staff (captain/waiter) to update status
@@ -94,7 +94,7 @@ router.patch(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(updateTableStatusSchema),
-  updateTableStatusController,
+  updateTableStatusController
 );
 
 router.delete(
@@ -105,7 +105,7 @@ router.delete(
   requireBrandAccess,
   requireOutletAccess,
   requireRole(ADMIN_RLS),
-  deleteTableController,
+  deleteTableController
 );
 
 router.get(
@@ -115,7 +115,7 @@ router.get(
   validateRequest(tableIdQuerySchema, 'query'),
   requireBrandAccess,
   requireOutletAccess,
-  getTableLiveOrdersController,
+  getTableLiveOrdersController
 );
 
 export default router;

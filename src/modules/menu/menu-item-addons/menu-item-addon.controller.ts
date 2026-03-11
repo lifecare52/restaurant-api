@@ -4,14 +4,14 @@ import {
   getMenuItemAddon,
   updateMenuItemAddon,
   deleteMenuItemAddon,
-  createBulkMenuItemAddons,
+  createBulkMenuItemAddons
 } from '@modules/menu/menu-item-addons/menu-item-addon.service';
 import type {
   MenuItemAddonCreateDTO,
   MenuItemAddonFilterQuery,
   MenuItemAddonListQuery,
   MenuItemAddonUpdateDTO,
-  BulkMenuItemAddonCreateDTO,
+  BulkMenuItemAddonCreateDTO
 } from '@modules/menu/menu-item-addons/menu-item-addon.types';
 import { getAddonMappingAggregationV2 } from '@modules/menu/menu-items/menu-item.service';
 
@@ -21,13 +21,13 @@ import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || '',
+  outletId: (req.headers['outlet-id'] as string | undefined) || ''
 });
 
 export const createMenuItemAddonController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -36,14 +36,14 @@ export const createMenuItemAddonController = async (
       res.locals.response = {
         status: false,
         code: 400,
-        message: 'Brand, outlet, item or addon not found',
+        message: 'Brand, outlet, item or addon not found'
       };
     } else {
       res.locals.response = {
         status: true,
         code: 201,
         message: API_MESSAGES.MENU_ITEM_ADDON_CREATED,
-        data: v,
+        data: v
       };
     }
     next();
@@ -55,20 +55,20 @@ export const createMenuItemAddonController = async (
 export const createBulkMenuItemAddonController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const result = await createBulkMenuItemAddons(
       brandId,
       outletId,
-      req.body as BulkMenuItemAddonCreateDTO,
+      req.body as BulkMenuItemAddonCreateDTO
     );
     res.locals.response = {
       status: true,
       code: 201,
       message: 'Bulk addons processed',
-      data: result,
+      data: result
     };
     next();
   } catch (err) {
@@ -79,7 +79,7 @@ export const createBulkMenuItemAddonController = async (
 export const listMenuItemAddonsController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -87,7 +87,7 @@ export const listMenuItemAddonsController = async (
       brandId,
       outletId,
       req.query as MenuItemAddonListQuery,
-      req.query as MenuItemAddonFilterQuery,
+      req.query as MenuItemAddonFilterQuery
     );
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
     next();
@@ -99,7 +99,7 @@ export const listMenuItemAddonsController = async (
 export const getMenuItemAddonController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -109,7 +109,7 @@ export const getMenuItemAddonController = async (
       res.locals.response = {
         status: false,
         code: 404,
-        message: API_MESSAGES.MENU_ITEM_ADDON_NOT_FOUND,
+        message: API_MESSAGES.MENU_ITEM_ADDON_NOT_FOUND
       };
     } else {
       res.locals.response = { status: true, code: 200, data: v };
@@ -123,7 +123,7 @@ export const getMenuItemAddonController = async (
 export const updateMenuItemAddonController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -132,20 +132,20 @@ export const updateMenuItemAddonController = async (
       brandId,
       outletId,
       menuItemAddonId,
-      req.body as MenuItemAddonUpdateDTO,
+      req.body as MenuItemAddonUpdateDTO
     );
     if (!v) {
       res.locals.response = {
         status: false,
         code: 404,
-        message: API_MESSAGES.MENU_ITEM_ADDON_NOT_FOUND,
+        message: API_MESSAGES.MENU_ITEM_ADDON_NOT_FOUND
       };
     } else {
       res.locals.response = {
         status: true,
         code: 200,
         message: API_MESSAGES.MENU_ITEM_ADDON_UPDATED,
-        data: v,
+        data: v
       };
     }
     next();
@@ -157,7 +157,7 @@ export const updateMenuItemAddonController = async (
 export const deleteMenuItemAddonController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -167,13 +167,13 @@ export const deleteMenuItemAddonController = async (
       res.locals.response = {
         status: false,
         code: 404,
-        message: API_MESSAGES.MENU_ITEM_ADDON_NOT_FOUND,
+        message: API_MESSAGES.MENU_ITEM_ADDON_NOT_FOUND
       };
     } else {
       res.locals.response = {
         status: true,
         code: 200,
-        message: API_MESSAGES.MENU_ITEM_ADDON_DELETED,
+        message: API_MESSAGES.MENU_ITEM_ADDON_DELETED
       };
     }
     next();
@@ -185,7 +185,7 @@ export const deleteMenuItemAddonController = async (
 export const getAddonMappingController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -195,7 +195,7 @@ export const getAddonMappingController = async (
     res.locals.response = {
       status: true,
       code: 200,
-      data: dataV2,
+      data: dataV2
     };
     next();
   } catch (err) {
@@ -209,5 +209,5 @@ export default {
   getMenuItemAddonController,
   updateMenuItemAddonController,
   deleteMenuItemAddonController,
-  getAddonMappingController,
+  getAddonMappingController
 };

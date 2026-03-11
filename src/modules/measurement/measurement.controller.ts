@@ -5,7 +5,7 @@ import {
   deleteMeasurement,
   getMeasurement,
   listMeasurements,
-  updateMeasurement,
+  updateMeasurement
 } from './measurement.service';
 
 import type { MeasurementCreateDTO, MeasurementListQuery } from './measurement.types';
@@ -13,7 +13,7 @@ import type { MeasurementCreateDTO, MeasurementListQuery } from './measurement.t
 export const createMeasurementController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const dto = req.body as MeasurementCreateDTO;
@@ -22,7 +22,7 @@ export const createMeasurementController = async (
       status: true,
       code: 201,
       message: 'Measurement created successfully',
-      data: result,
+      data: result
     };
     next();
   } catch (err) {
@@ -33,7 +33,7 @@ export const createMeasurementController = async (
 export const listMeasurementsController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const query = req.query as unknown as MeasurementListQuery;
@@ -41,7 +41,7 @@ export const listMeasurementsController = async (
     res.locals.response = {
       status: true,
       code: 200,
-      data: result.items,
+      data: result.items
     };
     next();
   } catch (err) {
@@ -57,13 +57,13 @@ export const getMeasurementController = async (req: Request, res: Response, next
       res.locals.response = {
         status: false,
         code: 404,
-        message: 'Measurement not found',
+        message: 'Measurement not found'
       };
     } else {
       res.locals.response = {
         status: true,
         code: 200,
-        data: result,
+        data: result
       };
     }
     next();
@@ -75,7 +75,7 @@ export const getMeasurementController = async (req: Request, res: Response, next
 export const updateMeasurementController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { measurementId, ...dto } = req.body;
@@ -84,14 +84,14 @@ export const updateMeasurementController = async (
       res.locals.response = {
         status: false,
         code: 404,
-        message: 'Measurement not found',
+        message: 'Measurement not found'
       };
     } else {
       res.locals.response = {
         status: true,
         code: 200,
         message: 'Measurement updated successfully',
-        data: result,
+        data: result
       };
     }
     next();
@@ -103,7 +103,7 @@ export const updateMeasurementController = async (
 export const deleteMeasurementController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { measurementId } = req.query as unknown as { measurementId: string };
@@ -112,13 +112,13 @@ export const deleteMeasurementController = async (
       res.locals.response = {
         status: false,
         code: 404,
-        message: 'Measurement not found',
+        message: 'Measurement not found'
       };
     } else {
       res.locals.response = {
         status: true,
         code: 200,
-        message: 'Measurement deleted successfully',
+        message: 'Measurement deleted successfully'
       };
     }
     next();

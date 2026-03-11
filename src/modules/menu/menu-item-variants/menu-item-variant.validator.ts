@@ -9,7 +9,7 @@ const measurementConfigSchema = Joi.object({
   baseValue: Joi.number().min(0).optional(),
   minValue: Joi.number().min(0).optional(),
   maxValue: Joi.number().min(0).optional(),
-  stepValue: Joi.number().min(0).optional(),
+  stepValue: Joi.number().min(0).optional()
 });
 
 export const createMenuItemVariantSchema = Joi.object({
@@ -22,11 +22,11 @@ export const createMenuItemVariantSchema = Joi.object({
   measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
     is: true,
     then: Joi.required(),
-    otherwise: Joi.optional(),
+    otherwise: Joi.optional()
   }),
 
   isActive: Joi.boolean().default(true),
-  isDefault: Joi.boolean().default(false),
+  isDefault: Joi.boolean().default(false)
 });
 
 export const updateMenuItemVariantSchema = Joi.object({
@@ -37,15 +37,15 @@ export const updateMenuItemVariantSchema = Joi.object({
   measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
     is: true,
     then: Joi.required(),
-    otherwise: Joi.optional(),
+    otherwise: Joi.optional()
   }),
 
   isActive: Joi.boolean(),
-  isDefault: Joi.boolean(),
+  isDefault: Joi.boolean()
 });
 
 export const menuItemVariantIdQuerySchema = Joi.object({
-  menuItemVariantId: objectId.required(),
+  menuItemVariantId: objectId.required()
 });
 
 export const menuItemVariantListQuerySchema = Joi.object({
@@ -58,5 +58,5 @@ export const menuItemVariantListQuerySchema = Joi.object({
     .default('createdAt'),
   order: Joi.string()
     .valid(...SORT_ORDERS)
-    .default('ASC'),
+    .default('ASC')
 });

@@ -20,7 +20,7 @@ import { EventEmitter } from 'events';
  *   kot.status.updated     — KOT-level status changed (PENDING→PREPARING etc.)
  *   kot.item.status.updated — individual KOT item status changed
  */
-class OrderEventBus extends EventEmitter { }
+class OrderEventBus extends EventEmitter {}
 
 export const orderEvents = new OrderEventBus();
 export default orderEvents;

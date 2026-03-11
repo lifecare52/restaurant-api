@@ -11,13 +11,13 @@ import {
   deleteMeasurementController,
   getMeasurementController,
   listMeasurementsController,
-  updateMeasurementController,
+  updateMeasurementController
 } from './measurement.controller';
 import {
   createMeasurementSchema,
   measurementIdSchema,
   measurementListQuerySchema,
-  updateMeasurementSchema,
+  updateMeasurementSchema
 } from './measurement.validator';
 
 const router = Router();
@@ -27,21 +27,21 @@ router.post(
   auth,
   requireRole([ROLES.ADMIN]),
   validateRequest(createMeasurementSchema),
-  createMeasurementController,
+  createMeasurementController
 );
 
 router.get(
   '/',
   auth,
   validateRequest(measurementListQuerySchema, 'query'),
-  listMeasurementsController,
+  listMeasurementsController
 );
 
 router.get(
   '/detail',
   auth,
   validateRequest(measurementIdSchema, 'query'),
-  getMeasurementController,
+  getMeasurementController
 );
 
 router.patch(
@@ -49,7 +49,7 @@ router.patch(
   auth,
   requireRole([ROLES.ADMIN]),
   validateRequest(updateMeasurementSchema),
-  updateMeasurementController,
+  updateMeasurementController
 );
 
 router.delete(
@@ -57,7 +57,7 @@ router.delete(
   auth,
   requireRole([ROLES.ADMIN]),
   validateRequest(measurementIdSchema, 'query'),
-  deleteMeasurementController,
+  deleteMeasurementController
 );
 
 export default router;

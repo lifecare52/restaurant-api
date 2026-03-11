@@ -5,7 +5,7 @@ import MenuItemVariantEntity from '@modules/menu/menu-item-variants/menu-item-va
 import type {
   MenuItemVariantCreateDTO,
   MenuItemVariantUpdateDTO,
-  MenuItemVariantListQuery,
+  MenuItemVariantListQuery
 } from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import { getMenuItem } from '@modules/menu/menu-items/menu-item.service';
 import { getVariation } from '@modules/menu/variations/variation.service';
@@ -14,7 +14,7 @@ import { getOutletById } from '@modules/outlet/outlet.service';
 export const createMenuItemVariant = async (
   brandId: string,
   outletId: string,
-  dto: MenuItemVariantCreateDTO,
+  dto: MenuItemVariantCreateDTO
 ) => {
   const brand = await getBrandById(brandId);
   if (!brand) return null;
@@ -35,9 +35,9 @@ export const createMenuItemVariant = async (
           brandId: new Types.ObjectId(brandId),
           outletId: new Types.ObjectId(outletId),
           menuItemId: new Types.ObjectId(dto.menuItemId),
-          isDelete: false,
+          isDelete: false
         },
-        { $set: { isDefault: false } },
+        { $set: { isDefault: false } }
       );
     }
     return await MenuItemVariantEntity.create({
@@ -52,13 +52,13 @@ export const createMenuItemVariant = async (
       measurementConfig: dto.measurementConfig
         ? {
             ...dto.measurementConfig,
-            measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+            measurementId: new Types.ObjectId(dto.measurementConfig.measurementId)
           }
         : undefined,
 
       isActive: dto.isActive ?? true,
       isDelete: false,
-      isDefault: dto.isDefault ?? false,
+      isDefault: dto.isDefault ?? false
     });
   } catch (err) {
     const e = err as { code?: number };
@@ -66,7 +66,7 @@ export const createMenuItemVariant = async (
       throw {
         status: 409,
         code: 'DUPLICATE_MENU_ITEM_VARIANT',
-        message: 'Variant already attached to this menu item or default already exists',
+        message: 'Variant already attached to this menu item or default already exists'
       };
     }
     throw err;
@@ -76,7 +76,7 @@ export const createMenuItemVariant = async (
 export const listMenuItemVariants = async (
   brandId: string,
   outletId: string,
-  pagination: MenuItemVariantListQuery,
+  pagination: MenuItemVariantListQuery
 ) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;
@@ -85,7 +85,7 @@ export const listMenuItemVariants = async (
   const filter: Record<string, unknown> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   };
 
   if (pagination.menuItemId) {
@@ -103,7 +103,7 @@ export const listMenuItemVariants = async (
       .sort({ [sortColumn]: sortOrder })
       .skip(skip)
       .limit(limit),
-    MenuItemVariantEntity.countDocuments(filter),
+    MenuItemVariantEntity.countDocuments(filter)
   ]);
 
   return { items, total };
@@ -114,20 +114,20 @@ export const getAllMenuItemVariants = async (brandId: string, outletId: string) 
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    isActive: true,
+    isActive: true
   }).lean();
 };
 
 export const getMenuItemVariant = async (
   brandId: string,
   outletId: string,
-  menuItemVariantId: string,
+  menuItemVariantId: string
 ) => {
   return MenuItemVariantEntity.findOne({
     _id: new Types.ObjectId(menuItemVariantId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   });
 };
 
@@ -135,7 +135,7 @@ export const updateMenuItemVariant = async (
   brandId: string,
   outletId: string,
   menuItemVariantId: string,
-  dto: MenuItemVariantUpdateDTO,
+  dto: MenuItemVariantUpdateDTO
 ) => {
   try {
     if (dto.isDefault) {
@@ -143,7 +143,7 @@ export const updateMenuItemVariant = async (
         _id: new Types.ObjectId(menuItemVariantId),
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
-        isDelete: false,
+        isDelete: false
       });
       if (current) {
         await MenuItemVariantEntity.updateMany(
@@ -152,9 +152,9 @@ export const updateMenuItemVariant = async (
             outletId: new Types.ObjectId(outletId),
             menuItemId: current.menuItemId,
             isDelete: false,
-            _id: { $ne: current._id },
+            _id: { $ne: current._id }
           },
-          { $set: { isDefault: false } },
+          { $set: { isDefault: false } }
         );
       }
     }
@@ -166,7 +166,7 @@ export const updateMenuItemVariant = async (
     if (dto.measurementConfig) {
       updateData.measurementConfig = {
         ...dto.measurementConfig,
-        measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+        measurementId: new Types.ObjectId(dto.measurementConfig.measurementId)
       };
     }
 
@@ -174,12 +174,12 @@ export const updateMenuItemVariant = async (
       {
         _id: new Types.ObjectId(menuItemVariantId),
         brandId: new Types.ObjectId(brandId),
-        outletId: new Types.ObjectId(outletId),
+        outletId: new Types.ObjectId(outletId)
       },
       {
-        $set: updateData,
+        $set: updateData
       },
-      { new: true },
+      { new: true }
     );
   } catch (err) {
     const e = err as { code?: number };
@@ -187,7 +187,7 @@ export const updateMenuItemVariant = async (
       throw {
         status: 409,
         code: 'DUPLICATE_MENU_ITEM_VARIANT',
-        message: 'Variant already attached to this menu item or default already exists',
+        message: 'Variant already attached to this menu item or default already exists'
       };
     }
     throw err;
@@ -197,16 +197,16 @@ export const updateMenuItemVariant = async (
 export const deleteMenuItemVariant = async (
   brandId: string,
   outletId: string,
-  menuItemVariantId: string,
+  menuItemVariantId: string
 ) => {
   return MenuItemVariantEntity.findOneAndUpdate(
     {
       _id: new Types.ObjectId(menuItemVariantId),
       brandId: new Types.ObjectId(brandId),
-      outletId: new Types.ObjectId(outletId),
+      outletId: new Types.ObjectId(outletId)
     },
     { $set: { isDelete: true } },
-    { new: true },
+    { new: true }
   );
 };
 
@@ -215,5 +215,5 @@ export default {
   listMenuItemVariants,
   getMenuItemVariant,
   updateMenuItemVariant,
-  deleteMenuItemVariant,
+  deleteMenuItemVariant
 };

@@ -11,7 +11,7 @@ export const createTableSchema = Joi.object({
   status: Joi.string()
     .valid(...Object.values(TABLE_STATUS))
     .optional(),
-  isActive: Joi.boolean().default(true),
+  isActive: Joi.boolean().default(true)
 });
 
 export const updateTableSchema = Joi.object({
@@ -21,13 +21,13 @@ export const updateTableSchema = Joi.object({
   status: Joi.string()
     .valid(...Object.values(TABLE_STATUS))
     .optional(),
-  isActive: Joi.boolean().optional(),
+  isActive: Joi.boolean().optional()
 }).min(1);
 
 export const updateTableStatusSchema = Joi.object({
   status: Joi.string()
     .valid(...Object.values(TABLE_STATUS))
-    .required(),
+    .required()
 });
 
 export const tableListQuerySchema = Joi.object({
@@ -40,9 +40,9 @@ export const tableListQuerySchema = Joi.object({
   zoneId: objectId.optional(),
   status: Joi.string()
     .valid(...Object.values(TABLE_STATUS))
-    .optional(),
+    .optional()
 });
 
 export const tableIdQuerySchema = Joi.object({
-  tableId: objectId.required(),
+  tableId: objectId.required()
 });

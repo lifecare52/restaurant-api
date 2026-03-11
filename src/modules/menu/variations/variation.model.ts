@@ -14,14 +14,14 @@ const VariationSchema = new Schema<Variation>(
     department: {
       type: String,
       enum: VARIATION_DEPARTMENTS,
-      required: true,
+      required: true
     },
 
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
-    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null },
+    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 // Unique per brand+outlet+department+name (case-insensitive)
@@ -30,14 +30,14 @@ VariationSchema.index(
   {
     unique: true,
     collation: { locale: 'en', strength: 2 },
-    partialFilterExpression: { isDelete: false },
-  },
+    partialFilterExpression: { isDelete: false }
+  }
 );
 
 export const VariationEntity = model<Variation, VariationModel>(
   'Variation',
   VariationSchema,
-  'variations',
+  'variations'
 );
 
 export default VariationEntity;

@@ -7,18 +7,17 @@ import {
   getTokenDisplay,
   addItemsToOrder,
   removeItemFromOrder,
-  updateOrderItem,
+  updateOrderItem
 } from '@modules/order/order.service';
 
 import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || '',
+  outletId: (req.headers['outlet-id'] as string | undefined) || ''
 });
 
-const getUserId = (req: Request): string =>
-  (req.user?.id || '') as string;
+const getUserId = (req: Request): string => (req.user?.id || '') as string;
 
 // ─── Controllers ──────────────────────────────────────────────────────────────
 
@@ -27,37 +26,64 @@ export const createOrderController = async (req: Request, res: Response, next: N
     const { brandId, outletId } = getTenant(req);
     const userId = getUserId(req);
     const item = await createOrder(brandId, outletId, userId, req.body);
-    res.locals.response = { status: true, code: 201, message: 'Order created successfully', data: item };
+    res.locals.response = {
+      status: true,
+      code: 201,
+      message: 'Order created successfully',
+      data: item
+    };
     next();
   } catch (err) {
     next(err);
   }
 };
 
-export const addItemsToOrderController = async (req: Request, res: Response, next: NextFunction) => {
+export const addItemsToOrderController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const result = await addItemsToOrder(brandId, outletId, req.body);
-    res.locals.response = { status: true, code: 200, message: 'Items added to order', data: result };
+    res.locals.response = {
+      status: true,
+      code: 200,
+      message: 'Items added to order',
+      data: result
+    };
     next();
   } catch (err) {
     next(err);
   }
 };
 
-export const removeItemFromOrderController = async (req: Request, res: Response, next: NextFunction) => {
+export const removeItemFromOrderController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const userId = getUserId(req);
     const result = await removeItemFromOrder(brandId, outletId, req.body, userId);
-    res.locals.response = { status: true, code: 200, message: 'Item removed from order', data: result };
+    res.locals.response = {
+      status: true,
+      code: 200,
+      message: 'Item removed from order',
+      data: result
+    };
     next();
   } catch (err) {
     next(err);
   }
 };
 
-export const updateOrderItemController = async (req: Request, res: Response, next: NextFunction) => {
+export const updateOrderItemController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const userId = getUserId(req);
@@ -90,7 +116,12 @@ export const closeOrderController = async (req: Request, res: Response, next: Ne
     const { brandId, outletId } = getTenant(req);
     const userId = getUserId(req);
     const item = await closeOrder(brandId, outletId, req.body, userId);
-    res.locals.response = { status: true, code: 200, message: 'Order closed successfully', data: item };
+    res.locals.response = {
+      status: true,
+      code: 200,
+      message: 'Order closed successfully',
+      data: item
+    };
     next();
   } catch (err) {
     next(err);
@@ -109,7 +140,11 @@ export const cancelOrderController = async (req: Request, res: Response, next: N
   }
 };
 
-export const getTokenDisplayController = async (req: Request, res: Response, next: NextFunction) => {
+export const getTokenDisplayController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const data = await getTokenDisplay(brandId, outletId);

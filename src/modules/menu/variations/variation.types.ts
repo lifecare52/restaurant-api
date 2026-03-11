@@ -12,11 +12,11 @@ export enum VariationDepartment {
   FLAVOR = 'FLAVOR',
   TOPPING = 'TOPPING',
   STYLE = 'STYLE',
-  CUSTOM = 'CUSTOM',
+  CUSTOM = 'CUSTOM'
 }
 
 export const VARIATION_DEPARTMENTS = Object.values(
-  VariationDepartment,
+  VariationDepartment
 ) as readonly VariationDepartment[];
 export type VariationDepartmentType = (typeof VARIATION_DEPARTMENTS)[number];
 

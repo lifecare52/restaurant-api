@@ -5,7 +5,7 @@ import type { Types } from 'mongoose';
 export enum TABLE_STATUS {
   AVAILABLE = 'AVAILABLE',
   OCCUPIED = 'OCCUPIED',
-  RESERVED = 'RESERVED',
+  RESERVED = 'RESERVED'
 }
 
 export interface TableCreateDTO {

@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || '',
+  outletId: (req.headers['outlet-id'] as string | undefined) || ''
 });
 
 /**
@@ -19,7 +19,7 @@ export const getPosMenuController = async (req: Request, res: Response, next: Ne
     res.locals.response = {
       status: true,
       code: 200,
-      data,
+      data
     };
     next();
   } catch (err) {

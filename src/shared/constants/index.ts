@@ -2,13 +2,13 @@ export const ROLES = {
   ADMIN: 'ADMIN',
   OWNER: 'OWNER',
   PARTNER: 'PARTNER',
-  STAFF: 'STAFF',
+  STAFF: 'STAFF'
 } as const;
 
 export const PERMISSIONS = {
   USER_MANAGEMENT: 'USER_MANAGEMENT',
   BRAND_MANAGEMENT: 'BRAND_MANAGEMENT',
-  OUTLET_MANAGEMENT: 'OUTLET_MANAGEMENT',
+  OUTLET_MANAGEMENT: 'OUTLET_MANAGEMENT'
 } as const;
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
@@ -41,5 +41,5 @@ export const API_MESSAGES = {
   CATEGORY_CREATED: 'Category created successfully',
   CATEGORY_UPDATED: 'Category updated successfully',
   CATEGORY_NOT_FOUND: 'Category not found',
-  CATEGORY_DELETED: 'Category deleted successfully',
+  CATEGORY_DELETED: 'Category deleted successfully'
 } as const;

@@ -6,14 +6,14 @@ import {
   updateTable,
   updateTableStatus,
   deleteTable,
-  getTableLiveOrders,
+  getTableLiveOrders
 } from '@modules/table/table.service';
 
 import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || '',
+  outletId: (req.headers['outlet-id'] as string | undefined) || ''
 });
 
 export const createTableController = async (req: Request, res: Response, next: NextFunction) => {
@@ -24,7 +24,7 @@ export const createTableController = async (req: Request, res: Response, next: N
       status: true,
       code: 201,
       message: 'Table created successfully',
-      data: item,
+      data: item
     };
     next();
   } catch (err) {
@@ -46,7 +46,7 @@ export const listTablesController = async (req: Request, res: Response, next: Ne
 export const listActiveTablesController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -86,7 +86,7 @@ export const updateTableController = async (req: Request, res: Response, next: N
         status: true,
         code: 200,
         message: 'Table updated successfully',
-        data: item,
+        data: item
       };
     }
     next();
@@ -98,7 +98,7 @@ export const updateTableController = async (req: Request, res: Response, next: N
 export const updateTableStatusController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -112,7 +112,7 @@ export const updateTableStatusController = async (
         status: true,
         code: 200,
         message: 'Table status updated successfully',
-        data: item,
+        data: item
       };
     }
     next();
@@ -137,7 +137,11 @@ export const deleteTableController = async (req: Request, res: Response, next: N
   }
 };
 
-export const getTableLiveOrdersController = async (req: Request, res: Response, next: NextFunction) => {
+export const getTableLiveOrdersController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const { tableId } = req.query as { tableId: string };
@@ -148,4 +152,3 @@ export const getTableLiveOrdersController = async (req: Request, res: Response, 
     next(err);
   }
 };
-

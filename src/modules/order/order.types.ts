@@ -1,13 +1,13 @@
-import type { Types } from 'mongoose';
-
-import type { PaginationQuery } from '@shared/interfaces/pagination';
 import {
   ORDER_TYPE,
   ORDER_STATUS,
   PAYMENT_STATUS,
   ITEM_STATUS,
-  PAYMENT_METHOD,
+  PAYMENT_METHOD
 } from '@shared/enum/order.enum';
+import type { PaginationQuery } from '@shared/interfaces/pagination';
+
+import type { Types } from 'mongoose';
 
 export { ORDER_TYPE, ORDER_STATUS, PAYMENT_STATUS, ITEM_STATUS, PAYMENT_METHOD };
 
@@ -27,8 +27,8 @@ export interface Order {
   // Financials
   subtotal: number;
   discountAmount: number;
-  discountType?: number | null;    // FLAT=1, PERCENTAGE=2
-  discountValue?: number | null;   // the raw input value (e.g. 50 or 10%)
+  discountType?: number | null; // FLAT=1, PERCENTAGE=2
+  discountValue?: number | null; // the raw input value (e.g. 50 or 10%)
   totalAmount: number;
   // Payment
   paymentStatus: PAYMENT_STATUS;

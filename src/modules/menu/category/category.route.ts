@@ -11,7 +11,7 @@ import {
   listActiveCategoriesController,
   getCategoryController,
   updateCategoryController,
-  deleteCategoryController,
+  deleteCategoryController
 } from './category.controller';
 import {
   createCategorySchema,
@@ -20,7 +20,7 @@ import {
   categoryListQuerySchema,
   categoryGetQuerySchema,
   categoryModifyQuerySchema,
-  categoryBrandHeaderSchema,
+  categoryBrandHeaderSchema
 } from './category.validator';
 
 const router = Router();
@@ -32,7 +32,7 @@ router.post(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createCategorySchema),
-  createCategoryController,
+  createCategoryController
 );
 
 router.get(
@@ -42,7 +42,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(categoryListQuerySchema, 'query'),
-  listCategoriesController,
+  listCategoriesController
 );
 
 router.get(
@@ -51,7 +51,7 @@ router.get(
   validateRequest(categoryListHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  listActiveCategoriesController,
+  listActiveCategoriesController
 );
 
 router.get(
@@ -60,7 +60,7 @@ router.get(
   validateRequest(categoryBrandHeaderSchema, 'headers'),
   validateRequest(categoryGetQuerySchema, 'query'),
   requireBrandAccess,
-  getCategoryController,
+  getCategoryController
 );
 
 router.patch(
@@ -70,7 +70,7 @@ router.patch(
   validateRequest(categoryModifyQuerySchema, 'query'),
   requireBrandAccess,
   validateRequest(updateCategorySchema),
-  updateCategoryController,
+  updateCategoryController
 );
 
 router.delete(
@@ -79,7 +79,7 @@ router.delete(
   validateRequest(categoryBrandHeaderSchema, 'headers'),
   validateRequest(categoryModifyQuerySchema, 'query'),
   requireBrandAccess,
-  deleteCategoryController,
+  deleteCategoryController
 );
 
 export default router;

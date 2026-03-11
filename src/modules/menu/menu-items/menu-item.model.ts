@@ -14,9 +14,9 @@ const MeasurementConfigSchema = new Schema(
     baseValue: { type: Number, min: 0, default: null },
     minValue: { type: Number, default: null },
     maxValue: { type: Number, default: null },
-    stepValue: { type: Number, default: null },
+    stepValue: { type: Number, default: null }
   },
-  { _id: false },
+  { _id: false }
 );
 
 const MenuItemSchema = new Schema<MenuItem>(
@@ -31,14 +31,14 @@ const MenuItemSchema = new Schema<MenuItem>(
       validate: [
         {
           validator: (arr: string[]) => arr.length <= 2,
-          message: 'shortCodes can have at most 2 entries',
+          message: 'shortCodes can have at most 2 entries'
         },
         {
           validator: (arr: string[]) =>
             new Set((arr || []).map(s => (s ?? '').toLowerCase())).size === (arr || []).length,
-          message: 'shortCodes must be unique (case-insensitive)',
-        },
-      ],
+          message: 'shortCodes must be unique (case-insensitive)'
+        }
+      ]
     },
 
     categoryId: { type: Schema.Types.ObjectId, required: true, ref: 'Category' },
@@ -46,7 +46,7 @@ const MenuItemSchema = new Schema<MenuItem>(
     dietary: {
       type: String,
       enum: DIETARIES,
-      required: true,
+      required: true
     },
 
     basePrice: { type: Number, default: null },
@@ -63,9 +63,9 @@ const MenuItemSchema = new Schema<MenuItem>(
 
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
-    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null },
+    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 MenuItemSchema.pre('save', function (next) {
@@ -80,7 +80,7 @@ MenuItemSchema.pre('save', function (next) {
 
 MenuItemSchema.index(
   { brandId: 1, outletId: 1, name: 1 },
-  { unique: true, partialFilterExpression: { isDelete: false } },
+  { unique: true, partialFilterExpression: { isDelete: false } }
 );
 MenuItemSchema.index(
   { brandId: 1, outletId: 1, shortCodes: 1 },
@@ -89,15 +89,15 @@ MenuItemSchema.index(
     collation: { locale: 'en', strength: 2 },
     partialFilterExpression: {
       isDelete: false,
-      shortCodes: { $exists: true, $not: { $size: 0 } },
-    },
-  },
+      shortCodes: { $exists: true, $not: { $size: 0 } }
+    }
+  }
 );
 
 export const MenuItemEntity = model<MenuItem, MenuItemModel>(
   'MenuItem',
   MenuItemSchema,
-  'menu_items',
+  'menu_items'
 );
 
 export default MenuItemEntity;

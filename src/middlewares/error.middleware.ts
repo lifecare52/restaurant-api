@@ -6,7 +6,7 @@ export const errorHandler = (
   err: unknown,
   _req: Request,
   res: Response,
-  _next: NextFunction,
+  _next: NextFunction
 ): void => {
   const e = err as {
     status?: number;
@@ -22,7 +22,7 @@ export const errorHandler = (
     code: status,
     message,
     errors: apiError ? [apiError] : undefined,
-    validationMessages: e?.validationMessages,
+    validationMessages: e?.validationMessages
   };
   res.locals.response = response;
   _next();

@@ -6,13 +6,13 @@ import {
   listActiveAddonsController,
   getAddonController,
   updateAddonController,
-  deleteAddonController,
+  deleteAddonController
 } from '@modules/menu/addons/addon.controller';
 import {
   createAddonSchema,
   updateAddonSchema,
   addonListQuerySchema,
-  addonIdQuerySchema,
+  addonIdQuerySchema
 } from '@modules/menu/addons/addon.validator';
 
 import { commonHeaderSchema } from '@shared/utils/common.validation';
@@ -30,7 +30,7 @@ router.post(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createAddonSchema),
-  createAddonController,
+  createAddonController
 );
 
 router.get(
@@ -40,7 +40,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(addonListQuerySchema, 'query'),
-  listAddonsController,
+  listAddonsController
 );
 
 router.get(
@@ -49,7 +49,7 @@ router.get(
   validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  listActiveAddonsController,
+  listActiveAddonsController
 );
 
 router.get(
@@ -59,7 +59,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(addonIdQuerySchema, 'query'),
-  getAddonController,
+  getAddonController
 );
 
 router.patch(
@@ -70,7 +70,7 @@ router.patch(
   requireOutletAccess,
   validateRequest(addonIdQuerySchema, 'query'),
   validateRequest(updateAddonSchema),
-  updateAddonController,
+  updateAddonController
 );
 
 router.delete(
@@ -80,7 +80,7 @@ router.delete(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(addonIdQuerySchema, 'query'),
-  deleteAddonController,
+  deleteAddonController
 );
 
 export default router;

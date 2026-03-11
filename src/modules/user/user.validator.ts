@@ -6,7 +6,7 @@ export const createOwnerSchema = Joi.object({
   email: Joi.string().email(),
   password: Joi.string().min(6).required(),
   brandId: Joi.string().required(),
-  outlets: Joi.array().items(Joi.string()).min(1).required(),
+  outlets: Joi.array().items(Joi.string()).min(1).required()
 });
 
 export const createUserSchema = Joi.object({
@@ -17,7 +17,7 @@ export const createUserSchema = Joi.object({
   role: Joi.string().valid('PARTNER', 'STAFF').required(),
   permissions: Joi.array().items(Joi.string()).default([]),
   isActive: Joi.boolean().default(true),
-  salary: Joi.number().min(0),
+  salary: Joi.number().min(0)
 });
 
 export const updateUserSchema = Joi.object({
@@ -28,7 +28,7 @@ export const updateUserSchema = Joi.object({
   outlets: Joi.array().items(Joi.string()),
   permissions: Joi.array().items(Joi.string()),
   isActive: Joi.boolean(),
-  salary: Joi.number().min(0),
+  salary: Joi.number().min(0)
 });
 
 export const userListQuerySchema = Joi.object({
@@ -39,11 +39,11 @@ export const userListQuerySchema = Joi.object({
   column: Joi.string()
     .valid('name', 'username', 'email', 'createdAt', 'updatedAt', 'isActive')
     .default('createdAt'),
-  order: Joi.string().valid('ASC', 'DESC').default('DESC'),
+  order: Joi.string().valid('ASC', 'DESC').default('DESC')
 });
 
 export const userIdQuerySchema = Joi.object({
-  userId: Joi.string().required(),
+  userId: Joi.string().required()
 });
 
 export const createAdminSchema = Joi.object({
@@ -57,11 +57,11 @@ export const createAdminSchema = Joi.object({
     .messages({
       'string.min': 'Password must be at least 6 characters long',
       'string.pattern.base':
-        'Password must include uppercase, lowercase, number, and special character',
-    }),
+        'Password must include uppercase, lowercase, number, and special character'
+    })
 });
 
 export const loginSchema = Joi.object({
   username: Joi.string().trim().min(3).required(),
-  password: Joi.string().min(6).required(),
+  password: Joi.string().min(6).required()
 });
