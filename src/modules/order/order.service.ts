@@ -72,7 +72,12 @@ const batchFetchMenuData = async (items: AddItemToOrderDTO[]) => {
   const [menuItems, variants, addons] = await Promise.all([
     MenuItemEntity.find({ _id: { $in: menuItemIds }, isDelete: false }).lean(),
     variantIds.length
-      ? MenuItemVariantEntity.find({ _id: { $in: variantIds } })
+      ? MenuItemVariantEntity.find({
+        $or: [
+          { _id: { $in: variantIds } },
+          { variationId: { $in: variantIds } }
+        ]
+      })
         .populate('variationId', 'name')
         .lean()
       : [],
@@ -81,6 +86,7 @@ const batchFetchMenuData = async (items: AddItemToOrderDTO[]) => {
 
   return {
     menuItemMap: new Map(menuItems.map((m) => [String(m._id), m])),
+    variants, // Return raw array for secondary lookup
     variantMap: new Map(variants.map((v: any) => [String(v._id), v])),
     addonMap: new Map(addons.map((a: any) => [String(a._id), a])),
   };
@@ -95,6 +101,7 @@ const processItems = (
   outletId: string,
   menuItemMap: Map<string, any>,
   variantMap: Map<string, any>,
+  variants: any[],
   addonMap: Map<string, any>,
 ): { processedItems: ProcessedOrderItem[]; processedAddons: ProcessedOrderItemAddon[]; subtotal: number } => {
   let subtotal = 0;
@@ -109,7 +116,17 @@ const processItems = (
     let basePrice = menuItem.basePrice || 0;
 
     if (item.variationId) {
-      const variant = variantMap.get(item.variationId);
+      // 1. Try direct ID match (MenuItemVariant ID)
+      let variant = variantMap.get(item.variationId);
+
+      // 2. Try shared Variation ID match within the scope of this MenuItem
+      if (!variant) {
+        variant = variants.find(
+          (v) => String(v.variationId?._id || v.variationId) === String(item.variationId) &&
+            String(v.menuItemId) === String(item.menuItemId)
+        );
+      }
+
       if (!variant) throw { status: 404, message: `Variation ${item.variationId} not found` };
       basePrice = variant.basePrice ?? menuItem.basePrice ?? 0;
       variationName = (variant.variationId as any)?.name || null;
@@ -193,11 +210,11 @@ export const createOrder = async (
   }
 
   // Batch-fetch menu data (no N+1)
-  const { menuItemMap, variantMap, addonMap } = await batchFetchMenuData(dto.items);
+  const { menuItemMap, variantMap, variants, addonMap } = await batchFetchMenuData(dto.items);
 
   // Process items
   const { processedItems, processedAddons, subtotal } = processItems(
-    dto.items, brandId, outletId, menuItemMap, variantMap, addonMap,
+    dto.items, brandId, outletId, menuItemMap, variantMap, variants, addonMap,
   );
 
   const totalAmount = subtotal;
@@ -312,9 +329,9 @@ export const addItemsToOrder = async (
   if (!order) throw { status: 404, message: 'Active order not found' };
   if (!dto.items || dto.items.length === 0) throw { status: 400, message: 'At least one item required' };
 
-  const { menuItemMap, variantMap, addonMap } = await batchFetchMenuData(dto.items);
+  const { menuItemMap, variantMap, variants, addonMap } = await batchFetchMenuData(dto.items);
   const { processedItems, processedAddons, subtotal: newSubtotal } = processItems(
-    dto.items, brandId, outletId, menuItemMap, variantMap, addonMap,
+    dto.items, brandId, outletId, menuItemMap, variantMap, variants, addonMap,
   );
 
   const now = new Date();
