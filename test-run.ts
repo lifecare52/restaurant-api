@@ -97,9 +97,6 @@ async function runTests() {
         console.error('Test failed:', err);
     } finally {
         console.log('Cleaning up data...');
-        if (mongoose.connection.db) {
-            await mongoose.connection.db.dropDatabase();
-        }
         await mongoose.disconnect();
     }
 }

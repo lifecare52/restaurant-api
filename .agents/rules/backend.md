@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 You are an AI assistant working on a Node.js + Express.js + TypeScript backend following a Modular Monolith architecture.
 
 These rules are STRICT and MUST be followed at all times.  
