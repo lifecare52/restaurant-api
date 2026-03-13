@@ -11,12 +11,26 @@ export const errorHandler = (
   const e = err as {
     status?: number;
     message?: string;
-    code?: string;
+    code?: string | number;
     validationMessages?: string[];
+    keyValue?: Record<string, any>;
   };
-  const status = e?.status ?? 500;
-  const message = e?.message ?? 'Internal Server Error';
-  const apiError: IApiError | undefined = e?.code ? { code: e.code, message } : undefined;
+
+  let status = e?.status ?? 500;
+  let message = e?.message ?? 'Internal Server Error';
+
+  // Handle MongoDB Duplicate Key Error (Code 11000)
+  if (e?.code === 11000) {
+    status = 409;
+    if (e.keyValue) {
+      const keys = Object.keys(e.keyValue).join(', ');
+      message = `${keys.charAt(0).toUpperCase() + keys.slice(1)} already exists.`;
+    } else {
+      message = 'A record with this information already exists.';
+    }
+  }
+
+  const apiError: IApiError | undefined = e?.code ? { code: String(e.code), message } : undefined;
   const response: IApiResponse = {
     status: false,
     code: status,
