@@ -276,7 +276,8 @@ const buildMenuItemNested = async (
                 items: a.allowedItems ?? [],
                 isSingleSelect: a.isSingleSelect ?? false,
                 min: a.min ?? undefined,
-                max: a.max ?? undefined
+                max: a.max ?? undefined,
+                _id: a._id
               };
             })
         );
@@ -317,7 +318,8 @@ const buildMenuItemNested = async (
           items: a.allowedItems ?? [],
           isSingleSelect: a.isSingleSelect ?? false,
           min: a.min ?? undefined,
-          max: a.max ?? undefined
+          max: a.max ?? undefined,
+          _id: a._id
         };
       })
     );

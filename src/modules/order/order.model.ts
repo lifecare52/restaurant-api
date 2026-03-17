@@ -75,6 +75,20 @@ export const OrderEntity = model<Order, OrderModel>('Order', OrderSchema, 'order
 
 // ─── Order Item ───────────────────────────────────────────────────────────────
 
+const MeasurementSelectionSchema = new Schema(
+  {
+    measurementId: { type: String, required: true },
+    unit: { type: String, required: true },
+    enteredQuantity: { type: Number, required: true },
+    baseUnit: { type: String, required: true },
+    baseUnitQuantity: { type: Number, required: true },
+    baseValue: { type: Number, required: true },
+    basePrice: { type: Number, required: true },
+    totalPrice: { type: Number, required: true }
+  },
+  { _id: false }
+);
+
 const OrderItemSchema = new Schema<OrderItem>(
   {
     brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
@@ -84,6 +98,7 @@ const OrderItemSchema = new Schema<OrderItem>(
     itemName: { type: String, required: true },
     basePrice: { type: Number, required: true, min: 0 },
     quantity: { type: Number, required: true, min: 1 },
+    measurement: { type: MeasurementSelectionSchema, default: undefined },
     variationId: { type: Schema.Types.ObjectId, ref: 'MenuItemVariant', default: null },
     variationName: { type: String, default: null },
     instruction: { type: String, default: null },

@@ -49,6 +49,17 @@ export interface Order {
   updatedAt?: Date;
 }
 
+export interface MeasurementSelectionDTO {
+  measurementId: string;
+  unit: string;
+  enteredQuantity: number;
+  baseUnit: string;
+  baseUnitQuantity: number;
+  baseValue: number;
+  basePrice: number;
+  totalPrice: number;
+}
+
 export interface OrderItem {
   _id?: Types.ObjectId;
   brandId: Types.ObjectId;
@@ -58,6 +69,7 @@ export interface OrderItem {
   itemName: string;
   basePrice: number;
   quantity: number;
+  measurement?: MeasurementSelectionDTO;
   variationId?: Types.ObjectId | null;
   variationName?: string | null;
   instruction?: string | null;
@@ -129,7 +141,8 @@ export interface AddonDTO {
 
 export interface AddItemToOrderDTO {
   menuItemId: string;
-  quantity: number;
+  quantity?: number;
+  measurement?: MeasurementSelectionDTO;
   variationId?: string;
   instruction?: string;
   addons?: AddonDTO[];
