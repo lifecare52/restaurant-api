@@ -11,13 +11,21 @@ const addonSchema = Joi.object({
   quantity: Joi.number().integer().min(1).required()
 });
 
+const measurementSchema = Joi.object({
+  measurementId: Joi.string().optional(),
+  unit: Joi.string().required(),
+  enteredQuantity: Joi.number().positive().required(),
+  totalPrice: Joi.number().positive().optional()
+});
+
 const orderItemSchema = Joi.object({
   menuItemId: objectId.required(),
-  quantity: Joi.number().integer().min(1).required(),
+  quantity: Joi.number().integer().min(1).optional(),
+  measurement: measurementSchema.optional(),
   variationId: objectId.optional(),
   instruction: Joi.string().max(300).optional().allow('', null),
   addons: Joi.array().items(addonSchema).optional().default([])
-});
+}).or('quantity', 'measurement'); // Must provide at least one
 
 // ─── Create Order ─────────────────────────────────────────────────────────────
 

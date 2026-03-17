@@ -7,6 +7,7 @@ import AddonEntity from '@modules/menu/addons/addon.model';
 import type { AddonItem } from '@modules/menu/addons/addon.types';
 import MenuItemVariantEntity from '@modules/menu/menu-item-variants/menu-item-variant.model';
 import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
+import MeasurementEntity from '@modules/measurement/measurement.model';
 import DailySequenceEntity from '@modules/order/daily-sequence.model';
 import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
 import { logOrderAction } from '@modules/order/order-audit.service';
@@ -27,7 +28,8 @@ import {
   type OrderListQuery,
   type OrderItemAddon,
   type ProcessedOrderItem,
-  type ProcessedOrderItemAddon
+  type ProcessedOrderItemAddon,
+  type MeasurementSelectionDTO
 } from '@modules/order/order.types';
 import TableEntity from '@modules/table/table.model';
 import { TABLE_STATUS } from '@modules/table/table.types';
@@ -83,11 +85,25 @@ const batchFetchMenuData = async (items: AddItemToOrderDTO[]) => {
     addonIds.length ? AddonEntity.find({ _id: { $in: addonIds } }).lean() : []
   ]);
 
+  // Collect measurement IDs
+  const measurementIds = new Set<string>();
+  menuItems.forEach((m: any) => {
+    if (m.measurementConfig?.measurementId) measurementIds.add(String(m.measurementConfig.measurementId));
+  });
+  variants.forEach((v: any) => {
+    if (v.measurementConfig?.measurementId) measurementIds.add(String(v.measurementConfig.measurementId));
+  });
+
+  const measurements = measurementIds.size
+    ? await MeasurementEntity.find({ _id: { $in: [...measurementIds] } }).lean()
+    : [];
+
   return {
     menuItemMap: new Map(menuItems.map(m => [String(m._id), m])),
     variants, // Return raw array for secondary lookup
     variantMap: new Map(variants.map((v: any) => [String(v._id), v])),
-    addonMap: new Map(addons.map((a: any) => [String(a._id), a]))
+    addonMap: new Map(addons.map((a: any) => [String(a._id), a])),
+    measurementMap: new Map(measurements.map((m: any) => [String(m._id), m]))
   };
 };
 
@@ -101,7 +117,8 @@ const processItems = (
   menuItemMap: Map<string, any>,
   variantMap: Map<string, any>,
   variants: any[],
-  addonMap: Map<string, any>
+  addonMap: Map<string, any>,
+  measurementMap: Map<string, any>
 ): {
   processedItems: ProcessedOrderItem[];
   processedAddons: ProcessedOrderItemAddon[];
@@ -112,17 +129,31 @@ const processItems = (
   const processedAddons: ProcessedOrderItemAddon[] = [];
 
   for (const item of items) {
+    // Legacy frontend support: extract measurement from instruction
+    if (!item.measurement && item.instruction?.startsWith('MEAS:')) {
+      try {
+        const parsed = JSON.parse(item.instruction.substring(5));
+        item.measurement = parsed.measurement || parsed;
+        item.instruction = undefined; // Clear the hacky instruction
+      } catch (e) {
+        // Ignore JSON parse errors, validation will catch missing measurement later
+      }
+    }
+
     const menuItem = menuItemMap.get(item.menuItemId);
     if (!menuItem) throw { status: 404, message: `MenuItem ${item.menuItemId} not found` };
 
     let variationName: string | null = null;
-    let basePrice = menuItem.basePrice || 0;
+    let variant: any = null;
+    let measurementConfig: any = null;
+    let isMeasurementItem = false;
 
+    // 1. Resolve Variation & Measurement Config
     if (item.variationId) {
-      // 1. Try direct ID match (MenuItemVariant ID)
-      let variant = variantMap.get(item.variationId);
+      // Try direct ID match (MenuItemVariant ID)
+      variant = variantMap.get(item.variationId);
 
-      // 2. Try shared Variation ID match within the scope of this MenuItem
+      // Try shared Variation ID match within the scope of this MenuItem
       if (!variant) {
         variant = variants.find(
           (v) => String(v.variationId?._id || v.variationId) === String(item.variationId) &&
@@ -131,12 +162,119 @@ const processItems = (
       }
 
       if (!variant) throw { status: 404, message: `Variation ${item.variationId} not found` };
-      basePrice = variant.basePrice ?? menuItem.basePrice ?? 0;
       variationName = (variant.variationId as any)?.name || null;
+
+      // Check for measurement config in variation (Priority 1)
+      if (variant.isMeasurementBased && variant.measurementConfig) {
+        measurementConfig = variant.measurementConfig;
+        isMeasurementItem = true;
+      }
+    }
+
+    // 2. Check for measurement config in menu item (Priority 2)
+    if (!isMeasurementItem && menuItem.isMeasurementBased && menuItem.measurementConfig) {
+      measurementConfig = menuItem.measurementConfig;
+      isMeasurementItem = true;
+    }
+
+    let basePrice = 0;
+    let itemTotal = 0;
+    let finalQuantity = item.quantity || 1;
+    let measurementSnapshot: MeasurementSelectionDTO | undefined = undefined;
+
+    if (isMeasurementItem) {
+      if (!item.measurement) {
+        throw { status: 400, message: `Measurement details required for ${menuItem.name}` };
+      }
+
+      const config = measurementConfig;
+      basePrice = config.basePrice || 0;
+      const baseValue = config.baseValue || 1;
+      const enteredQuantity = item.measurement.enteredQuantity;
+
+      const measurementDoc = measurementMap.get(String(config.measurementId));
+
+      let baseUnitQuantity = enteredQuantity;
+      let quantityInPrimaryUnit = enteredQuantity;
+
+      if (measurementDoc) {
+        const unitLower = (item.measurement.unit || '').toLowerCase();
+        const primaryUnitLower = (measurementDoc.unit || '').toLowerCase();
+        const baseUnitLower = (measurementDoc.baseUnit || '').toLowerCase();
+        const conversionFactor = measurementDoc.conversionFactor || 1;
+
+        if (unitLower === primaryUnitLower) {
+          baseUnitQuantity = enteredQuantity * conversionFactor;
+          quantityInPrimaryUnit = enteredQuantity;
+        } else if (unitLower === baseUnitLower) {
+          baseUnitQuantity = enteredQuantity;
+          quantityInPrimaryUnit = enteredQuantity / conversionFactor;
+        } else {
+          throw {
+            status: 400,
+            message: `Invalid unit '${item.measurement.unit}' for ${menuItem.name}. Expected ${measurementDoc.unit} or ${measurementDoc.baseUnit}`
+          };
+        }
+
+        const minValue = config.minValue as number | null | undefined;
+        const maxValue = config.maxValue as number | null | undefined;
+        const epsilon = 1e-6;
+
+        if (typeof minValue === 'number' && quantityInPrimaryUnit < minValue - epsilon) {
+          throw {
+            status: 400,
+            message: `Measurement for ${menuItem.name} must be at least ${minValue} ${measurementDoc.unit}`
+          };
+        }
+
+        if (typeof maxValue === 'number' && quantityInPrimaryUnit > maxValue + epsilon) {
+          throw {
+            status: 400,
+            message: `Measurement for ${menuItem.name} must be at most ${maxValue} ${measurementDoc.unit}`
+          };
+        }
+      }
+
+      const priceForOneUnit = (baseUnitQuantity / baseValue) * basePrice;
+
+      if (item.measurement.totalPrice !== undefined) {
+        const diff = Math.abs(item.measurement.totalPrice - priceForOneUnit);
+        if (diff > 1.0) {
+          throw {
+            status: 400,
+            message: `Price mismatch for ${menuItem.name}. Calculated: ${priceForOneUnit}, Provided: ${item.measurement.totalPrice}`
+          };
+        }
+      }
+
+      finalQuantity = 1;
+      itemTotal = priceForOneUnit;
+
+      const unitName = item.measurement.unit;
+      const baseUnitName = measurementDoc?.baseUnit || config.baseUnit || unitName;
+
+      measurementSnapshot = {
+        measurementId: String(config.measurementId || item.measurement.measurementId),
+        unit: unitName,
+        enteredQuantity: enteredQuantity,
+        baseUnit: baseUnitName,
+        baseUnitQuantity: baseUnitQuantity, // Correctly calculated for inventory
+        baseValue: baseValue,
+        basePrice: basePrice,
+        totalPrice: priceForOneUnit
+      };
+
+    } else {
+      // Quantity Based
+      if (!item.quantity) {
+        throw { status: 400, message: `Quantity required for ${menuItem.name}` };
+      }
+      basePrice = variant?.basePrice ?? menuItem.basePrice ?? 0;
+      itemTotal = basePrice * item.quantity;
+      finalQuantity = item.quantity;
     }
 
     const currentItemId = new Types.ObjectId();
-    let itemTotal = basePrice * item.quantity;
 
     if (item.addons && item.addons.length > 0) {
       for (const addonDto of item.addons) {
@@ -153,7 +291,8 @@ const processItems = (
           };
 
         const addonPrice = addonItemDoc.price || 0;
-        itemTotal += addonPrice * addonDto.quantity * item.quantity;
+        // Addon price is multiplied by item quantity (even for measurement items, usually 1)
+        itemTotal += addonPrice * addonDto.quantity * finalQuantity;
 
         processedAddons.push({
           _id: new Types.ObjectId(),
@@ -181,7 +320,8 @@ const processItems = (
       menuItemId: new Types.ObjectId(item.menuItemId),
       itemName: menuItem.name,
       basePrice,
-      quantity: item.quantity,
+      quantity: finalQuantity,
+      measurement: measurementSnapshot,
       variationId: item.variationId ? new Types.ObjectId(item.variationId) : null,
       variationName,
       instruction: item.instruction || null,
@@ -216,7 +356,7 @@ export const createOrder = async (
   }
 
   // Batch-fetch menu data (no N+1)
-  const { menuItemMap, variantMap, variants, addonMap } = await batchFetchMenuData(dto.items);
+  const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(dto.items);
 
   // Process items
   const { processedItems, processedAddons, subtotal } = processItems(
@@ -226,7 +366,8 @@ export const createOrder = async (
     menuItemMap,
     variantMap,
     variants,
-    addonMap
+    addonMap,
+    measurementMap
   );
 
   const totalAmount = subtotal;
@@ -241,14 +382,14 @@ export const createOrder = async (
   let tokenNo: string | null = null;
   let tableName: string | null = null;
 
-  if (dto.orderType === ORDER_TYPE.TAKEAWAY) {
+  if (dto.orderType === ORDER_TYPE.TAKEAWAY || dto.orderType === ORDER_TYPE.DELIVERY) {
     const tokenSeq = await getNextSequence(brandId, outletId, 'TOKEN');
     tokenNo = String(tokenSeq);
   } else if (dto.orderType === ORDER_TYPE.DINE_IN && dto.tableId) {
     const table = await TableEntity.findById(dto.tableId).lean();
     if (!table) throw { status: 404, message: 'Table not found' };
-    tokenNo = table.name;
     tableName = table.name;
+    // For DINE_IN, tokenNo remains null as per requirements
   }
 
   // ── Transaction ───────────────────────────────────────────────────────────
@@ -355,12 +496,12 @@ export const addItemsToOrder = async (
   if (!dto.items || dto.items.length === 0)
     throw { status: 400, message: 'At least one item required' };
 
-  const { menuItemMap, variantMap, variants, addonMap } = await batchFetchMenuData(dto.items);
+  const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(dto.items);
   const {
     processedItems,
     processedAddons,
     subtotal: newSubtotal
-  } = processItems(dto.items, brandId, outletId, menuItemMap, variantMap, variants, addonMap);
+  } = processItems(dto.items, brandId, outletId, menuItemMap, variantMap, variants, addonMap, measurementMap);
 
   const now = new Date();
 
@@ -677,7 +818,14 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
     addons: addons.filter(addon => String(addon.orderItemId) === String(item._id))
   }));
 
-  return { ...order, items: formattedItems };
+  const result: any = { ...order, items: formattedItems };
+
+  // Requirement: Do NOT include tokenNumber in the API response for DINE_IN
+  if (order.orderType === ORDER_TYPE.DINE_IN) {
+    delete result.tokenNo;
+  }
+
+  return result;
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
