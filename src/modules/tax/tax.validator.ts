@@ -17,7 +17,7 @@ export const createTaxSchema = Joi.object({
   applicableOrderTypes: Joi.array()
     .items(Joi.string().valid(...Object.values(ORDER_TYPES)))
     .default(Object.values(ORDER_TYPES)),
-  isActive: Joi.boolean().default(true),
+  isActive: Joi.boolean().default(true)
 });
 
 export const updateTaxSchema = Joi.object({
@@ -33,24 +33,24 @@ export const updateTaxSchema = Joi.object({
   applicableOrderTypes: Joi.array()
     .items(Joi.string().valid(...Object.values(ORDER_TYPES)))
     .optional(),
-  isActive: Joi.boolean().optional(),
+  isActive: Joi.boolean().optional()
 });
 
 export const createTaxGroupSchema = Joi.object({
   name: Joi.string().min(1).max(100).required(),
   taxes: Joi.array().items(Joi.string().hex().length(24)).min(1).required(),
-  isActive: Joi.boolean().default(true),
+  isActive: Joi.boolean().default(true)
 });
 
 export const updateTaxGroupSchema = Joi.object({
   name: Joi.string().min(1).max(100).optional(),
   taxes: Joi.array().items(Joi.string().hex().length(24)).min(1).optional(),
-  isActive: Joi.boolean().optional(),
+  isActive: Joi.boolean().optional()
 });
 
 export const taxHeaderSchema = Joi.object({
   'brand-id': Joi.string().required(),
-  'outlet-id': Joi.string().required(),
+  'outlet-id': Joi.string().required()
 }).unknown(true);
 
 export const taxListQuerySchema = Joi.object({
@@ -64,7 +64,7 @@ export const taxListQuerySchema = Joi.object({
   order: Joi.string()
     .valid(...SORT_ORDERS)
     .optional()
-    .default('ASC'),
+    .default('ASC')
 }).unknown(true);
 
 export const taxGroupListQuerySchema = Joi.object({
@@ -78,17 +78,17 @@ export const taxGroupListQuerySchema = Joi.object({
   order: Joi.string()
     .valid(...SORT_ORDERS)
     .optional()
-    .default('ASC'),
+    .default('ASC')
 }).unknown(true);
 
 export const taxGetQuerySchema = Joi.object({
-  taxId: Joi.string().hex().length(24).required(),
+  taxId: Joi.string().hex().length(24).required()
 });
 
 export const taxGroupGetQuerySchema = Joi.object({
-  taxGroupId: Joi.string().hex().length(24).required(),
+  taxGroupId: Joi.string().hex().length(24).required()
 });
 
 export const taxIdParamsSchema = Joi.object({
-  id: Joi.string().hex().length(24).required(),
+  id: Joi.string().hex().length(24).required()
 });

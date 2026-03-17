@@ -6,6 +6,7 @@ Additionally, you must respect ESLint and Prettier configuration and enforce for
 ============================
 ARCHITECTURE PRINCIPLES
 ============================
+
 - The project uses a Modular Monolith (Domain-based) architecture.
 - The repository is a single repo with clear domain boundaries.
 - Every domain must be independently extractable into a microservice in the future.
@@ -14,6 +15,7 @@ ARCHITECTURE PRINCIPLES
 ============================
 MODULE OWNERSHIP
 ============================
+
 - Each business domain is implemented as an isolated module inside `src/modules`.
 - Every module MUST contain its own:
   - model
@@ -28,6 +30,7 @@ MODULE OWNERSHIP
 ============================
 CROSS-MODULE COMMUNICATION
 ============================
+
 - Direct imports of models from other modules are STRICTLY FORBIDDEN.
 - Modules may interact ONLY through:
   - exposed service methods
@@ -36,12 +39,14 @@ CROSS-MODULE COMMUNICATION
 - Circular dependencies between modules are NOT allowed.
 
 FORBIDDEN:
+
 - Importing models from another module
 - Sharing Mongoose schemas across modules
 
 ============================
 FOLDER STRUCTURE RULES
 ============================
+
 - All domain logic MUST live inside `src/modules`.
 - Shared logic MUST live inside `src/shared`.
 - `src/shared` may contain ONLY:
@@ -56,6 +61,7 @@ FOLDER STRUCTURE RULES
 ============================
 VALIDATION RULES (JOI)
 ============================
+
 - Joi is the ONLY validation library allowed.
 - Validation schemas MUST be defined inside each module’s validator file.
 - Validation MUST execute before controller logic.
@@ -65,6 +71,7 @@ VALIDATION RULES (JOI)
 ============================
 CONTROLLER RULES
 ============================
+
 - Controllers MUST be thin.
 - Controllers may ONLY:
   - receive validated input
@@ -78,6 +85,7 @@ CONTROLLER RULES
 ============================
 SERVICE RULES
 ============================
+
 - Services contain ALL business logic.
 - Services may access:
   - models within the same module
@@ -89,6 +97,7 @@ SERVICE RULES
 ============================
 MODEL RULES (MONGODB)
 ============================
+
 - Each module owns its MongoDB models.
 - Models MUST NOT be shared across modules.
 - Cross-domain relationships MUST be handled using IDs only.
@@ -97,6 +106,7 @@ MODEL RULES (MONGODB)
 ============================
 MIDDLEWARE RULES
 ============================
+
 - All middlewares must live in `src/middlewares`.
 - Middlewares must be generic and reusable.
 - Auth middleware MUST NOT contain business logic.
@@ -105,6 +115,7 @@ MIDDLEWARE RULES
 ============================
 TYPESCRIPT RULES
 ============================
+
 - TypeScript strict mode MUST remain enabled.
 - Avoid using `any`.
 - Each module defines its own domain types.
@@ -116,6 +127,7 @@ TYPESCRIPT RULES
 ============================
 ESLINT + PRETTIER CONTEXT
 ============================
+
 - ESLint MUST be used for all TypeScript files in `src/**/*.ts`.
 - Prettier MUST be used for formatting and consistency.
 - Enforce:
@@ -136,6 +148,7 @@ ESLINT + PRETTIER CONTEXT
 ============================
 ERROR HANDLING RULES
 ============================
+
 - All errors MUST be handled by centralized error middleware.
 - Services should throw domain-specific errors.
 - Controllers must NOT format error responses manually.
@@ -143,6 +156,7 @@ ERROR HANDLING RULES
 ============================
 ENVIRONMENT & CONFIG
 ============================
+
 - No hardcoded secrets.
 - Environment variables must be accessed via config files.
 - `.env` must never be committed.
@@ -151,6 +165,7 @@ ENVIRONMENT & CONFIG
 ============================
 CODE QUALITY RULES
 ============================
+
 - Follow Single Responsibility Principle.
 - Keep modules small and focused.
 - Use meaningful naming.
@@ -159,6 +174,7 @@ CODE QUALITY RULES
 ============================
 FUTURE-PROOFING
 ============================
+
 - Always design modules as independently deployable services.
 - Avoid assumptions about other modules’ internal implementations.
 - Prefer interfaces/events for future integrations.
@@ -167,3 +183,5 @@ FUTURE-PROOFING
 GOLDEN RULE
 ============================
 If a module cannot be extracted into its own microservice with minimal changes, the implementation is WRONG.
+
+Dont Add Any Testing Script mongoose.connection.db.dropDatabase();

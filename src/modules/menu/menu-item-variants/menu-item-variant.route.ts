@@ -5,13 +5,13 @@ import {
   listMenuItemVariantsController,
   getMenuItemVariantController,
   updateMenuItemVariantController,
-  deleteMenuItemVariantController,
+  deleteMenuItemVariantController
 } from '@modules/menu/menu-item-variants/menu-item-variant.controller';
 import {
   createMenuItemVariantSchema,
   updateMenuItemVariantSchema,
   menuItemVariantListQuerySchema,
-  menuItemVariantIdQuerySchema,
+  menuItemVariantIdQuerySchema
 } from '@modules/menu/menu-item-variants/menu-item-variant.validator';
 
 import { commonHeaderSchema } from '@shared/utils/common.validation';
@@ -29,7 +29,7 @@ router.post(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createMenuItemVariantSchema),
-  createMenuItemVariantController,
+  createMenuItemVariantController
 );
 
 router.get(
@@ -39,7 +39,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemVariantListQuerySchema, 'query'),
-  listMenuItemVariantsController,
+  listMenuItemVariantsController
 );
 
 router.get(
@@ -49,7 +49,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemVariantIdQuerySchema, 'query'),
-  getMenuItemVariantController,
+  getMenuItemVariantController
 );
 
 router.patch(
@@ -60,7 +60,7 @@ router.patch(
   requireOutletAccess,
   validateRequest(menuItemVariantIdQuerySchema, 'query'),
   validateRequest(updateMenuItemVariantSchema),
-  updateMenuItemVariantController,
+  updateMenuItemVariantController
 );
 
 router.delete(
@@ -70,7 +70,7 @@ router.delete(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemVariantIdQuerySchema, 'query'),
-  deleteMenuItemVariantController,
+  deleteMenuItemVariantController
 );
 
 export default router;

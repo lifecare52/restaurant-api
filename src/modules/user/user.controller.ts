@@ -8,7 +8,7 @@ import {
   getUsers,
   login,
   loginAdmin,
-  updateUser,
+  updateUser
 } from '@modules/user/user.service';
 import type { UpdateUserDTO, UserListQueryDTO } from '@modules/user/user.types';
 
@@ -35,7 +35,7 @@ export const createOwnerController = async (req: Request, res: Response, next: N
 export const createOutletUserController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const creator = req.user!;
@@ -49,7 +49,7 @@ export const createOutletUserController = async (
       res.locals.response = {
         status: false,
         code: 403,
-        message: 'Forbidden or invalid payload',
+        message: 'Forbidden or invalid payload'
       };
       next();
       return;
@@ -64,7 +64,7 @@ export const createOutletUserController = async (
 export const listOutletUsersController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const brandId = req.headers['brand-id'] as string;
@@ -96,7 +96,7 @@ export const getOutletUserController = async (req: Request, res: Response, next:
 export const updateOutletUserController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const brandId = req.headers['brand-id'] as string;
@@ -117,7 +117,7 @@ export const updateOutletUserController = async (
 export const deleteOutletUserController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const brandId = req.headers['brand-id'] as string;
@@ -137,7 +137,7 @@ export const deleteOutletUserController = async (
 export const createAdminBootstrapController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const admin = await createAdminBootstrap(req.body);

@@ -7,6 +7,7 @@ It is independent from architecture.md rules.
 ============================
 COMMON API RESPONSE
 ============================
+
 - All API responses MUST follow a standard interface:
 
 ```ts
@@ -137,3 +138,7 @@ All responses sent to clients MUST go through the response middleware in IApiRes
 Any direct response from a controller or service is WRONG.
 
 Swagger documentation MUST always reflect the actual response structure.
+
+
+Dont Add Any Testing Script mongoose.connection.db.dropDatabase();
+```

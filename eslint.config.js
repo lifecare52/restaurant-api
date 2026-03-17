@@ -34,6 +34,18 @@ module.exports = [
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-console': 'warn',
       'prettier/prettier': 'error',
+      'prettier/prettier': [
+        'error',
+        {
+          "tabWidth": 2,  // Adjust tab width as needed
+          "useTabs": false,  // Use spaces instead of tabs
+          "endOfLine": "auto",  // Adjust line endings based on the system
+          "trailingComma": "none",  // Avoid trailing commas
+          "bracketSpacing": true,  // Adjust spacing between brackets
+          "semi": true,  // Ensure semicolons are used at the end of statements
+          "singleQuote": true  // Use single quotes instead of double quotes
+        }
+      ],
       'import/order': [
         'error',
         {

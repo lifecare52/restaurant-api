@@ -15,26 +15,26 @@ const TaxSchema = new Schema<Tax>(
       type: String,
       enum: Object.values(TAX_TYPES),
       required: true,
-      default: TAX_TYPES.PERCENTAGE,
+      default: TAX_TYPES.PERCENTAGE
     },
 
     isInclusive: { type: Boolean, default: false },
     calculationMethod: {
       type: String,
       enum: Object.values(TAX_CALCULATION_METHODS),
-      default: TAX_CALCULATION_METHODS.STANDARD,
+      default: TAX_CALCULATION_METHODS.STANDARD
     },
 
     applicableOrderTypes: {
       type: [String],
       enum: Object.values(ORDER_TYPES),
-      default: Object.values(ORDER_TYPES),
+      default: Object.values(ORDER_TYPES)
     },
 
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false },
+    isDelete: { type: Boolean, default: false }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 // Ensure a tax with the same name isn't created twice per outlet unless deleted
@@ -43,8 +43,8 @@ TaxSchema.index(
   {
     unique: true,
     partialFilterExpression: { isDelete: false },
-    collation: { locale: 'en', strength: 2 },
-  },
+    collation: { locale: 'en', strength: 2 }
+  }
 );
 
 export const TaxEntity = model<Tax, TaxModel>('Tax', TaxSchema, 'taxes');

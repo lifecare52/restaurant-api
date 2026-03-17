@@ -13,9 +13,9 @@ const TaxGroupSchema = new Schema<TaxGroup>(
     taxes: [{ type: Schema.Types.ObjectId, ref: 'Tax' }],
 
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false },
+    isDelete: { type: Boolean, default: false }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 TaxGroupSchema.index(
@@ -23,14 +23,14 @@ TaxGroupSchema.index(
   {
     unique: true,
     partialFilterExpression: { isDelete: false },
-    collation: { locale: 'en', strength: 2 },
-  },
+    collation: { locale: 'en', strength: 2 }
+  }
 );
 
 export const TaxGroupEntity = model<TaxGroup, TaxGroupModel>(
   'TaxGroup',
   TaxGroupSchema,
-  'tax_groups',
+  'tax_groups'
 );
 
 export default TaxGroupEntity;

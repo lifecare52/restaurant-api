@@ -12,13 +12,13 @@ import {
   listActiveVariationsController,
   getVariationController,
   updateVariationController,
-  deleteVariationController,
+  deleteVariationController
 } from './variation.controller';
 import {
   createVariationSchema,
   updateVariationSchema,
   variationListQuerySchema,
-  variationIdQuerySchema,
+  variationIdQuerySchema
 } from './variation.validator';
 
 const router = Router();
@@ -30,7 +30,7 @@ router.post(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createVariationSchema),
-  createVariationController,
+  createVariationController
 );
 
 router.get(
@@ -40,7 +40,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(variationListQuerySchema, 'query'),
-  listVariationsController,
+  listVariationsController
 );
 
 router.get(
@@ -49,7 +49,7 @@ router.get(
   validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  listActiveVariationsController,
+  listActiveVariationsController
 );
 
 router.get(
@@ -59,7 +59,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(variationIdQuerySchema, 'query'),
-  getVariationController,
+  getVariationController
 );
 
 router.patch(
@@ -70,7 +70,7 @@ router.patch(
   requireOutletAccess,
   validateRequest(variationIdQuerySchema, 'query'),
   validateRequest(updateVariationSchema),
-  updateVariationController,
+  updateVariationController
 );
 
 router.delete(
@@ -80,7 +80,7 @@ router.delete(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(variationIdQuerySchema, 'query'),
-  deleteVariationController,
+  deleteVariationController
 );
 
 export default router;

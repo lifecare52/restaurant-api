@@ -18,7 +18,7 @@ export const createAddonController = async (req: Request, res: Response, next: N
         status: true,
         code: 201,
         message: API_MESSAGES.ADDON_CREATED,
-        data: v,
+        data: v
       };
     }
     next();
@@ -43,7 +43,7 @@ export const listAddonsController = async (req: Request, res: Response, next: Ne
       limit: limit ? Number(limit) : 20,
       searchText,
       column,
-      order,
+      order
     });
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
     next();
@@ -55,7 +55,7 @@ export const listAddonsController = async (req: Request, res: Response, next: Ne
 export const listActiveAddonsController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const brandId = req.headers['brand-id'] as string;
@@ -99,7 +99,7 @@ export const updateAddonController = async (req: Request, res: Response, next: N
         status: true,
         code: 200,
         message: API_MESSAGES.ADDON_UPDATED,
-        data: v,
+        data: v
       };
     }
     next();

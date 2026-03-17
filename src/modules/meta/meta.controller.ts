@@ -8,7 +8,7 @@ export const getConstantsController = async (_req: Request, res: Response, next:
     res.locals.response = {
       status: true,
       code: 200,
-      data,
+      data
     };
     next();
   } catch (err) {

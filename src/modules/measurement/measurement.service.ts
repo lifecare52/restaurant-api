@@ -5,7 +5,7 @@ import MeasurementEntity from './measurement.model';
 import type {
   MeasurementCreateDTO,
   MeasurementListQuery,
-  MeasurementUpdateDTO,
+  MeasurementUpdateDTO
 } from './measurement.types';
 
 export const createMeasurement = async (dto: MeasurementCreateDTO) => {
@@ -25,7 +25,7 @@ export const listMeasurements = async (query: MeasurementListQuery) => {
     match.$or = [
       { name: { $regex: searchText, $options: 'i' } },
       { unit: { $regex: searchText, $options: 'i' } },
-      { baseUnit: { $regex: searchText, $options: 'i' } },
+      { baseUnit: { $regex: searchText, $options: 'i' } }
     ];
   }
 
@@ -43,7 +43,7 @@ export const getMeasurement = async (measurementId: string) => {
   return MeasurementEntity.findOne({
     _id: new Types.ObjectId(measurementId),
     isDelete: false,
-    isActive: true,
+    isActive: true
   }).select('-isDelete -createdAt -updatedAt -isActive');
 };
 
@@ -51,7 +51,7 @@ export const updateMeasurement = async (measurementId: string, dto: MeasurementU
   return MeasurementEntity.findOneAndUpdate(
     { _id: new Types.ObjectId(measurementId) },
     { $set: dto },
-    { new: true },
+    { new: true }
   ).select('-isDelete -createdAt -updatedAt -isActive');
 };
 
@@ -59,7 +59,7 @@ export const deleteMeasurement = async (measurementId: string) => {
   return MeasurementEntity.findOneAndUpdate(
     { _id: new Types.ObjectId(measurementId) },
     { $set: { isDelete: true } },
-    { new: true },
+    { new: true }
   ).select('-isDelete -createdAt -updatedAt -isActive');
 };
 
@@ -68,5 +68,5 @@ export default {
   listMeasurements,
   getMeasurement,
   updateMeasurement,
-  deleteMeasurement,
+  deleteMeasurement
 };

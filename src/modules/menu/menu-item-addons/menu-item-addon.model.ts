@@ -12,16 +12,16 @@ const MenuItemAddonSchema = new Schema<MenuItemAddon>(
       type: Schema.Types.ObjectId,
       required: false,
       index: true,
-      ref: 'MenuItemVariant',
+      ref: 'MenuItemVariant'
     },
     allowedItemIds: { type: [Schema.Types.ObjectId], default: [] },
     isSingleSelect: { type: Boolean, default: false },
     min: { type: Number, default: null },
     max: { type: Number, default: null },
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false },
+    isDelete: { type: Boolean, default: false }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 MenuItemAddonSchema.index(
@@ -32,15 +32,15 @@ MenuItemAddonSchema.index(
       isDelete: false,
       menuItemVariantId: {
         $exists: false,
-        $type: 'objectId',
-      },
-    },
-  },
+        $type: 'objectId'
+      }
+    }
+  }
 );
 
 const MenuItemAddonEntity = model<MenuItemAddon>(
   'MenuItemAddon',
   MenuItemAddonSchema,
-  'menu_item_addons',
+  'menu_item_addons'
 );
 export default MenuItemAddonEntity;

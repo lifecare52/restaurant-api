@@ -16,7 +16,7 @@ export class TaxService {
       brandId,
       outletId,
       name: payload.name,
-      isDelete: false,
+      isDelete: false
     });
 
     if (existingTax) {
@@ -26,7 +26,7 @@ export class TaxService {
     const newTax = new TaxEntity({
       ...payload,
       brandId,
-      outletId,
+      outletId
     });
 
     return await newTax.save();
@@ -50,7 +50,7 @@ export class TaxService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      TaxEntity.countDocuments(query),
+      TaxEntity.countDocuments(query)
     ]);
 
     return {
@@ -59,8 +59,8 @@ export class TaxService {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
-      },
+        totalPages: Math.ceil(total / limit)
+      }
     };
   }
 
@@ -69,7 +69,7 @@ export class TaxService {
       _id: taxId,
       brandId,
       outletId,
-      isDelete: false,
+      isDelete: false
     }).lean();
 
     if (!tax) {
@@ -83,7 +83,7 @@ export class TaxService {
     brandId: string,
     outletId: string,
     taxId: string,
-    payload: Partial<Tax>,
+    payload: Partial<Tax>
   ): Promise<Tax> {
     if (payload.name) {
       const existingTax = await TaxEntity.findOne({
@@ -91,7 +91,7 @@ export class TaxService {
         brandId,
         outletId,
         name: payload.name,
-        isDelete: false,
+        isDelete: false
       });
 
       if (existingTax) {
@@ -102,7 +102,7 @@ export class TaxService {
     const updatedTax = await TaxEntity.findOneAndUpdate(
       { _id: taxId, brandId, outletId, isDelete: false },
       { $set: payload },
-      { new: true, runValidators: true },
+      { new: true, runValidators: true }
     );
 
     if (!updatedTax) {
@@ -116,7 +116,7 @@ export class TaxService {
     const deletedTax = await TaxEntity.findOneAndUpdate(
       { _id: taxId, brandId, outletId, isDelete: false },
       { $set: { isDelete: true, isActive: false } },
-      { new: true },
+      { new: true }
     );
 
     if (!deletedTax) {
@@ -126,7 +126,7 @@ export class TaxService {
     // Optional: when a tax is deleted, we might want to remove it from all tax groups.
     await TaxGroupEntity.updateMany(
       { brandId, outletId, taxes: taxId },
-      { $pull: { taxes: taxId } },
+      { $pull: { taxes: taxId } }
     );
 
     return true;
@@ -137,7 +137,7 @@ export class TaxService {
       brandId,
       outletId,
       isActive: true,
-      isDelete: false,
+      isDelete: false
     }).lean()) as unknown as Tax[];
   }
 
@@ -148,13 +148,13 @@ export class TaxService {
   async createTaxGroup(
     brandId: string,
     outletId: string,
-    payload: Partial<TaxGroup>,
+    payload: Partial<TaxGroup>
   ): Promise<TaxGroup> {
     const existingGroup = await TaxGroupEntity.findOne({
       brandId,
       outletId,
       name: payload.name,
-      isDelete: false,
+      isDelete: false
     });
 
     if (existingGroup) {
@@ -167,7 +167,7 @@ export class TaxService {
         _id: { $in: payload.taxes },
         brandId,
         outletId,
-        isDelete: false,
+        isDelete: false
       });
 
       if (activeTaxes !== payload.taxes.length) {
@@ -178,7 +178,7 @@ export class TaxService {
     const newGroup = new TaxGroupEntity({
       ...payload,
       brandId,
-      outletId,
+      outletId
     });
 
     return await newGroup.save();
@@ -187,7 +187,7 @@ export class TaxService {
   async getTaxGroups(
     brandId: string,
     outletId: string,
-    data: PaginationQuery & { isActive?: string },
+    data: PaginationQuery & { isActive?: string }
   ) {
     const { page = 1, limit = 10, isActive } = data;
     const skip = (page - 1) * limit;
@@ -207,7 +207,7 @@ export class TaxService {
         .skip(skip)
         .limit(limit)
         .lean(),
-      TaxGroupEntity.countDocuments(query),
+      TaxGroupEntity.countDocuments(query)
     ]);
 
     return {
@@ -216,8 +216,8 @@ export class TaxService {
         total,
         page,
         limit,
-        totalPages: Math.ceil(total / limit),
-      },
+        totalPages: Math.ceil(total / limit)
+      }
     };
   }
 
@@ -226,7 +226,7 @@ export class TaxService {
       _id: groupId,
       brandId,
       outletId,
-      isDelete: false,
+      isDelete: false
     })
       .populate('taxes')
       .lean();
@@ -242,7 +242,7 @@ export class TaxService {
     brandId: string,
     outletId: string,
     groupId: string,
-    payload: Partial<TaxGroup>,
+    payload: Partial<TaxGroup>
   ): Promise<TaxGroup> {
     if (payload.name) {
       const existingGroup = await TaxGroupEntity.findOne({
@@ -250,7 +250,7 @@ export class TaxService {
         brandId,
         outletId,
         name: payload.name,
-        isDelete: false,
+        isDelete: false
       });
 
       if (existingGroup) {
@@ -263,7 +263,7 @@ export class TaxService {
         _id: { $in: payload.taxes },
         brandId,
         outletId,
-        isDelete: false,
+        isDelete: false
       });
 
       if (activeTaxes !== payload.taxes.length) {
@@ -274,7 +274,7 @@ export class TaxService {
     const updatedGroup = await TaxGroupEntity.findOneAndUpdate(
       { _id: groupId, brandId, outletId, isDelete: false },
       { $set: payload },
-      { new: true, runValidators: true },
+      { new: true, runValidators: true }
     ).populate('taxes');
 
     if (!updatedGroup) {
@@ -288,7 +288,7 @@ export class TaxService {
     const deletedGroup = await TaxGroupEntity.findOneAndUpdate(
       { _id: groupId, brandId, outletId, isDelete: false },
       { $set: { isDelete: true, isActive: false } },
-      { new: true },
+      { new: true }
     );
 
     if (!deletedGroup) {
@@ -303,7 +303,7 @@ export class TaxService {
       brandId,
       outletId,
       isActive: true,
-      isDelete: false,
+      isDelete: false
     })
       .populate('taxes')
       .lean()) as unknown as TaxGroup[];

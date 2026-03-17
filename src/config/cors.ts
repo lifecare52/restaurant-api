@@ -15,11 +15,11 @@ const toList = (value: string | undefined, fallback: string): string[] =>
 export const getCorsConfig = (): CorsConfig => {
   const allowedOrigins = toList(process.env.CORS_ORIGINS, '*');
   const allowCredentials = ['true', '1', 'yes'].includes(
-    (process.env.CORS_ALLOW_CREDENTIALS ?? '').toLowerCase(),
+    (process.env.CORS_ALLOW_CREDENTIALS ?? '').toLowerCase()
   );
   const allowedMethods = toList(
     process.env.CORS_ALLOWED_METHODS,
-    'GET,POST,PATCH,PUT,DELETE,OPTIONS',
+    'GET,POST,PATCH,PUT,DELETE,OPTIONS'
   );
   // Always include required headers even if env overrides are provided
   const baseHeaders = ['Content-Type', 'Authorization', 'brand-id', 'outlet-id'];

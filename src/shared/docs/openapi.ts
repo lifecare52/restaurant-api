@@ -1,11 +1,11 @@
-export const getOpenApiSpec = () => {
+﻿export const getOpenApiSpec = () => {
   const spec = {
     openapi: '3.0.3',
     info: {
       title: 'Restaurant Management Backend',
       version: '1.0.0',
       description:
-        'API documentation for Users, Brands, and Outlets. All responses follow IApiResponse format.',
+        'API documentation for Users, Brands, and Outlets. All responses follow IApiResponse format.'
     },
     servers: [{ url: '/' }],
     components: {
@@ -13,60 +13,60 @@ export const getOpenApiSpec = () => {
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT',
+          bearerFormat: 'JWT'
         },
         brandIdHeader: { type: 'apiKey', in: 'header', name: 'brand-id' },
-        outletIdHeader: { type: 'apiKey', in: 'header', name: 'outlet-id' },
+        outletIdHeader: { type: 'apiKey', in: 'header', name: 'outlet-id' }
       },
       schemas: {
         Tax: {
           type: 'object',
           properties: {
             _id: {
-              type: 'string',
+              type: 'string'
             },
             brandId: {
-              type: 'string',
+              type: 'string'
             },
             outletId: {
-              type: 'string',
+              type: 'string'
             },
             name: {
-              type: 'string',
+              type: 'string'
             },
             rate: {
-              type: 'number',
+              type: 'number'
             },
             type: {
               type: 'string',
-              enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
+              enum: ['PERCENTAGE', 'FLAT_AMOUNT']
             },
             isInclusive: {
-              type: 'boolean',
+              type: 'boolean'
             },
             calculationMethod: {
               type: 'string',
-              enum: ['STANDARD', 'CUMULATIVE'],
+              enum: ['STANDARD', 'CUMULATIVE']
             },
             applicableOrderTypes: {
               type: 'array',
               items: {
                 type: 'string',
-                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
-              },
+                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE']
+              }
             },
             isActive: {
-              type: 'boolean',
+              type: 'boolean'
             },
             isDelete: {
-              type: 'boolean',
+              type: 'boolean'
             },
             createdAt: {
-              type: 'string',
+              type: 'string'
             },
             updatedAt: {
-              type: 'string',
-            },
+              type: 'string'
+            }
           },
           required: [
             '_id',
@@ -79,158 +79,158 @@ export const getOpenApiSpec = () => {
             'calculationMethod',
             'applicableOrderTypes',
             'isActive',
-            'isDelete',
-          ],
+            'isDelete'
+          ]
         },
         TaxGroup: {
           type: 'object',
           properties: {
             _id: {
-              type: 'string',
+              type: 'string'
             },
             brandId: {
-              type: 'string',
+              type: 'string'
             },
             outletId: {
-              type: 'string',
+              type: 'string'
             },
             name: {
-              type: 'string',
+              type: 'string'
             },
             taxes: {
               type: 'array',
               items: {
-                $ref: '#/components/schemas/Tax',
-              },
+                $ref: '#/components/schemas/Tax'
+              }
             },
             isActive: {
-              type: 'boolean',
+              type: 'boolean'
             },
             isDelete: {
-              type: 'boolean',
+              type: 'boolean'
             },
             createdAt: {
-              type: 'string',
+              type: 'string'
             },
             updatedAt: {
-              type: 'string',
-            },
+              type: 'string'
+            }
           },
-          required: ['_id', 'brandId', 'outletId', 'name', 'taxes', 'isActive', 'isDelete'],
+          required: ['_id', 'brandId', 'outletId', 'name', 'taxes', 'isActive', 'isDelete']
         },
         CreateTaxRequest: {
           type: 'object',
           properties: {
             name: {
               type: 'string',
-              minLength: 1,
+              minLength: 1
             },
             rate: {
               type: 'number',
-              minimum: 0,
+              minimum: 0
             },
             type: {
               type: 'string',
               enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
-              default: 'PERCENTAGE',
+              default: 'PERCENTAGE'
             },
             isInclusive: {
               type: 'boolean',
-              default: false,
+              default: false
             },
             calculationMethod: {
               type: 'string',
               enum: ['STANDARD', 'CUMULATIVE'],
-              default: 'STANDARD',
+              default: 'STANDARD'
             },
             applicableOrderTypes: {
               type: 'array',
               items: {
                 type: 'string',
-                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
+                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE']
               },
-              default: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
+              default: ['DINE_IN', 'TAKE_AWAY', 'ONLINE']
             },
             isActive: {
               type: 'boolean',
-              default: true,
-            },
+              default: true
+            }
           },
-          required: ['name', 'rate'],
+          required: ['name', 'rate']
         },
         UpdateTaxRequest: {
           type: 'object',
           properties: {
             name: {
               type: 'string',
-              minLength: 1,
+              minLength: 1
             },
             rate: {
               type: 'number',
-              minimum: 0,
+              minimum: 0
             },
             type: {
               type: 'string',
-              enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
+              enum: ['PERCENTAGE', 'FLAT_AMOUNT']
             },
             isInclusive: {
-              type: 'boolean',
+              type: 'boolean'
             },
             calculationMethod: {
               type: 'string',
-              enum: ['STANDARD', 'CUMULATIVE'],
+              enum: ['STANDARD', 'CUMULATIVE']
             },
             applicableOrderTypes: {
               type: 'array',
               items: {
                 type: 'string',
-                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE'],
-              },
+                enum: ['DINE_IN', 'TAKE_AWAY', 'ONLINE']
+              }
             },
             isActive: {
-              type: 'boolean',
-            },
-          },
+              type: 'boolean'
+            }
+          }
         },
         CreateTaxGroupRequest: {
           type: 'object',
           properties: {
             name: {
               type: 'string',
-              minLength: 1,
+              minLength: 1
             },
             taxes: {
               type: 'array',
               items: {
-                type: 'string',
+                type: 'string'
               },
-              minItems: 1,
+              minItems: 1
             },
             isActive: {
               type: 'boolean',
-              default: true,
-            },
+              default: true
+            }
           },
-          required: ['name', 'taxes'],
+          required: ['name', 'taxes']
         },
         UpdateTaxGroupRequest: {
           type: 'object',
           properties: {
             name: {
               type: 'string',
-              minLength: 1,
+              minLength: 1
             },
             taxes: {
               type: 'array',
               items: {
-                type: 'string',
+                type: 'string'
               },
-              minItems: 1,
+              minItems: 1
             },
             isActive: {
-              type: 'boolean',
-            },
-          },
+              type: 'boolean'
+            }
+          }
         },
         Zone: {
           type: 'object',
@@ -242,24 +242,24 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
+            updatedAt: { type: 'string' }
           },
-          required: ['_id', 'brandId', 'outletId', 'name', 'isActive', 'isDelete'],
+          required: ['_id', 'brandId', 'outletId', 'name', 'isActive', 'isDelete']
         },
         CreateZoneRequest: {
           type: 'object',
           properties: {
             name: { type: 'string', minLength: 2 },
-            isActive: { type: 'boolean', default: true },
+            isActive: { type: 'boolean', default: true }
           },
-          required: ['name'],
+          required: ['name']
         },
         UpdateZoneRequest: {
           type: 'object',
           properties: {
             name: { type: 'string', minLength: 2 },
-            isActive: { type: 'boolean' },
-          },
+            isActive: { type: 'boolean' }
+          }
         },
         Table: {
           type: 'object',
@@ -274,7 +274,7 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
+            updatedAt: { type: 'string' }
           },
           required: [
             '_id',
@@ -284,8 +284,8 @@ export const getOpenApiSpec = () => {
             'capacity',
             'status',
             'isActive',
-            'isDelete',
-          ],
+            'isDelete'
+          ]
         },
         CreateTableRequest: {
           type: 'object',
@@ -294,9 +294,9 @@ export const getOpenApiSpec = () => {
             capacity: { type: 'number', minimum: 1 },
             zoneId: { type: 'string' },
             status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
-            isActive: { type: 'boolean', default: true },
+            isActive: { type: 'boolean', default: true }
           },
-          required: ['name'],
+          required: ['name']
         },
         UpdateTableRequest: {
           type: 'object',
@@ -305,23 +305,23 @@ export const getOpenApiSpec = () => {
             capacity: { type: 'number', minimum: 1 },
             zoneId: { type: 'string', nullable: true },
             status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
-            isActive: { type: 'boolean' },
-          },
+            isActive: { type: 'boolean' }
+          }
         },
         UpdateTableStatusRequest: {
           type: 'object',
           properties: {
-            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] }
           },
-          required: ['status'],
+          required: ['status']
         },
         ApiError: {
           type: 'object',
           properties: {
             code: { type: 'string' },
-            message: { type: 'string' },
+            message: { type: 'string' }
           },
-          required: ['code', 'message'],
+          required: ['code', 'message']
         },
         ApiResponse: {
           type: 'object',
@@ -332,37 +332,37 @@ export const getOpenApiSpec = () => {
             data: { type: 'object', additionalProperties: true },
             errors: {
               type: 'array',
-              items: { $ref: '#/components/schemas/ApiError' },
+              items: { $ref: '#/components/schemas/ApiError' }
             },
             validationMessages: {
               type: 'array',
-              items: { type: 'string' },
+              items: { type: 'string' }
             },
-            total: { type: 'number' },
+            total: { type: 'number' }
           },
-          required: ['status', 'code'],
+          required: ['status', 'code']
         },
         MetaTypesResponse: {
           type: 'object',
           properties: {
             outletTypes: {
               type: 'array',
-              items: { type: 'string', enum: ['bakery', 'restaurant', 'cafe'] },
+              items: { type: 'string', enum: ['bakery', 'restaurant', 'cafe'] }
             },
             cuisineTypes: {
               type: 'array',
-              items: { type: 'string', enum: ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai'] },
-            },
+              items: { type: 'string', enum: ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai'] }
+            }
           },
-          required: ['outletTypes', 'cuisineTypes'],
+          required: ['outletTypes', 'cuisineTypes']
         },
         LoginRequest: {
           type: 'object',
           properties: {
             username: { type: 'string', minLength: 3 },
-            password: { type: 'string', minLength: 6 },
+            password: { type: 'string', minLength: 6 }
           },
-          required: ['username', 'password'],
+          required: ['username', 'password']
         },
         LoginResponse: {
           type: 'object',
@@ -372,10 +372,10 @@ export const getOpenApiSpec = () => {
             outletId: {
               type: 'string',
               nullable: true,
-              description: 'First outlet assigned (if any)',
-            },
+              description: 'First outlet assigned (if any)'
+            }
           },
-          required: ['token'],
+          required: ['token']
         },
         CreateAdminRequest: {
           type: 'object',
@@ -387,10 +387,10 @@ export const getOpenApiSpec = () => {
               type: 'string',
               minLength: 6,
               description:
-                'At least 6 chars with uppercase, lowercase, number and special character',
-            },
+                'At least 6 chars with uppercase, lowercase, number and special character'
+            }
           },
-          required: ['name', 'username', 'email', 'password'],
+          required: ['name', 'username', 'email', 'password']
         },
         CreateOwnerRequest: {
           type: 'object',
@@ -400,9 +400,9 @@ export const getOpenApiSpec = () => {
             email: { type: 'string', format: 'email' },
             password: { type: 'string', minLength: 6 },
             brandId: { type: 'string' },
-            outlets: { type: 'array', items: { type: 'string' }, minItems: 1 },
+            outlets: { type: 'array', items: { type: 'string' }, minItems: 1 }
           },
-          required: ['name', 'username', 'password', 'brandId', 'outlets'],
+          required: ['name', 'username', 'password', 'brandId', 'outlets']
         },
         CreateUserRequest: {
           type: 'object',
@@ -414,9 +414,9 @@ export const getOpenApiSpec = () => {
             role: { type: 'string', enum: ['PARTNER', 'STAFF'] },
             permissions: { type: 'array', items: { type: 'string' }, default: [] },
             isActive: { type: 'boolean', default: true },
-            salary: { type: 'number' },
+            salary: { type: 'number' }
           },
-          required: ['name', 'username', 'password', 'role'],
+          required: ['name', 'username', 'password', 'role']
         },
         UpdateUserRequest: {
           type: 'object',
@@ -428,8 +428,8 @@ export const getOpenApiSpec = () => {
             outlets: { type: 'array', items: { type: 'string' } },
             permissions: { type: 'array', items: { type: 'string' } },
             isActive: { type: 'boolean' },
-            salary: { type: 'number' },
-          },
+            salary: { type: 'number' }
+          }
         },
         User: {
           type: 'object',
@@ -445,8 +445,8 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
             salary: { type: 'number' },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
-          },
+            updatedAt: { type: 'string' }
+          }
         },
         CreateBrandRequest: {
           type: 'object',
@@ -456,11 +456,11 @@ export const getOpenApiSpec = () => {
               type: 'object',
               properties: {
                 name: { type: 'string' },
-                outletLimit: { type: 'number' },
-              },
-            },
+                outletLimit: { type: 'number' }
+              }
+            }
           },
-          required: ['name'],
+          required: ['name']
         },
         UpdateBrandRequest: {
           type: 'object',
@@ -470,10 +470,10 @@ export const getOpenApiSpec = () => {
               type: 'object',
               properties: {
                 name: { type: 'string' },
-                outletLimit: { type: 'number' },
-              },
-            },
-          },
+                outletLimit: { type: 'number' }
+              }
+            }
+          }
         },
         CreateOutletRequest: {
           type: 'object',
@@ -487,12 +487,12 @@ export const getOpenApiSpec = () => {
                   type: 'array',
                   items: {
                     type: 'string',
-                    enum: ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai'],
-                  },
+                    enum: ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai']
+                  }
                 },
-                outletType: { type: 'string', enum: ['bakery', 'restaurant', 'cafe'] },
+                outletType: { type: 'string', enum: ['bakery', 'restaurant', 'cafe'] }
               },
-              required: ['name', 'outletType'],
+              required: ['name', 'outletType']
             },
             contact: {
               type: 'object',
@@ -502,9 +502,9 @@ export const getOpenApiSpec = () => {
                 country: { type: 'string' },
                 state: { type: 'string' },
                 city: { type: 'string' },
-                address: { type: 'string' },
+                address: { type: 'string' }
               },
-              required: ['email', 'phone', 'country', 'state', 'city', 'address'],
+              required: ['email', 'phone', 'country', 'state', 'city', 'address']
             },
             settings: {
               type: 'object',
@@ -514,13 +514,13 @@ export const getOpenApiSpec = () => {
                 gstScheme: {
                   type: 'string',
                   enum: ['REGULAR', 'COMPOSITION', 'NONE'],
-                  default: 'NONE',
+                  default: 'NONE'
                 },
-                currency: { type: 'string' },
-              },
-            },
+                currency: { type: 'string' }
+              }
+            }
           },
-          required: ['basicInfo', 'contact'],
+          required: ['basicInfo', 'contact']
         },
         UpdateOutletRequest: {
           type: 'object',
@@ -534,11 +534,11 @@ export const getOpenApiSpec = () => {
                   type: 'array',
                   items: {
                     type: 'string',
-                    enum: ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai'],
-                  },
+                    enum: ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai']
+                  }
                 },
-                outletType: { type: 'string', enum: ['bakery', 'restaurant', 'cafe'] },
-              },
+                outletType: { type: 'string', enum: ['bakery', 'restaurant', 'cafe'] }
+              }
             },
             contact: {
               type: 'object',
@@ -548,8 +548,8 @@ export const getOpenApiSpec = () => {
                 country: { type: 'string' },
                 state: { type: 'string' },
                 city: { type: 'string' },
-                address: { type: 'string' },
-              },
+                address: { type: 'string' }
+              }
             },
             settings: {
               type: 'object',
@@ -557,10 +557,10 @@ export const getOpenApiSpec = () => {
                 gstEnabled: { type: 'boolean' },
                 gstNo: { type: 'string' },
                 gstScheme: { type: 'string', enum: ['REGULAR', 'COMPOSITION', 'NONE'] },
-                currency: { type: 'string' },
-              },
-            },
-          },
+                currency: { type: 'string' }
+              }
+            }
+          }
         },
         OutletDetail: {
           type: 'object',
@@ -572,9 +572,9 @@ export const getOpenApiSpec = () => {
                 name: { type: 'string' },
                 logo: { type: 'string', format: 'uri' },
                 cuisineType: { type: 'array', items: { type: 'string' } },
-                outletType: { type: 'string', enum: ['bakery', 'restaurant', 'cafe'] },
+                outletType: { type: 'string', enum: ['bakery', 'restaurant', 'cafe'] }
               },
-              required: ['name', 'outletType'],
+              required: ['name', 'outletType']
             },
             contact: {
               type: 'object',
@@ -584,9 +584,9 @@ export const getOpenApiSpec = () => {
                 country: { type: 'string' },
                 state: { type: 'string' },
                 city: { type: 'string' },
-                address: { type: 'string' },
+                address: { type: 'string' }
               },
-              required: ['email', 'phone', 'country', 'state', 'city', 'address'],
+              required: ['email', 'phone', 'country', 'state', 'city', 'address']
             },
             settings: {
               type: 'object',
@@ -594,13 +594,13 @@ export const getOpenApiSpec = () => {
                 gstEnabled: { type: 'boolean' },
                 gstNo: { type: 'string' },
                 gstScheme: { type: 'string', enum: ['REGULAR', 'COMPOSITION', 'NONE'] },
-                currency: { type: 'string' },
-              },
+                currency: { type: 'string' }
+              }
             },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
+            updatedAt: { type: 'string' }
           },
-          required: ['_id', 'basicInfo', 'contact'],
+          required: ['_id', 'basicInfo', 'contact']
         },
         Category: {
           type: 'object',
@@ -614,9 +614,9 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
+            updatedAt: { type: 'string' }
           },
-          required: ['_id', 'brandId', 'outletId', 'name', 'isActive', 'isDelete'],
+          required: ['_id', 'brandId', 'outletId', 'name', 'isActive', 'isDelete']
         },
         CreateCategoryRequest: {
           type: 'object',
@@ -624,9 +624,9 @@ export const getOpenApiSpec = () => {
             name: { type: 'string', minLength: 2 },
             onlineName: { type: 'string', minLength: 2 },
             logo: { type: 'string', format: 'uri' },
-            isActive: { type: 'boolean', default: true },
+            isActive: { type: 'boolean', default: true }
           },
-          required: ['name'],
+          required: ['name']
         },
         UpdateCategoryRequest: {
           type: 'object',
@@ -634,16 +634,16 @@ export const getOpenApiSpec = () => {
             name: { type: 'string', minLength: 2 },
             onlineName: { type: 'string', minLength: 2 },
             logo: { type: 'string', format: 'uri' },
-            isActive: { type: 'boolean' },
-          },
+            isActive: { type: 'boolean' }
+          }
         },
         CategoryName: {
           type: 'object',
           properties: {
             _id: { type: 'string' },
-            name: { type: 'string' },
+            name: { type: 'string' }
           },
-          required: ['_id', 'name'],
+          required: ['_id', 'name']
         },
         MenuItem: {
           type: 'object',
@@ -657,7 +657,7 @@ export const getOpenApiSpec = () => {
               items: { type: 'string' },
               maxItems: 2,
               uniqueItems: true,
-              description: 'Up to 2 codes; unique per brand+outlet (case-insensitive)',
+              description: 'Up to 2 codes; unique per brand+outlet (case-insensitive)'
             },
             categoryId: { type: 'string' },
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
@@ -668,7 +668,7 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
+            updatedAt: { type: 'string' }
           },
           required: [
             '_id',
@@ -678,8 +678,8 @@ export const getOpenApiSpec = () => {
             'categoryId',
             'dietary',
             'isActive',
-            'isDelete',
-          ],
+            'isDelete'
+          ]
         },
         AddonItemSimple: {
           type: 'object',
@@ -689,9 +689,9 @@ export const getOpenApiSpec = () => {
             price: { type: 'number', minimum: 0 },
             sapCode: { type: 'string' },
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
-            available: { type: 'boolean' },
+            available: { type: 'boolean' }
           },
-          required: ['_id', 'name', 'price', 'available'],
+          required: ['_id', 'name', 'price', 'available']
         },
         AddonGroupSimple: {
           type: 'object',
@@ -700,9 +700,9 @@ export const getOpenApiSpec = () => {
             items: { type: 'array', items: { $ref: '#/components/schemas/AddonItemSimple' } },
             isSingleSelect: { type: 'boolean' },
             min: { type: 'number', nullable: true },
-            max: { type: 'number', nullable: true },
+            max: { type: 'number', nullable: true }
           },
-          required: ['name', 'items'],
+          required: ['name', 'items']
         },
         VariationWithAddonsSimple: {
           type: 'object',
@@ -713,9 +713,9 @@ export const getOpenApiSpec = () => {
             costPrice: { type: 'number', minimum: 0, nullable: true },
             isMeasurementBased: { type: 'boolean' },
             measurementConfig: { $ref: '#/components/schemas/MeasurementConfig' },
-            addons: { type: 'array', items: { $ref: '#/components/schemas/AddonGroupSimple' } },
+            addons: { type: 'array', items: { $ref: '#/components/schemas/AddonGroupSimple' } }
           },
-          required: ['variationId', 'name', 'isMeasurementBased', 'addons'],
+          required: ['variationId', 'name', 'isMeasurementBased', 'addons']
         },
         MenuItemWithNested: {
           allOf: [
@@ -725,12 +725,12 @@ export const getOpenApiSpec = () => {
               properties: {
                 variations: {
                   type: 'array',
-                  items: { $ref: '#/components/schemas/VariationWithAddonsSimple' },
+                  items: { $ref: '#/components/schemas/VariationWithAddonsSimple' }
                 },
-                addons: { type: 'array', items: { $ref: '#/components/schemas/AddonGroupSimple' } },
-              },
-            },
-          ],
+                addons: { type: 'array', items: { $ref: '#/components/schemas/AddonGroupSimple' } }
+              }
+            }
+          ]
         },
         AddonInputCreate: {
           type: 'object',
@@ -739,9 +739,9 @@ export const getOpenApiSpec = () => {
             addonId: { type: 'string' },
             isSingleSelect: { type: 'boolean' },
             min: { type: 'number', minimum: 0 },
-            max: { type: 'number', minimum: 0 },
+            max: { type: 'number', minimum: 0 }
           },
-          required: ['addonId'],
+          required: ['addonId']
         },
         AddonInputUpdate: {
           type: 'object',
@@ -751,9 +751,9 @@ export const getOpenApiSpec = () => {
             allowedItems: { type: 'array', items: { type: 'string' } },
             isSingleSelect: { type: 'boolean' },
             min: { type: 'number', minimum: 0 },
-            max: { type: 'number', minimum: 0 },
+            max: { type: 'number', minimum: 0 }
           },
-          required: ['addonId'],
+          required: ['addonId']
         },
         MeasurementConfig: {
           type: 'object',
@@ -764,9 +764,9 @@ export const getOpenApiSpec = () => {
             baseValue: { type: 'number', minimum: 0, nullable: true },
             minValue: { type: 'number', nullable: true },
             maxValue: { type: 'number', nullable: true },
-            stepValue: { type: 'number', nullable: true },
+            stepValue: { type: 'number', nullable: true }
           },
-          required: ['measurementId', 'basePrice'],
+          required: ['measurementId', 'basePrice']
         },
         CreateMenuItemRequest: {
           type: 'object',
@@ -777,7 +777,7 @@ export const getOpenApiSpec = () => {
               items: { type: 'string' },
               maxItems: 2,
               uniqueItems: true,
-              description: 'Up to 2 codes; unique per brand+outlet (case-insensitive)',
+              description: 'Up to 2 codes; unique per brand+outlet (case-insensitive)'
             },
             categoryId: { type: 'string' },
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
@@ -799,24 +799,24 @@ export const getOpenApiSpec = () => {
                   addons: {
                     type: 'array',
                     items: {
-                      $ref: '#/components/schemas/AddonInputCreate',
+                      $ref: '#/components/schemas/AddonInputCreate'
                     },
                     description:
-                      'Objects with addonId, selection rules; allowedItems is ignored on create',
-                  },
+                      'Objects with addonId, selection rules; allowedItems is ignored on create'
+                  }
                 },
-                required: ['variationId', 'basePrice'],
-              },
+                required: ['variationId', 'basePrice']
+              }
             },
             addons: {
               type: 'array',
               items: { $ref: '#/components/schemas/AddonInputCreate' },
               description:
-                'Item-level addons (used only when variations are not provided); allowedItems is ignored on create',
+                'Item-level addons (used only when variations are not provided); allowedItems is ignored on create'
             },
-            isActive: { type: 'boolean', default: true },
+            isActive: { type: 'boolean', default: true }
           },
-          required: ['name', 'categoryId', 'dietary'],
+          required: ['name', 'categoryId', 'dietary']
         },
         UpdateMenuItemRequest: {
           type: 'object',
@@ -827,7 +827,7 @@ export const getOpenApiSpec = () => {
               items: { type: 'string' },
               maxItems: 2,
               uniqueItems: true,
-              description: 'Up to 2 codes; unique per brand+outlet (case-insensitive)',
+              description: 'Up to 2 codes; unique per brand+outlet (case-insensitive)'
             },
             categoryId: { type: 'string' },
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
@@ -846,20 +846,20 @@ export const getOpenApiSpec = () => {
                   measurementConfig: { $ref: '#/components/schemas/MeasurementConfig' },
                   addons: {
                     type: 'array',
-                    items: { $ref: '#/components/schemas/AddonInputUpdate' },
-                  },
+                    items: { $ref: '#/components/schemas/AddonInputUpdate' }
+                  }
                 },
-                required: ['variationId'],
-              },
+                required: ['variationId']
+              }
             },
             addons: {
               type: 'array',
               description:
                 'Optional: item-level addon updates (used when variations are not provided)',
-              items: { $ref: '#/components/schemas/AddonInputUpdate' },
+              items: { $ref: '#/components/schemas/AddonInputUpdate' }
             },
-            isActive: { type: 'boolean' },
-          },
+            isActive: { type: 'boolean' }
+          }
         },
         BulkUpdateMenuItemAvailabilityRequest: {
           type: 'object',
@@ -872,14 +872,14 @@ export const getOpenApiSpec = () => {
                   _id: { type: 'string' },
                   online: { type: 'boolean' },
                   takeAway: { type: 'boolean' },
-                  dineIn: { type: 'boolean' },
+                  dineIn: { type: 'boolean' }
                 },
-                required: ['_id', 'online', 'takeAway', 'dineIn'],
+                required: ['_id', 'online', 'takeAway', 'dineIn']
               },
-              minItems: 1,
-            },
+              minItems: 1
+            }
           },
-          required: ['items'],
+          required: ['items']
         },
         Variation: {
           type: 'object',
@@ -900,23 +900,23 @@ export const getOpenApiSpec = () => {
                 'FLAVOR',
                 'TOPPING',
                 'STYLE',
-                'CUSTOM',
-              ],
+                'CUSTOM'
+              ]
             },
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
+            updatedAt: { type: 'string' }
           },
-          required: ['_id', 'brandId', 'outletId', 'name', 'department', 'isActive', 'isDelete'],
+          required: ['_id', 'brandId', 'outletId', 'name', 'department', 'isActive', 'isDelete']
         },
         VariationName: {
           type: 'object',
           properties: {
             _id: { type: 'string' },
-            name: { type: 'string' },
+            name: { type: 'string' }
           },
-          required: ['_id', 'name'],
+          required: ['_id', 'name']
         },
         CreateVariationRequest: {
           type: 'object',
@@ -934,12 +934,12 @@ export const getOpenApiSpec = () => {
                 'FLAVOR',
                 'TOPPING',
                 'STYLE',
-                'CUSTOM',
-              ],
+                'CUSTOM'
+              ]
             },
-            isActive: { type: 'boolean', default: true },
+            isActive: { type: 'boolean', default: true }
           },
-          required: ['name', 'department'],
+          required: ['name', 'department']
         },
         UpdateVariationRequest: {
           type: 'object',
@@ -957,11 +957,11 @@ export const getOpenApiSpec = () => {
                 'FLAVOR',
                 'TOPPING',
                 'STYLE',
-                'CUSTOM',
-              ],
+                'CUSTOM'
+              ]
             },
-            isActive: { type: 'boolean' },
-          },
+            isActive: { type: 'boolean' }
+          }
         },
         Measurement: {
           type: 'object',
@@ -970,7 +970,7 @@ export const getOpenApiSpec = () => {
             name: { type: 'string' },
             measurementType: {
               type: 'string',
-              enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM'],
+              enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM']
             },
             unit: { type: 'string' },
             baseUnit: { type: 'string' },
@@ -979,7 +979,7 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
+            updatedAt: { type: 'string' }
           },
           required: [
             '_id',
@@ -989,8 +989,8 @@ export const getOpenApiSpec = () => {
             'baseUnit',
             'conversionFactor',
             'isActive',
-            'isDelete',
-          ],
+            'isDelete'
+          ]
         },
         CreateMeasurementRequest: {
           type: 'object',
@@ -998,15 +998,15 @@ export const getOpenApiSpec = () => {
             name: { type: 'string', minLength: 2 },
             measurementType: {
               type: 'string',
-              enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM'],
+              enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM']
             },
             unit: { type: 'string' },
             baseUnit: { type: 'string' },
             conversionFactor: { type: 'number', minimum: 0 },
             isDecimalAllowed: { type: 'boolean', default: true },
-            isActive: { type: 'boolean', default: true },
+            isActive: { type: 'boolean', default: true }
           },
-          required: ['name', 'measurementType', 'unit', 'baseUnit'],
+          required: ['name', 'measurementType', 'unit', 'baseUnit']
         },
         UpdateMeasurementRequest: {
           type: 'object',
@@ -1015,15 +1015,15 @@ export const getOpenApiSpec = () => {
             name: { type: 'string', minLength: 2 },
             measurementType: {
               type: 'string',
-              enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM'],
+              enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM']
             },
             unit: { type: 'string' },
             baseUnit: { type: 'string' },
             conversionFactor: { type: 'number', minimum: 0 },
             isDecimalAllowed: { type: 'boolean' },
-            isActive: { type: 'boolean' },
+            isActive: { type: 'boolean' }
           },
-          required: ['measurementId'],
+          required: ['measurementId']
         },
         MenuItemVariant: {
           type: 'object',
@@ -1041,7 +1041,7 @@ export const getOpenApiSpec = () => {
             isDefault: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
+            updatedAt: { type: 'string' }
           },
           required: [
             '_id',
@@ -1051,8 +1051,8 @@ export const getOpenApiSpec = () => {
             'variationId',
             'basePrice',
             'isActive',
-            'isDelete',
-          ],
+            'isDelete'
+          ]
         },
         CreateMenuItemVariantRequest: {
           type: 'object',
@@ -1064,9 +1064,9 @@ export const getOpenApiSpec = () => {
             isMeasurementBased: { type: 'boolean', default: false },
             measurementConfig: { $ref: '#/components/schemas/MeasurementConfig' },
             isActive: { type: 'boolean', default: true },
-            isDefault: { type: 'boolean', default: false },
+            isDefault: { type: 'boolean', default: false }
           },
-          required: ['menuItemId', 'variationId', 'basePrice'],
+          required: ['menuItemId', 'variationId', 'basePrice']
         },
         UpdateMenuItemVariantRequest: {
           type: 'object',
@@ -1076,16 +1076,16 @@ export const getOpenApiSpec = () => {
             isMeasurementBased: { type: 'boolean' },
             measurementConfig: { $ref: '#/components/schemas/MeasurementConfig' },
             isActive: { type: 'boolean' },
-            isDefault: { type: 'boolean' },
-          },
+            isDefault: { type: 'boolean' }
+          }
         },
         AddonName: {
           type: 'object',
           properties: {
             _id: { type: 'string' },
-            name: { type: 'string' },
+            name: { type: 'string' }
           },
-          required: ['_id', 'name'],
+          required: ['_id', 'name']
         },
         Addon: {
           type: 'object',
@@ -1104,17 +1104,17 @@ export const getOpenApiSpec = () => {
                   price: { type: 'number', minimum: 0 },
                   sapCode: { type: 'string' },
                   dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
-                  available: { type: 'boolean' },
+                  available: { type: 'boolean' }
                 },
-                required: ['name', 'price'],
-              },
+                required: ['name', 'price']
+              }
             },
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
+            updatedAt: { type: 'string' }
           },
-          required: ['_id', 'brandId', 'outletId', 'name', 'items', 'isActive', 'isDelete'],
+          required: ['_id', 'brandId', 'outletId', 'name', 'items', 'isActive', 'isDelete']
         },
         CreateAddonRequest: {
           type: 'object',
@@ -1129,14 +1129,14 @@ export const getOpenApiSpec = () => {
                   price: { type: 'number', minimum: 0 },
                   sapCode: { type: 'string' },
                   dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
-                  available: { type: 'boolean' },
+                  available: { type: 'boolean' }
                 },
-                required: ['name', 'price'],
-              },
+                required: ['name', 'price']
+              }
             },
-            isActive: { type: 'boolean', default: true },
+            isActive: { type: 'boolean', default: true }
           },
-          required: ['name', 'items'],
+          required: ['name', 'items']
         },
         UpdateAddonRequest: {
           type: 'object',
@@ -1151,13 +1151,13 @@ export const getOpenApiSpec = () => {
                   price: { type: 'number', minimum: 0 },
                   sapCode: { type: 'string' },
                   dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
-                  available: { type: 'boolean' },
+                  available: { type: 'boolean' }
                 },
-                required: ['name', 'price'],
-              },
+                required: ['name', 'price']
+              }
             },
-            isActive: { type: 'boolean' },
-          },
+            isActive: { type: 'boolean' }
+          }
         },
         MenuItemAddon: {
           type: 'object',
@@ -1182,17 +1182,17 @@ export const getOpenApiSpec = () => {
                   price: { type: 'number', minimum: 0 },
                   sapCode: { type: 'string' },
                   dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
-                  available: { type: 'boolean' },
+                  available: { type: 'boolean' }
                 },
-                required: ['_id', 'name', 'price'],
-              },
+                required: ['_id', 'name', 'price']
+              }
             },
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
-            updatedAt: { type: 'string' },
+            updatedAt: { type: 'string' }
           },
-          required: ['_id', 'brandId', 'outletId', 'menuItemId', 'addonId', 'isActive', 'isDelete'],
+          required: ['_id', 'brandId', 'outletId', 'menuItemId', 'addonId', 'isActive', 'isDelete']
         },
         CreateMenuItemAddonRequest: {
           type: 'object',
@@ -1204,9 +1204,9 @@ export const getOpenApiSpec = () => {
             isSingleSelect: { type: 'boolean' },
             min: { type: 'number', minimum: 0 },
             max: { type: 'number', minimum: 1 },
-            isActive: { type: 'boolean', default: true },
+            isActive: { type: 'boolean', default: true }
           },
-          required: ['menuItemId', 'addonId'],
+          required: ['menuItemId', 'addonId']
         },
         CreateBulkMenuItemAddonRequest: {
           type: 'object',
@@ -1223,13 +1223,13 @@ export const getOpenApiSpec = () => {
                 type: 'object',
                 properties: {
                   menuId: { type: 'string' },
-                  variationId: { type: 'string' },
+                  variationId: { type: 'string' }
                 },
-                required: ['menuId'],
-              },
-            },
+                required: ['menuId']
+              }
+            }
           },
-          required: ['addonId', 'items'],
+          required: ['addonId', 'items']
         },
         UpdateMenuItemAddonRequest: {
           type: 'object',
@@ -1238,8 +1238,8 @@ export const getOpenApiSpec = () => {
             isSingleSelect: { type: 'boolean' },
             min: { type: 'number', minimum: 0 },
             max: { type: 'number', minimum: 1 },
-            isActive: { type: 'boolean' },
-          },
+            isActive: { type: 'boolean' }
+          }
         },
         CategoryWiseGroup: {
           type: 'object',
@@ -1250,9 +1250,9 @@ export const getOpenApiSpec = () => {
               properties: {
                 _id: { type: 'string' },
                 name: { type: 'string' },
-                isActive: { type: 'boolean' },
+                isActive: { type: 'boolean' }
               },
-              required: ['_id', 'name', 'isActive'],
+              required: ['_id', 'name', 'isActive']
             },
             items: {
               type: 'array',
@@ -1262,13 +1262,13 @@ export const getOpenApiSpec = () => {
                   _id: { type: 'string' },
                   name: { type: 'string' },
                   dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
-                  isActive: { type: 'boolean' },
+                  isActive: { type: 'boolean' }
                 },
-                required: ['_id', 'name', 'dietary', 'isActive'],
-              },
-            },
+                required: ['_id', 'name', 'dietary', 'isActive']
+              }
+            }
           },
-          required: ['category', 'items'],
+          required: ['category', 'items']
         },
         OrderMenuCategoryGroup: {
           type: 'object',
@@ -1279,12 +1279,308 @@ export const getOpenApiSpec = () => {
             category: { type: 'string' },
             items: {
               type: 'array',
-              items: { $ref: '#/components/schemas/MenuItemWithNested' },
-            },
+              items: { $ref: '#/components/schemas/MenuItemWithNested' }
+            }
           },
-          required: ['categoryId', 'category', 'items'],
+          required: ['categoryId', 'category', 'items']
         },
-      },
+        OrderItemAddon: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            addonId: { type: 'string' },
+            addonItemId: { type: 'string' },
+            addonName: { type: 'string' },
+            addonItemName: { type: 'string', nullable: true },
+            price: { type: 'number' },
+            quantity: { type: 'number' }
+          },
+          required: ['addonId', 'addonItemId', 'quantity']
+        },
+        OrderItem: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            menuItemId: { type: 'string' },
+            itemName: { type: 'string' },
+            basePrice: { type: 'number' },
+            quantity: { type: 'number' },
+            variationId: { type: 'string', nullable: true },
+            variationName: { type: 'string', nullable: true },
+            instruction: { type: 'string', nullable: true },
+            totalPrice: { type: 'number' },
+            itemStatus: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED'
+            },
+            kotSentAt: { type: 'string', format: 'date-time', nullable: true },
+            cancelReason: { type: 'string', nullable: true },
+            cancelledAt: { type: 'string', format: 'date-time', nullable: true },
+            addons: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/OrderItemAddon' }
+            }
+          },
+          required: [
+            '_id',
+            'menuItemId',
+            'itemName',
+            'basePrice',
+            'quantity',
+            'totalPrice',
+            'itemStatus'
+          ]
+        },
+        OrderSummary: {
+          type: 'object',
+          description: 'Lightweight order object returned in list endpoints',
+          properties: {
+            _id: { type: 'string' },
+            orderNumber: { type: 'string' },
+            tokenNo: { type: 'string', nullable: true },
+            orderType: {
+              type: 'number',
+              enum: [1, 2, 3],
+              description: '1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY'
+            },
+            tableId: { type: 'string', nullable: true },
+            status: {
+              type: 'number',
+              enum: [1, 2, 3, 4],
+              description: '1=OPEN, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED'
+            },
+            subtotal: { type: 'number' },
+            taxAmount: { type: 'number' },
+            discountAmount: { type: 'number' },
+            totalAmount: { type: 'number' },
+            paymentStatus: {
+              type: 'number',
+              enum: [1, 2, 3, 4],
+              description: '1=UNPAID, 2=PARTIAL, 3=PAID, 4=REFUNDED'
+            },
+            paymentMethod: {
+              type: 'number',
+              nullable: true,
+              enum: [1, 2, 3, 4, 5],
+              description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE'
+            },
+            waiterId: { type: 'string', nullable: true },
+            createdAt: { type: 'string', format: 'date-time' }
+          },
+          required: ['_id', 'orderNumber', 'orderType', 'status', 'totalAmount']
+        },
+        OrderDetail: {
+          allOf: [
+            { $ref: '#/components/schemas/OrderSummary' },
+            {
+              type: 'object',
+              properties: {
+                items: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/OrderItem' }
+                },
+                cancellationReason: { type: 'string', nullable: true },
+                closedAt: { type: 'string', format: 'date-time', nullable: true },
+                confirmedAt: { type: 'string', format: 'date-time', nullable: true }
+              }
+            }
+          ]
+        },
+        AddonItemDTO: {
+          type: 'object',
+          properties: {
+            addonId: { type: 'string' },
+            addonItemId: { type: 'string' },
+            quantity: { type: 'number', minimum: 1 }
+          },
+          required: ['addonId', 'addonItemId', 'quantity']
+        },
+        AddItemToOrderItemDTO: {
+          type: 'object',
+          properties: {
+            menuItemId: { type: 'string' },
+            quantity: { type: 'number', minimum: 1 },
+            variationId: { type: 'string' },
+            instruction: { type: 'string', maxLength: 300 },
+            addons: { type: 'array', items: { $ref: '#/components/schemas/AddonItemDTO' } }
+          },
+          required: ['menuItemId', 'quantity']
+        },
+        CreateOrderRequest: {
+          type: 'object',
+          properties: {
+            orderType: {
+              type: 'number',
+              enum: [1, 2, 3],
+              description:
+                '1=DINE_IN (requires tableId), 2=TAKEAWAY, 3=DELIVERY (requires shippingAddress)'
+            },
+            tableId: { type: 'string', description: 'Required when orderType=1 (DINE_IN)' },
+            items: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/AddItemToOrderItemDTO' },
+              minItems: 1
+            },
+            notes: { type: 'string', maxLength: 500 },
+            shippingAddress: { type: 'string', description: 'Required when orderType=3 (DELIVERY)' }
+          },
+          required: ['orderType', 'items']
+        },
+        AddItemsToOrderRequest: {
+          type: 'object',
+          properties: {
+            orderId: { type: 'string' },
+            items: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/AddItemToOrderItemDTO' },
+              minItems: 1
+            }
+          },
+          required: ['orderId', 'items']
+        },
+        RemoveOrderItemRequest: {
+          type: 'object',
+          properties: {
+            orderId: { type: 'string' },
+            orderItemId: { type: 'string' },
+            cancelReason: { type: 'string', maxLength: 300 }
+          },
+          required: ['orderId', 'orderItemId']
+        },
+        UpdateOrderItemRequest: {
+          type: 'object',
+          description:
+            'Update quantity or instruction of a PENDING order item. At least one of quantity or instruction must be provided.',
+          properties: {
+            orderId: { type: 'string' },
+            orderItemId: { type: 'string' },
+            quantity: { type: 'number', minimum: 1 },
+            instruction: { type: 'string', maxLength: 300 }
+          },
+          required: ['orderId', 'orderItemId']
+        },
+        CloseOrderRequest: {
+          type: 'object',
+          properties: {
+            orderId: { type: 'string' },
+            paymentMethod: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE'
+            }
+          },
+          required: ['orderId']
+        },
+        CancelOrderRequest: {
+          type: 'object',
+          properties: {
+            orderId: { type: 'string' },
+            cancellationReason: { type: 'string', maxLength: 500 }
+          },
+          required: ['orderId']
+        },
+        TokenDisplayItem: {
+          type: 'object',
+          properties: {
+            tokenNo: { type: 'string', nullable: true },
+            orderId: { type: 'string' },
+            orderNumber: { type: 'string' }
+          },
+          required: ['orderId', 'orderNumber']
+        },
+        KOTItem: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            orderItemId: { type: 'string' },
+            quantity: { type: 'number' },
+            itemStatus: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED'
+            },
+            preparedAt: { type: 'string', format: 'date-time', nullable: true },
+            servedAt: { type: 'string', format: 'date-time', nullable: true }
+          }
+        },
+        KOTDetail: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            orderId: { type: 'string' },
+            kotNumber: { type: 'string' },
+            kotType: {
+              type: 'number',
+              enum: [1, 2, 3],
+              description: '1=REGULAR, 2=VOID, 3=REPRINT'
+            },
+            waiterId: { type: 'string', nullable: true },
+            tokenNo: { type: 'string', nullable: true },
+            tableName: { type: 'string', nullable: true },
+            status: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED'
+            },
+            isPrinted: { type: 'boolean' },
+            items: { type: 'array', items: { $ref: '#/components/schemas/KOTItem' } },
+            createdAt: { type: 'string', format: 'date-time' }
+          },
+          required: ['_id', 'orderId', 'kotNumber', 'kotType', 'status']
+        },
+        UpdateKOTStatusRequest: {
+          type: 'object',
+          properties: {
+            kotId: { type: 'string' },
+            status: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description:
+                '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED. State machine enforced.'
+            }
+          },
+          required: ['kotId', 'status']
+        },
+        UpdateKOTItemStatusRequest: {
+          type: 'object',
+          properties: {
+            kotItemId: { type: 'string' },
+            status: {
+              type: 'number',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED'
+            }
+          },
+          required: ['kotItemId', 'status']
+        },
+        SalesReportItem: {
+          type: 'object',
+          properties: {
+            date: { type: 'string', format: 'date' },
+            orderType: {
+              type: 'number',
+              enum: [1, 2, 3],
+              description: '1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY'
+            },
+            totalOrders: { type: 'number' },
+            totalAmount: { type: 'number' },
+            tax: { type: 'number' },
+            discount: { type: 'number' }
+          }
+        },
+        ItemSalesReportItem: {
+          type: 'object',
+          properties: {
+            menuItemId: { type: 'string' },
+            itemName: { type: 'string' },
+            variationId: { type: 'string', nullable: true },
+            variationName: { type: 'string', nullable: true },
+            quantitySold: { type: 'number' },
+            totalRevenue: { type: 'number' }
+          }
+        }
+      }
     },
     tags: [
       { name: 'Users' },
@@ -1294,28 +1590,36 @@ export const getOpenApiSpec = () => {
       {
         name: 'Categories',
         description:
-          'Requires brand-id for detail/update/delete; brand-id and outlet-id for create/list.',
+          'Requires brand-id for detail/update/delete; brand-id and outlet-id for create/list.'
       },
       {
         name: 'Menu-Items',
-        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.',
+        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.'
       },
       {
         name: 'Variations',
-        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.',
+        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.'
       },
       {
         name: 'Menu-Item-Variants',
-        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.',
+        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.'
       },
       {
         name: 'Menu-Item-Addons',
-        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.',
+        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.'
       },
       {
         name: 'Orders',
-        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.',
+        description: 'Requires brand-id and outlet-id on all endpoints. Set via Authorize.'
       },
+      {
+        name: 'KOTs',
+        description: 'Kitchen Order Tickets. Requires brand-id and outlet-id on all endpoints.'
+      },
+      {
+        name: 'Reports',
+        description: 'Requires brand-id and outlet-id on all endpoints.'
+      }
     ],
     paths: {
       '/api/v1/taxes': {
@@ -1324,14 +1628,14 @@ export const getOpenApiSpec = () => {
           summary: 'Get all active taxes',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1339,23 +1643,23 @@ export const getOpenApiSpec = () => {
               in: 'query',
               schema: {
                 type: 'number',
-                default: 1,
-              },
+                default: 1
+              }
             },
             {
               name: 'limit',
               in: 'query',
               schema: {
                 type: 'number',
-                default: 20,
-              },
+                default: 20
+              }
             },
             {
               name: 'isActive',
               in: 'query',
               schema: {
-                type: 'boolean',
-              },
+                type: 'boolean'
+              }
             },
             {
               name: 'column',
@@ -1363,8 +1667,8 @@ export const getOpenApiSpec = () => {
               schema: {
                 type: 'string',
                 enum: ['name', 'rate', 'type', 'isActive', 'createdAt', 'updatedAt'],
-                default: 'name',
-              },
+                default: 'name'
+              }
             },
             {
               name: 'order',
@@ -1372,9 +1676,9 @@ export const getOpenApiSpec = () => {
               schema: {
                 type: 'string',
                 enum: ['ASC', 'DESC'],
-                default: 'ASC',
-              },
-            },
+                default: 'ASC'
+              }
+            }
           ],
           responses: {
             '200': {
@@ -1382,36 +1686,36 @@ export const getOpenApiSpec = () => {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/ApiResponse',
-                  },
-                },
-              },
-            },
-          },
+                    $ref: '#/components/schemas/ApiResponse'
+                  }
+                }
+              }
+            }
+          }
         },
         post: {
           tags: ['Tax'],
           summary: 'Create a new tax',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/CreateTaxRequest',
-                },
-              },
-            },
+                  $ref: '#/components/schemas/CreateTaxRequest'
+                }
+              }
+            }
           },
           responses: {
             '201': {
@@ -1419,13 +1723,13 @@ export const getOpenApiSpec = () => {
               content: {
                 'application/json': {
                   schema: {
-                    $ref: '#/components/schemas/ApiResponse',
-                  },
-                },
-              },
-            },
-          },
-        },
+                    $ref: '#/components/schemas/ApiResponse'
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       '/api/v1/taxes/{id}': {
         get: {
@@ -1433,14 +1737,14 @@ export const getOpenApiSpec = () => {
           summary: 'Get a specific tax by ID',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1448,32 +1752,32 @@ export const getOpenApiSpec = () => {
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
+              description: 'Not Found'
+            }
+          }
         },
         patch: {
           tags: ['Tax'],
           summary: 'Update a specific tax',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1481,42 +1785,42 @@ export const getOpenApiSpec = () => {
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/UpdateTaxRequest',
-                },
-              },
-            },
+                  $ref: '#/components/schemas/UpdateTaxRequest'
+                }
+              }
+            }
           },
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
+              description: 'Not Found'
+            }
+          }
         },
         delete: {
           tags: ['Tax'],
           summary: 'Delete a specific tax',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1524,19 +1828,19 @@ export const getOpenApiSpec = () => {
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
-        },
+              description: 'Not Found'
+            }
+          }
+        }
       },
       '/api/v1/taxes/groups': {
         get: {
@@ -1544,14 +1848,14 @@ export const getOpenApiSpec = () => {
           summary: 'Get all active tax groups',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1559,61 +1863,61 @@ export const getOpenApiSpec = () => {
               in: 'query',
               schema: {
                 type: 'number',
-                default: 1,
-              },
+                default: 1
+              }
             },
             {
               name: 'limit',
               in: 'query',
               schema: {
                 type: 'number',
-                default: 20,
-              },
+                default: 20
+              }
             },
             {
               name: 'isActive',
               in: 'query',
               schema: {
-                type: 'boolean',
-              },
-            },
+                type: 'boolean'
+              }
+            }
           ],
           responses: {
             '200': {
-              description: 'Success',
-            },
-          },
+              description: 'Success'
+            }
+          }
         },
         post: {
           tags: ['TaxGroup'],
           summary: 'Create a new tax group',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/CreateTaxGroupRequest',
-                },
-              },
-            },
+                  $ref: '#/components/schemas/CreateTaxGroupRequest'
+                }
+              }
+            }
           },
           responses: {
             '201': {
-              description: 'Created',
-            },
-          },
-        },
+              description: 'Created'
+            }
+          }
+        }
       },
       '/api/v1/taxes/groups/{id}': {
         get: {
@@ -1621,14 +1925,14 @@ export const getOpenApiSpec = () => {
           summary: 'Get a specific tax group by ID',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1636,32 +1940,32 @@ export const getOpenApiSpec = () => {
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
+              description: 'Not Found'
+            }
+          }
         },
         patch: {
           tags: ['TaxGroup'],
           summary: 'Update a specific tax group',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1669,42 +1973,42 @@ export const getOpenApiSpec = () => {
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
-                  $ref: '#/components/schemas/UpdateTaxGroupRequest',
-                },
-              },
-            },
+                  $ref: '#/components/schemas/UpdateTaxGroupRequest'
+                }
+              }
+            }
           },
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
+              description: 'Not Found'
+            }
+          }
         },
         delete: {
           tags: ['TaxGroup'],
           summary: 'Delete a specific tax group',
           security: [
             {
-              bearerAuth: [],
+              bearerAuth: []
             },
             {
-              brandIdHeader: [],
+              brandIdHeader: []
             },
             {
-              outletIdHeader: [],
-            },
+              outletIdHeader: []
+            }
           ],
           parameters: [
             {
@@ -1712,19 +2016,19 @@ export const getOpenApiSpec = () => {
               in: 'path',
               required: true,
               schema: {
-                type: 'string',
-              },
-            },
+                type: 'string'
+              }
+            }
           ],
           responses: {
             '200': {
-              description: 'Success',
+              description: 'Success'
             },
             '404': {
-              description: 'Not Found',
-            },
-          },
-        },
+              description: 'Not Found'
+            }
+          }
+        }
       },
       '/api/v1/order/menu-items': {
         get: {
@@ -1746,17 +2050,17 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'array',
-                            items: { $ref: '#/components/schemas/OrderMenuCategoryGroup' },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        },
+                            items: { $ref: '#/components/schemas/OrderMenuCategoryGroup' }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       '/api/v1/meta/types': {
         get: {
@@ -1773,10 +2077,10 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/MetaTypesResponse' },
-                        },
-                      },
-                    ],
+                          data: { $ref: '#/components/schemas/MetaTypesResponse' }
+                        }
+                      }
+                    ]
                   },
                   examples: {
                     success: {
@@ -1785,16 +2089,16 @@ export const getOpenApiSpec = () => {
                         code: 200,
                         data: {
                           outletTypes: ['bakery', 'restaurant', 'cafe'],
-                          cuisineTypes: ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai'],
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
+                          cuisineTypes: ['Indian', 'Italian', 'Chinese', 'Mexican', 'Thai']
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       '/api/v1/users/login': {
         post: {
@@ -1803,8 +2107,8 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } }
+            }
           },
           responses: {
             200: {
@@ -1817,22 +2121,22 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/LoginResponse' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/LoginResponse' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             401: {
               description: 'Invalid credentials',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/users/admins/login': {
         post: {
@@ -1841,8 +2145,8 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/LoginRequest' } }
+            }
           },
           responses: {
             200: {
@@ -1855,22 +2159,22 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/LoginResponse' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/LoginResponse' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             401: {
               description: 'Invalid credentials',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/users/admins/bootstrap': {
         post: {
@@ -1879,8 +2183,8 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateAdminRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/CreateAdminRequest' } }
+            }
           },
           responses: {
             201: {
@@ -1893,10 +2197,10 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/Category' },
-                        },
-                      },
-                    ],
+                          data: { $ref: '#/components/schemas/Category' }
+                        }
+                      }
+                    ]
                   },
                   examples: {
                     success: {
@@ -1913,22 +2217,22 @@ export const getOpenApiSpec = () => {
                           isActive: true,
                           isDelete: false,
                           createdAt: '2026-02-03T10:00:00.000Z',
-                          updatedAt: '2026-02-03T10:00:00.000Z',
-                        },
-                      },
-                    },
-                  },
-                },
-              },
+                          updatedAt: '2026-02-03T10:00:00.000Z'
+                        }
+                      }
+                    }
+                  }
+                }
+              }
             },
             403: {
               description: 'Admin already exists',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/users/admins': {
         post: {
@@ -1938,24 +2242,24 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateAdminRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/CreateAdminRequest' } }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/users/owners': {
         post: {
@@ -1965,30 +2269,30 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateOwnerRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/CreateOwnerRequest' } }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/users': {
         post: {
@@ -2000,8 +2304,8 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateUserRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/CreateUserRequest' } }
+            }
           },
           responses: {
             201: {
@@ -2014,27 +2318,27 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/User' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/User' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Users'],
@@ -2045,38 +2349,38 @@ export const getOpenApiSpec = () => {
               name: 'page',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, default: 1 },
+              schema: { type: 'number', minimum: 1, default: 1 }
             },
             {
               name: 'limit',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
             },
             {
               name: 'searchText',
               in: 'query',
               required: false,
-              schema: { type: 'string' },
+              schema: { type: 'string' }
             },
             {
               name: 'role',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['PARTNER', 'STAFF'] },
+              schema: { type: 'string', enum: ['PARTNER', 'STAFF'] }
             },
             {
               name: 'column',
               in: 'query',
               required: false,
-              schema: { type: 'string', default: 'createdAt' },
+              schema: { type: 'string', default: 'createdAt' }
             },
             {
               name: 'order',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'DESC' },
-            },
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'DESC' }
+            }
           ],
           responses: {
             200: {
@@ -2091,22 +2395,22 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'array',
-                            items: { $ref: '#/components/schemas/User' },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                            items: { $ref: '#/components/schemas/User' }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Users'],
@@ -2116,8 +2420,8 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/UpdateUserRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateUserRequest' } }
+            }
           },
           responses: {
             200: {
@@ -2130,27 +2434,27 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/User' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/User' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         delete: {
           tags: ['Users'],
@@ -2161,23 +2465,23 @@ export const getOpenApiSpec = () => {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/users/detail': {
         get: {
@@ -2196,28 +2500,28 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/User' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/User' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/brands': {
         post: {
@@ -2227,29 +2531,29 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateBrandRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/CreateBrandRequest' } }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Brands'],
@@ -2268,11 +2572,11 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'array',
-                            items: { $ref: '#/components/schemas/Category' },
-                          },
-                        },
-                      },
-                    ],
+                            items: { $ref: '#/components/schemas/Category' }
+                          }
+                        }
+                      }
+                    ]
                   },
                   examples: {
                     success: {
@@ -2288,28 +2592,28 @@ export const getOpenApiSpec = () => {
                             onlineName: 'Main Course',
                             logo: 'https://cdn.example.com/logo.png',
                             isActive: true,
-                            isDelete: false,
-                          },
-                        ],
-                      },
-                    },
-                  },
-                },
-              },
+                            isDelete: false
+                          }
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Brands'],
@@ -2318,8 +2622,8 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/UpdateBrandRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateBrandRequest' } }
+            }
           },
           responses: {
             200: {
@@ -2332,28 +2636,28 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/Category' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/Category' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/brands/outlets': {
         post: {
@@ -2363,35 +2667,35 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateOutletRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/CreateOutletRequest' } }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             400: {
               description: 'Plan outlet limit reached or brand not found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Outlets'],
@@ -2410,22 +2714,22 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'object',
-                            properties: { deleted: { type: 'boolean' } },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                            properties: { deleted: { type: 'boolean' } }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Outlets'],
@@ -2434,36 +2738,36 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/UpdateOutletRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateOutletRequest' } }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/brands/outlets/detail': {
         get: {
@@ -2481,22 +2785,22 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/OutletDetail' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/OutletDetail' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/categories': {
         post: {
@@ -2508,36 +2812,36 @@ export const getOpenApiSpec = () => {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/CreateCategoryRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/CreateCategoryRequest' }
+              }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             400: {
               description: 'Brand or outlet not found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Categories'],
@@ -2549,19 +2853,19 @@ export const getOpenApiSpec = () => {
               name: 'page',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, default: 1 },
+              schema: { type: 'number', minimum: 1, default: 1 }
             },
             {
               name: 'limit',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
             },
             {
               name: 'searchText',
               in: 'query',
               required: false,
-              schema: { type: 'string', minLength: 1, maxLength: 100 },
+              schema: { type: 'string', minLength: 1, maxLength: 100 }
             },
             {
               name: 'column',
@@ -2570,30 +2874,30 @@ export const getOpenApiSpec = () => {
               schema: {
                 type: 'string',
                 enum: ['name', 'onlineName', 'createdAt', 'updatedAt', 'isActive'],
-                default: 'name',
-              },
+                default: 'name'
+              }
             },
             {
               name: 'order',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' },
-            },
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' }
+            }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Categories'],
@@ -2601,42 +2905,42 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory header: brand-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [] }],
           parameters: [
-            { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/UpdateCategoryRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/UpdateCategoryRequest' }
+              }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         delete: {
           tags: ['Categories'],
@@ -2644,29 +2948,29 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory header: brand-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [] }],
           parameters: [
-            { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/categories/detail': {
         get: {
@@ -2675,29 +2979,29 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory header: brand-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [] }],
           parameters: [
-            { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'categoryId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/categories/active': {
         get: {
@@ -2718,17 +3022,17 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'array',
-                            items: { $ref: '#/components/schemas/CategoryName' },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        },
+                            items: { $ref: '#/components/schemas/CategoryName' }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/menu-item-addons/addon-mapping': {
         get: {
@@ -2737,7 +3041,7 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'addonId', in: 'query', required: false, schema: { type: 'string' } },
+            { name: 'addonId', in: 'query', required: false, schema: { type: 'string' } }
           ],
           responses: {
             200: {
@@ -2764,40 +3068,40 @@ export const getOpenApiSpec = () => {
                                         type: 'object',
                                         properties: {
                                           Name: { type: 'string' },
-                                          _id: { type: 'string' },
+                                          _id: { type: 'string' }
                                         },
-                                        required: ['Name', '_id'],
+                                        required: ['Name', '_id']
                                       },
                                       {
                                         type: 'object',
                                         properties: {
                                           Name: { type: 'string' },
                                           menuItemId: { type: 'string' },
-                                          menuItemVariantId: { type: 'string' },
+                                          menuItemVariantId: { type: 'string' }
                                         },
-                                        required: ['Name', 'menuItemId', 'menuItemVariantId'],
-                                      },
-                                    ],
-                                  },
-                                },
-                              },
-                            },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                                        required: ['Name', 'menuItemId', 'menuItemVariantId']
+                                      }
+                                    ]
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/measurements': {
         get: {
@@ -2809,7 +3113,7 @@ export const getOpenApiSpec = () => {
               name: 'searchText',
               in: 'query',
               required: false,
-              schema: { type: 'string' },
+              schema: { type: 'string' }
             },
             {
               name: 'measurementType',
@@ -2817,21 +3121,21 @@ export const getOpenApiSpec = () => {
               required: false,
               schema: {
                 type: 'string',
-                enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM'],
-              },
+                enum: ['WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM']
+              }
             },
             {
               name: 'column',
               in: 'query',
               required: false,
-              schema: { type: 'string', default: 'createdAt' },
+              schema: { type: 'string', default: 'createdAt' }
             },
             {
               name: 'order',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'DESC' },
-            },
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'DESC' }
+            }
           ],
           responses: {
             200: {
@@ -2846,23 +3150,23 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'array',
-                            items: { $ref: '#/components/schemas/Measurement' },
+                            items: { $ref: '#/components/schemas/Measurement' }
                           },
-                          total: { type: 'number' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          total: { type: 'number' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         post: {
           tags: ['Measurements'],
@@ -2872,9 +3176,9 @@ export const getOpenApiSpec = () => {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/CreateMeasurementRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/CreateMeasurementRequest' }
+              }
+            }
           },
           responses: {
             201: {
@@ -2887,21 +3191,21 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/Measurement' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/Measurement' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Measurements'],
@@ -2911,9 +3215,9 @@ export const getOpenApiSpec = () => {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/UpdateMeasurementRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/UpdateMeasurementRequest' }
+              }
+            }
           },
           responses: {
             200: {
@@ -2926,27 +3230,27 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/Measurement' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/Measurement' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         delete: {
           tags: ['Measurements'],
@@ -2957,30 +3261,30 @@ export const getOpenApiSpec = () => {
               name: 'measurementId',
               in: 'query',
               required: true,
-              schema: { type: 'string' },
-            },
+              schema: { type: 'string' }
+            }
           ],
           responses: {
             200: {
               description: 'Deleted',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/measurements/detail': {
         get: {
@@ -2992,8 +3296,8 @@ export const getOpenApiSpec = () => {
               name: 'measurementId',
               in: 'query',
               required: true,
-              schema: { type: 'string' },
-            },
+              schema: { type: 'string' }
+            }
           ],
           responses: {
             200: {
@@ -3006,22 +3310,22 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/Measurement' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/Measurement' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/menu-items': {
         post: {
@@ -3033,36 +3337,36 @@ export const getOpenApiSpec = () => {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/CreateMenuItemRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/CreateMenuItemRequest' }
+              }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             400: {
               description: 'Brand or outlet not found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Menu-Items'],
@@ -3074,13 +3378,13 @@ export const getOpenApiSpec = () => {
               name: 'page',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, default: 1 },
+              schema: { type: 'number', minimum: 1, default: 1 }
             },
             {
               name: 'limit',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
             },
             { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
             {
@@ -3096,17 +3400,17 @@ export const getOpenApiSpec = () => {
                   'basePrice',
                   'createdAt',
                   'updatedAt',
-                  'isActive',
+                  'isActive'
                 ],
-                default: 'name',
-              },
+                default: 'name'
+              }
             },
             {
               name: 'order',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' },
-            },
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' }
+            }
           ],
           responses: {
             200: {
@@ -3121,22 +3425,22 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'array',
-                            items: { $ref: '#/components/schemas/MenuItemWithNested' },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                            items: { $ref: '#/components/schemas/MenuItemWithNested' }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Menu-Items'],
@@ -3144,42 +3448,42 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'menuItemId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'menuItemId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/UpdateMenuItemRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/UpdateMenuItemRequest' }
+              }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         delete: {
           tags: ['Menu-Items'],
@@ -3187,35 +3491,35 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'menuItemId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'menuItemId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/menu-items/availability': {
         patch: {
@@ -3227,37 +3531,37 @@ export const getOpenApiSpec = () => {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/BulkUpdateMenuItemAvailabilityRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/BulkUpdateMenuItemAvailabilityRequest' }
+              }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             400: {
               description: 'Bad Request',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             401: {
               description: 'Unauthorized',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/menu-items/category-wise': {
         get: {
@@ -3279,23 +3583,23 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'array',
-                            items: { $ref: '#/components/schemas/CategoryWiseGroup' },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                            items: { $ref: '#/components/schemas/CategoryWiseGroup' }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             401: {
               description: 'Unauthorized',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/menu-items/detail': {
         get: {
@@ -3304,7 +3608,7 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'menuItemId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'menuItemId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
@@ -3317,34 +3621,34 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/MenuItemWithNested' },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
+                          data: { $ref: '#/components/schemas/MenuItemWithNested' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             403: {
               description: 'Forbidden',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/variations': {
         post: {
@@ -3372,36 +3676,36 @@ export const getOpenApiSpec = () => {
                         'FLAVOR',
                         'TOPPING',
                         'STYLE',
-                        'CUSTOM',
-                      ],
+                        'CUSTOM'
+                      ]
                     },
-                    isActive: { type: 'boolean', default: true },
+                    isActive: { type: 'boolean', default: true }
                   },
-                  required: ['name', 'department'],
-                },
-              },
-            },
+                  required: ['name', 'department']
+                }
+              }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             409: {
               description: 'Duplicate variation',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Variations'],
@@ -3413,13 +3717,13 @@ export const getOpenApiSpec = () => {
               name: 'page',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, default: 1 },
+              schema: { type: 'number', minimum: 1, default: 1 }
             },
             {
               name: 'limit',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
             },
             { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
             {
@@ -3438,9 +3742,9 @@ export const getOpenApiSpec = () => {
                   'FLAVOR',
                   'TOPPING',
                   'STYLE',
-                  'CUSTOM',
-                ],
-              },
+                  'CUSTOM'
+                ]
+              }
             },
             {
               name: 'column',
@@ -3449,24 +3753,24 @@ export const getOpenApiSpec = () => {
               schema: {
                 type: 'string',
                 enum: ['name', 'department', 'createdAt', 'updatedAt', 'isActive'],
-                default: 'name',
-              },
+                default: 'name'
+              }
             },
             {
               name: 'order',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' },
-            },
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' }
+            }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Variations'],
@@ -3474,7 +3778,7 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'variationId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'variationId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           requestBody: {
             required: true,
@@ -3496,41 +3800,41 @@ export const getOpenApiSpec = () => {
                         'FLAVOR',
                         'TOPPING',
                         'STYLE',
-                        'CUSTOM',
-                      ],
+                        'CUSTOM'
+                      ]
                     },
-                    isActive: { type: 'boolean' },
-                  },
-                },
-              },
-            },
+                    isActive: { type: 'boolean' }
+                  }
+                }
+              }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             409: {
               description: 'Duplicate variation',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         delete: {
           tags: ['Variations'],
@@ -3538,23 +3842,23 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'variationId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'variationId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/variations/detail': {
         get: {
@@ -3563,23 +3867,23 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'variationId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'variationId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/variations/active': {
         get: {
@@ -3600,17 +3904,17 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'array',
-                            items: { $ref: '#/components/schemas/VariationName' },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        },
+                            items: { $ref: '#/components/schemas/VariationName' }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/menu-item-variants': {
         post: {
@@ -3622,36 +3926,36 @@ export const getOpenApiSpec = () => {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/CreateMenuItemVariantRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/CreateMenuItemVariantRequest' }
+              }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             400: {
               description: 'Brand, outlet, item or variation not found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             409: {
               description: 'Duplicate mapping',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Menu-Item-Variants'],
@@ -3663,13 +3967,13 @@ export const getOpenApiSpec = () => {
               name: 'page',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, default: 1 },
+              schema: { type: 'number', minimum: 1, default: 1 }
             },
             {
               name: 'limit',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
             },
             { name: 'menuItemId', in: 'query', required: false, schema: { type: 'string' } },
             { name: 'menuItemVariantId', in: 'query', required: false, schema: { type: 'string' } },
@@ -3680,24 +3984,24 @@ export const getOpenApiSpec = () => {
               schema: {
                 type: 'string',
                 enum: ['basePrice', 'costPrice', 'createdAt', 'updatedAt', 'isActive'],
-                default: 'createdAt',
-              },
+                default: 'createdAt'
+              }
             },
             {
               name: 'order',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' },
-            },
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' }
+            }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Menu-Item-Variants'],
@@ -3705,36 +4009,36 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'menuItemVariantId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'menuItemVariantId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/UpdateMenuItemVariantRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/UpdateMenuItemVariantRequest' }
+              }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         delete: {
           tags: ['Menu-Item-Variants'],
@@ -3742,23 +4046,23 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'menuItemVariantId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'menuItemVariantId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/menu-item-variants/detail': {
         get: {
@@ -3767,23 +4071,23 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'menuItemVariantId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'menuItemVariantId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/addons': {
         post: {
@@ -3794,29 +4098,29 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateAddonRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/CreateAddonRequest' } }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             409: {
               description: 'Duplicate addon',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Addons'],
@@ -3828,13 +4132,13 @@ export const getOpenApiSpec = () => {
               name: 'page',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, default: 1 },
+              schema: { type: 'number', minimum: 1, default: 1 }
             },
             {
               name: 'limit',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
             },
             { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
             {
@@ -3844,24 +4148,24 @@ export const getOpenApiSpec = () => {
               schema: {
                 type: 'string',
                 enum: ['name', 'createdAt', 'updatedAt', 'isActive'],
-                default: 'name',
-              },
+                default: 'name'
+              }
             },
             {
               name: 'order',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' },
-            },
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' }
+            }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Addons'],
@@ -3869,40 +4173,40 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'addonId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'addonId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/UpdateAddonRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateAddonRequest' } }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             409: {
               description: 'Duplicate addon',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         delete: {
           tags: ['Addons'],
@@ -3910,23 +4214,23 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'addonId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'addonId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/addons/active': {
         get: {
@@ -3947,17 +4251,17 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'array',
-                            items: { $ref: '#/components/schemas/AddonName' },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        },
+                            items: { $ref: '#/components/schemas/AddonName' }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/addons/detail': {
         get: {
@@ -3966,23 +4270,23 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'addonId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'addonId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/menu-item-addons/bulk': {
         post: {
@@ -3994,25 +4298,25 @@ export const getOpenApiSpec = () => {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/CreateBulkMenuItemAddonRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/CreateBulkMenuItemAddonRequest' }
+              }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/menu-item-addons': {
         post: {
@@ -4024,36 +4328,36 @@ export const getOpenApiSpec = () => {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/CreateMenuItemAddonRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/CreateMenuItemAddonRequest' }
+              }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             400: {
               description: 'Brand, outlet, item, addon or variant not found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             409: {
               description: 'Duplicate mapping',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Menu-Item-Addons'],
@@ -4065,13 +4369,13 @@ export const getOpenApiSpec = () => {
               name: 'page',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, default: 1 },
+              schema: { type: 'number', minimum: 1, default: 1 }
             },
             {
               name: 'limit',
               in: 'query',
               required: false,
-              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 },
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
             },
             { name: 'menuItemId', in: 'query', required: false, schema: { type: 'string' } },
             { name: 'addonId', in: 'query', required: false, schema: { type: 'string' } },
@@ -4083,24 +4387,24 @@ export const getOpenApiSpec = () => {
               schema: {
                 type: 'string',
                 enum: ['createdAt', 'updatedAt', 'isActive'],
-                default: 'createdAt',
-              },
+                default: 'createdAt'
+              }
             },
             {
               name: 'order',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' },
-            },
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'ASC' }
+            }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Menu-Item-Addons'],
@@ -4108,36 +4412,36 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'menuItemAddonId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'menuItemAddonId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/UpdateMenuItemAddonRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/UpdateMenuItemAddonRequest' }
+              }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             422: {
               description: 'Validation failed',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         delete: {
           tags: ['Menu-Item-Addons'],
@@ -4145,23 +4449,23 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'menuItemAddonId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'menuItemAddonId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/zones': {
         post: {
@@ -4173,23 +4477,23 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateZoneRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/CreateZoneRequest' } }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             409: {
               description: 'Conflict',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Zones'],
@@ -4202,7 +4506,7 @@ export const getOpenApiSpec = () => {
               name: 'limit',
               in: 'query',
               required: false,
-              schema: { type: 'number', default: 20 },
+              schema: { type: 'number', default: 20 }
             },
             { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
             { name: 'isActive', in: 'query', required: false, schema: { type: 'boolean' } },
@@ -4211,17 +4515,17 @@ export const getOpenApiSpec = () => {
               name: 'order',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['ASC', 'DESC'] },
-            },
+              schema: { type: 'string', enum: ['ASC', 'DESC'] }
+            }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Zones'],
@@ -4232,23 +4536,23 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/UpdateZoneRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateZoneRequest' } }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         delete: {
           tags: ['Zones'],
@@ -4260,11 +4564,11 @@ export const getOpenApiSpec = () => {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/zones/detail': {
         get: {
@@ -4277,17 +4581,17 @@ export const getOpenApiSpec = () => {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/zones/active': {
         get: {
@@ -4313,20 +4617,20 @@ export const getOpenApiSpec = () => {
                               type: 'object',
                               properties: {
                                 _id: { type: 'string' },
-                                name: { type: 'string' },
+                                name: { type: 'string' }
                               },
-                              required: ['_id', 'name'],
-                            },
-                          },
-                        },
-                      },
-                    ],
-                  },
-                },
-              },
-            },
-          },
-        },
+                              required: ['_id', 'name']
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
       },
       '/api/v1/tables/active': {
         get: {
@@ -4338,11 +4642,11 @@ export const getOpenApiSpec = () => {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/tables': {
         post: {
@@ -4353,17 +4657,17 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateTableRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/CreateTableRequest' } }
+            }
           },
           responses: {
             201: {
               description: 'Created',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         get: {
           tags: ['Tables'],
@@ -4376,7 +4680,7 @@ export const getOpenApiSpec = () => {
               name: 'limit',
               in: 'query',
               required: false,
-              schema: { type: 'number', default: 20 },
+              schema: { type: 'number', default: 20 }
             },
             { name: 'searchText', in: 'query', required: false, schema: { type: 'string' } },
             { name: 'isActive', in: 'query', required: false, schema: { type: 'boolean' } },
@@ -4385,24 +4689,24 @@ export const getOpenApiSpec = () => {
               name: 'status',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+              schema: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] }
             },
             { name: 'column', in: 'query', required: false, schema: { type: 'string' } },
             {
               name: 'order',
               in: 'query',
               required: false,
-              schema: { type: 'string', enum: ['ASC', 'DESC'] },
-            },
+              schema: { type: 'string', enum: ['ASC', 'DESC'] }
+            }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         patch: {
           tags: ['Tables'],
@@ -4410,22 +4714,22 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id. Requires ADMIN or OWNER role.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/UpdateTableRequest' } },
-            },
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateTableRequest' } }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
         },
         delete: {
           tags: ['Tables'],
@@ -4433,17 +4737,17 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id. Requires ADMIN or OWNER role.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/tables/detail': {
         get: {
@@ -4452,23 +4756,23 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/tables/status': {
         patch: {
@@ -4478,25 +4782,25 @@ export const getOpenApiSpec = () => {
             'Mandatory headers: brand-id, outlet-id. Update table status to AVAILABLE, OCCUPIED, or RESERVED.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           requestBody: {
             required: true,
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/UpdateTableStatusRequest' },
-              },
-            },
+                schema: { $ref: '#/components/schemas/UpdateTableStatusRequest' }
+              }
+            }
           },
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
       '/api/v1/menu/menu-item-addons/detail': {
         get: {
@@ -4505,26 +4809,645 @@ export const getOpenApiSpec = () => {
           description: 'Mandatory headers: brand-id, outlet-id (set via Authorize).',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'menuItemAddonId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'menuItemAddonId', in: 'query', required: true, schema: { type: 'string' } }
           ],
           responses: {
             200: {
               description: 'OK',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
             },
             404: {
               description: 'Not Found',
               content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
-              },
-            },
-          },
-        },
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
       },
-    },
-  };
+      '/api/v1/tables/live-orders': {
+        get: {
+          tags: ['Tables'],
+          summary: 'Get live orders for a table',
+          description: 'Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'tableId', in: 'query', required: true, schema: { type: 'string' } }
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/order': {
+        post: {
+          tags: ['Orders'],
+          summary: 'Create a new order',
+          description:
+            'Creates an order with items, generates KOT automatically. Mandatory headers: brand-id, outlet-id. The waiterId is taken from the authenticated user token.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CreateOrderRequest' } }
+            }
+          },
+          responses: {
+            201: {
+              description: 'Order created successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Validation error (missing tableId for DINE_IN, no items, etc.)',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            422: {
+              description: 'Joi validation failed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        },
+        get: {
+          tags: ['Orders'],
+          summary: 'List orders',
+          description: 'Paginated order list with filters. Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'page', in: 'query', schema: { type: 'number', minimum: 1, default: 1 } },
+            {
+              name: 'limit',
+              in: 'query',
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
+            },
+            {
+              name: 'status',
+              in: 'query',
+              schema: {
+                type: 'number',
+                enum: [1, 2, 3, 4],
+                description: '1=OPEN, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED'
+              }
+            },
+            {
+              name: 'orderType',
+              in: 'query',
+              schema: {
+                type: 'number',
+                enum: [1, 2, 3],
+                description: '1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY'
+              }
+            },
+            { name: 'tableId', in: 'query', schema: { type: 'string' } },
+            { name: 'waiterId', in: 'query', schema: { type: 'string' } },
+            { name: 'orderNumber', in: 'query', schema: { type: 'string' } },
+            { name: 'fromDate', in: 'query', schema: { type: 'string', format: 'date' } },
+            { name: 'toDate', in: 'query', schema: { type: 'string', format: 'date' } }
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/OrderSummary' }
+                          },
+                          total: { type: 'number' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/order/detail': {
+        get: {
+          tags: ['Orders'],
+          summary: 'Get order detail',
+          description:
+            'Returns full order with items, addons, and populated waiter info. Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'orderId', in: 'query', required: true, schema: { type: 'string' } }
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Not Found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/order/add-items': {
+        post: {
+          tags: ['Orders'],
+          summary: 'Add items to an existing order',
+          description:
+            'Adds new items to an OPEN or IN_PROGRESS order. Generates a new supplemental KOT. Does NOT replace existing items.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AddItemsToOrderRequest' }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Items added',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            404: {
+              description: 'Order not found or not active',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/order/remove-item': {
+        post: {
+          tags: ['Orders'],
+          summary: 'Cancel a specific item from an order',
+          description:
+            'Marks a single OrderItem as CANCELLED and generates a VOID KOT to signal the kitchen to stop preparing it. Recalculates order totals.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/RemoveOrderItemRequest' }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Item cancelled',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Item already cancelled or served',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            404: {
+              description: 'Item or order not found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/order/update-item': {
+        patch: {
+          tags: ['Orders'],
+          summary: 'Update a pending order item',
+          description:
+            'Change quantity or instruction on a PENDING item only (not yet sent to kitchen). At least one of quantity or instruction must be provided.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateOrderItemRequest' }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Item updated',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Cannot modify non-PENDING item',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/order/close': {
+        post: {
+          tags: ['Orders'],
+          summary: 'Close (complete) an order',
+          description:
+            'Marks order as COMPLETED. Requires paymentStatus to be PAID or PARTIAL. Releases table if no other active orders.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CloseOrderRequest' } }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Order closed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            400: {
+              description: 'Order not in valid state or payment not recorded',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/order/cancel': {
+        post: {
+          tags: ['Orders'],
+          summary: 'Cancel an order',
+          description:
+            'Cancels an OPEN or IN_PROGRESS order. Cancels all active KOTs. Releases table.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CancelOrderRequest' } }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Order cancelled',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            400: {
+              description: 'Cannot cancel a completed order',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/order/tokens': {
+        get: {
+          tags: ['Orders'],
+          summary: 'Token display (customer-facing board)',
+          description: 'Returns all active TAKEAWAY orders split into preparing and ready lists.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          responses: {
+            200: {
+              description: 'Token display data',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'object',
+                            properties: {
+                              preparing: {
+                                type: 'array',
+                                items: { $ref: '#/components/schemas/TokenDisplayItem' }
+                              },
+                              ready: {
+                                type: 'array',
+                                items: { $ref: '#/components/schemas/TokenDisplayItem' }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/kot': {
+        get: {
+          tags: ['KOTs'],
+          summary: 'List KOTs for a specific order',
+          description:
+            'Returns all KOTs (including VOID KOTs) for a given orderId. Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'orderId', in: 'query', required: true, schema: { type: 'string' } },
+            { name: 'page', in: 'query', schema: { type: 'number', minimum: 1, default: 1 } },
+            { name: 'limit', in: 'query', schema: { type: 'number', minimum: 1, default: 50 } }
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { type: 'array', items: { $ref: '#/components/schemas/KOTDetail' } }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/kot/kitchen': {
+        get: {
+          tags: ['KOTs'],
+          summary: 'Kitchen Display System (KDS) â€” all active KOTs',
+          description:
+            'Returns all non-completed KOTs for an outlet, sorted FIFO. Optionally filter by status. For Kitchen Display screens.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            {
+              name: 'status',
+              in: 'query',
+              schema: {
+                type: 'number',
+                enum: [1, 2, 3],
+                description: '1=PENDING, 2=PREPARING, 3=READY. Omit to get all active KOTs.'
+              }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { type: 'array', items: { $ref: '#/components/schemas/KOTDetail' } }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/kot/status': {
+        patch: {
+          tags: ['KOTs'],
+          summary: 'Update KOT status',
+          description: `Update KOT-level status. Enforces state machine:
+- PENDING â†’ PREPARING or CANCELLED
+- PREPARING â†’ READY or CANCELLED
+- READY â†’ SERVED or CANCELLED
+- Transitions outside these rules return HTTP 400.`,
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateKOTStatusRequest' }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'KOT status updated',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/KOTDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Invalid state transition',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            404: {
+              description: 'KOT not found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/kot/item-status': {
+        patch: {
+          tags: ['KOTs'],
+          summary: 'Update individual KOT item status',
+          description:
+            'Update status of a single item within a KOT (e.g., mark starter as SERVED while main is still PREPARING). Auto-advances KOT to SERVED when all items are served.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateKOTItemStatusRequest' }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'KOT item status updated',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            403: {
+              description: 'KOT does not belong to your outlet',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            404: {
+              description: 'KOT item not found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
 
+      '/api/v1/report/sales': {
+        get: {
+          tags: ['Reports'],
+          summary: 'Get Sales Report',
+          description: 'Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'startDate', in: 'query', schema: { type: 'string', format: 'date' } },
+            { name: 'endDate', in: 'query', schema: { type: 'string', format: 'date' } }
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/SalesReportItem' }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/report/item-sales': {
+        get: {
+          tags: ['Reports'],
+          summary: 'Get Item Sales Report',
+          description: 'Mandatory headers: brand-id, outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'startDate', in: 'query', schema: { type: 'string', format: 'date' } },
+            { name: 'endDate', in: 'query', schema: { type: 'string', format: 'date' } }
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/ItemSalesReportItem' }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  };
   return spec;
 };

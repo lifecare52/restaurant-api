@@ -4,7 +4,7 @@ import type Joi from 'joi';
 export const validateRequest =
   (
     schema: Joi.ObjectSchema,
-    property: 'body' | 'query' | 'params' | 'headers' = 'body',
+    property: 'body' | 'query' | 'params' | 'headers' = 'body'
   ): RequestHandler =>
   (req: Request, res: Response, next: NextFunction) => {
     const options =
@@ -26,7 +26,7 @@ export const validateRequest =
         status: 422,
         code: 'VALIDATION_FAILED',
         message: 'Validation failed',
-        validationMessages: messages,
+        validationMessages: messages
       });
     }
     if (property === 'body') req.body = value as unknown as typeof req.body;

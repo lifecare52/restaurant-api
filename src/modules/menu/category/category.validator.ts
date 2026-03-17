@@ -7,7 +7,7 @@ export const createCategorySchema = Joi.object({
   onlineName: Joi.string().trim().min(2).optional(),
   logo: Joi.string().uri().optional().allow(''),
   isActive: Joi.boolean().default(true),
-  taxGroupId: Joi.string().hex().length(24).optional().allow(null),
+  taxGroupId: Joi.string().hex().length(24).optional().allow(null)
 });
 
 export const updateCategorySchema = Joi.object({
@@ -15,12 +15,12 @@ export const updateCategorySchema = Joi.object({
   onlineName: Joi.string().trim().min(2),
   logo: Joi.string().uri().optional().allow(''),
   isActive: Joi.boolean(),
-  taxGroupId: Joi.string().hex().length(24).optional().allow(null),
+  taxGroupId: Joi.string().hex().length(24).optional().allow(null)
 });
 
 export const categoryListHeaderSchema = Joi.object({
   'brand-id': Joi.string().required(),
-  'outlet-id': Joi.string().required(),
+  'outlet-id': Joi.string().required()
 });
 
 export const categoryListQuerySchema = Joi.object({
@@ -34,17 +34,17 @@ export const categoryListQuerySchema = Joi.object({
   order: Joi.string()
     .valid(...SORT_ORDERS)
     .optional()
-    .default('ASC'),
+    .default('ASC')
 });
 
 export const categoryGetQuerySchema = Joi.object({
-  categoryId: Joi.string().required(),
+  categoryId: Joi.string().required()
 });
 
 export const categoryModifyQuerySchema = Joi.object({
-  categoryId: Joi.string().required(),
+  categoryId: Joi.string().required()
 });
 
 export const categoryBrandHeaderSchema = Joi.object({
-  'brand-id': Joi.string().required(),
+  'brand-id': Joi.string().required()
 });

@@ -12,14 +12,14 @@ const ZoneSchema = new Schema<Zone>(
     name: { type: String, required: true, trim: true },
 
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false },
+    isDelete: { type: Boolean, default: false }
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 ZoneSchema.index(
   { brandId: 1, outletId: 1, name: 1 },
-  { unique: true, partialFilterExpression: { isDelete: false } },
+  { unique: true, partialFilterExpression: { isDelete: false } }
 );
 
 export const ZoneEntity = model<Zone, ZoneModel>('Zone', ZoneSchema, 'zones');

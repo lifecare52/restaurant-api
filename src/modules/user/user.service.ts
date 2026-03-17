@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import { Types, type FilterQuery, type SortOrder } from 'mongoose';
 
 import { ROLES, PERMISSIONS } from '@shared/constants';
 import { signToken } from '@shared/utils/jwt';
@@ -10,7 +10,7 @@ import type {
   CreateOwnerDTO,
   CreateUserDTO,
   UpdateUserDTO,
-  UserListQueryDTO,
+  UserListQueryDTO
 } from './user.types';
 
 export const createOwner = async (adminId: string, dto: CreateOwnerDTO) => {
@@ -22,14 +22,14 @@ export const createOwner = async (adminId: string, dto: CreateOwnerDTO) => {
     role: ROLES.OWNER,
     brandId: new Types.ObjectId(dto.brandId),
     permissions: Object.values(PERMISSIONS),
-    outlets: (dto.outlets || []).map(id => new Types.ObjectId(id)),
+    outlets: (dto.outlets || []).map(id => new Types.ObjectId(id))
   });
   return owner;
 };
 
 export const createUser = async (
   creator: { id: string; permissions?: string[] },
-  dto: CreateUserDTO,
+  dto: CreateUserDTO
 ) => {
   const can = creator.permissions?.includes(PERMISSIONS.USER_MANAGEMENT);
   if (!can) return null;
@@ -42,7 +42,7 @@ export const createUser = async (
     brandId: new Types.ObjectId(dto.brandId),
     isActive: dto.isActive !== undefined ? dto.isActive : true,
     salary: dto.salary,
-    isDelete: false,
+    isDelete: false
   };
 
   if (dto.role === ROLES.PARTNER) {
@@ -50,7 +50,7 @@ export const createUser = async (
       ...commonFields,
       role: ROLES.PARTNER,
       permissions: dto.permissions || [],
-      outlets: dto.outlets || [],
+      outlets: dto.outlets || []
     });
     return user;
   }
@@ -61,7 +61,7 @@ export const createUser = async (
       ...commonFields,
       role: ROLES.STAFF,
       permissions: [],
-      outlets,
+      outlets
     });
     return user;
   }
@@ -73,10 +73,10 @@ export const getUsers = async (brandId: string, query: UserListQueryDTO) => {
   const limit = query.limit || 20;
   const skip = (page - 1) * limit;
 
-  const filter: Record<string, any> = {
+  const filter: FilterQuery<unknown> = {
     brandId: new Types.ObjectId(brandId),
     isDelete: false,
-    role: { $in: [ROLES.PARTNER, ROLES.STAFF] },
+    role: { $in: [ROLES.PARTNER, ROLES.STAFF] }
   };
 
   if (query.role) {
@@ -88,7 +88,7 @@ export const getUsers = async (brandId: string, query: UserListQueryDTO) => {
     filter.$or = [{ name: regex }, { username: regex }, { email: regex }];
   }
 
-  const sort: Record<string, any> = {};
+  const sort: Record<string, SortOrder> = {};
   if (query.column) {
     sort[query.column] = query.order === 'ASC' ? 1 : -1;
   } else {
@@ -97,7 +97,7 @@ export const getUsers = async (brandId: string, query: UserListQueryDTO) => {
 
   const [data, total] = await Promise.all([
     UserEntity.find(filter).sort(sort).skip(skip).limit(limit),
-    UserEntity.countDocuments(filter),
+    UserEntity.countDocuments(filter)
   ]);
 
   return { data, total, page, limit };
@@ -107,7 +107,7 @@ export const getUserById = async (brandId: string, userId: string) => {
   return UserEntity.findOne({
     _id: userId,
     brandId: new Types.ObjectId(brandId),
-    isDelete: false,
+    isDelete: false
   });
 };
 
@@ -115,7 +115,7 @@ export const updateUser = async (brandId: string, userId: string, dto: UpdateUse
   const user = await UserEntity.findOne({
     _id: userId,
     brandId: new Types.ObjectId(brandId),
-    isDelete: false,
+    isDelete: false
   });
   if (!user) return null;
 
@@ -136,7 +136,7 @@ export const deleteUser = async (brandId: string, userId: string) => {
   const user = await UserEntity.findOne({
     _id: userId,
     brandId: new Types.ObjectId(brandId),
-    isDelete: false,
+    isDelete: false
   });
   if (!user) return null;
 
@@ -149,7 +149,7 @@ export const deleteUser = async (brandId: string, userId: string) => {
 export const login = async (username: string, password: string) => {
   const user = await UserEntity.findOne({
     username: (username || '').trim().toLowerCase(),
-    isDelete: false,
+    isDelete: false
   });
   if (!user) throw new Error('Username not found');
   if (!user.isActive) {
@@ -166,7 +166,7 @@ export const login = async (username: string, password: string) => {
     role: user.role,
     brandId,
     outlets,
-    permissions: user.permissions || [],
+    permissions: user.permissions || []
   });
   return { token, brandId, outletId };
 };
@@ -174,7 +174,7 @@ export const login = async (username: string, password: string) => {
 export const loginAdmin = async (username: string, password: string) => {
   const user = await UserEntity.findOne({
     username: (username || '').trim().toLowerCase(),
-    isDelete: false,
+    isDelete: false
   });
   if (!user || user.role !== ROLES.ADMIN) return null;
   const ok = await user.comparePassword(password);
@@ -182,7 +182,7 @@ export const loginAdmin = async (username: string, password: string) => {
   const token = signToken({
     id: user._id.toString(),
     role: user.role,
-    permissions: user.permissions || [],
+    permissions: user.permissions || []
   });
   return { token };
 };
@@ -197,7 +197,7 @@ export const createAdminBootstrap = async (dto: CreateAdminDTO) => {
     password: dto.password,
     role: ROLES.ADMIN,
     permissions: Object.values(PERMISSIONS),
-    outlets: [],
+    outlets: []
   });
   return admin;
 };
@@ -211,7 +211,7 @@ export const createAdmin = async (creatorRole: string, dto: CreateAdminDTO) => {
     password: dto.password,
     role: ROLES.ADMIN,
     permissions: Object.values(PERMISSIONS),
-    outlets: [],
+    outlets: []
   });
   return admin;
 };
@@ -221,5 +221,5 @@ export default {
   createUser,
   createAdminBootstrap,
   createAdmin,
-  loginAdmin,
+  loginAdmin
 };

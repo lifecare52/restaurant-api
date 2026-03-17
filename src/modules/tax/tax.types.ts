@@ -2,14 +2,14 @@ import { Types, type Document } from 'mongoose';
 
 export const TAX_TYPES = {
   PERCENTAGE: 'PERCENTAGE',
-  FLAT_AMOUNT: 'FLAT_AMOUNT',
+  FLAT_AMOUNT: 'FLAT_AMOUNT'
 } as const;
 
 export type TaxType = (typeof TAX_TYPES)[keyof typeof TAX_TYPES];
 
 export const TAX_CALCULATION_METHODS = {
   STANDARD: 'STANDARD',
-  CUMULATIVE: 'CUMULATIVE',
+  CUMULATIVE: 'CUMULATIVE'
 } as const;
 
 export type TaxCalculationMethod =
@@ -18,7 +18,7 @@ export type TaxCalculationMethod =
 export const ORDER_TYPES = {
   DINE_IN: 'DINE_IN',
   TAKE_AWAY: 'TAKE_AWAY',
-  ONLINE: 'ONLINE',
+  ONLINE: 'ONLINE'
 } as const;
 
 export type OrderType = (typeof ORDER_TYPES)[keyof typeof ORDER_TYPES];

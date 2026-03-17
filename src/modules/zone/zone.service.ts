@@ -1,7 +1,9 @@
 import { Types } from 'mongoose';
 
 import ZoneEntity from '@modules/zone/zone.model';
-import type { ZoneCreateDTO, ZoneUpdateDTO, ZoneListQuery } from '@modules/zone/zone.types';
+import type { ZoneCreateDTO, ZoneUpdateDTO, ZoneListQuery, Zone } from '@modules/zone/zone.types';
+
+import type { FilterQuery } from 'mongoose';
 
 export const createZone = async (brandId: string, outletId: string, dto: ZoneCreateDTO) => {
   try {
@@ -10,11 +12,11 @@ export const createZone = async (brandId: string, outletId: string, dto: ZoneCre
       outletId: new Types.ObjectId(outletId),
       name: dto.name,
       isActive: dto.isActive ?? true,
-      isDelete: false,
+      isDelete: false
     });
     return created.toObject();
-  } catch (err: any) {
-    if (err?.code === 11000) {
+  } catch (err: unknown) {
+    if ((err as { code?: number })?.code === 11000) {
       throw { status: 409, code: 'DUPLICATE_ZONE', message: 'Zone name already exists' };
     }
     throw err;
@@ -26,10 +28,10 @@ export const listZones = async (brandId: string, outletId: string, query: ZoneLi
   const limit = query.limit && query.limit > 0 ? query.limit : 20;
   const skip = (page - 1) * limit;
 
-  const filter: any = {
+  const filter: FilterQuery<Zone> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   };
 
   if (query.searchText) {
@@ -49,7 +51,7 @@ export const listZones = async (brandId: string, outletId: string, query: ZoneLi
       .skip(skip)
       .limit(limit)
       .lean(),
-    ZoneEntity.countDocuments(filter),
+    ZoneEntity.countDocuments(filter)
   ]);
 
   return { items, total };
@@ -60,7 +62,7 @@ export const listActiveZones = async (brandId: string, outletId: string) => {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    isActive: true,
+    isActive: true
   })
     .select('name')
     .lean()
@@ -73,7 +75,7 @@ export const getZone = async (brandId: string, outletId: string, zoneId: string)
     _id: new Types.ObjectId(zoneId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false,
+    isDelete: false
   }).lean();
 };
 
@@ -81,7 +83,7 @@ export const updateZone = async (
   brandId: string,
   outletId: string,
   zoneId: string,
-  dto: ZoneUpdateDTO,
+  dto: ZoneUpdateDTO
 ) => {
   try {
     const updated = await ZoneEntity.findOneAndUpdate(
@@ -89,14 +91,14 @@ export const updateZone = async (
         _id: new Types.ObjectId(zoneId),
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
-        isDelete: false,
+        isDelete: false
       },
       { $set: dto },
-      { new: true },
+      { new: true }
     );
     return updated;
-  } catch (err: any) {
-    if (err?.code === 11000) {
+  } catch (err: unknown) {
+    if ((err as { code?: number })?.code === 11000) {
       throw { status: 409, code: 'DUPLICATE_ZONE', message: 'Zone name already exists' };
     }
     throw err;
@@ -109,9 +111,9 @@ export const deleteZone = async (brandId: string, outletId: string, zoneId: stri
       _id: new Types.ObjectId(zoneId),
       brandId: new Types.ObjectId(brandId),
       outletId: new Types.ObjectId(outletId),
-      isDelete: false,
+      isDelete: false
     },
     { $set: { isDelete: true } },
-    { new: true },
+    { new: true }
   );
 };

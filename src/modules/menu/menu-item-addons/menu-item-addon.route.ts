@@ -7,7 +7,7 @@ import {
   updateMenuItemAddonController,
   deleteMenuItemAddonController,
   createBulkMenuItemAddonController,
-  getAddonMappingController,
+  getAddonMappingController
 } from '@modules/menu/menu-item-addons/menu-item-addon.controller';
 import {
   createMenuItemAddonSchema,
@@ -15,7 +15,7 @@ import {
   menuItemAddonListQuerySchema,
   menuItemAddonIdQuerySchema,
   createBulkMenuItemAddonSchema,
-  addonMappingQuerySchema,
+  addonMappingQuerySchema
 } from '@modules/menu/menu-item-addons/menu-item-addon.validator';
 
 import { commonHeaderSchema } from '@shared/utils/common.validation';
@@ -33,7 +33,7 @@ router.post(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createBulkMenuItemAddonSchema),
-  createBulkMenuItemAddonController,
+  createBulkMenuItemAddonController
 );
 
 router.post(
@@ -43,7 +43,7 @@ router.post(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(createMenuItemAddonSchema),
-  createMenuItemAddonController,
+  createMenuItemAddonController
 );
 
 router.get(
@@ -53,7 +53,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(addonMappingQuerySchema, 'query'),
-  getAddonMappingController,
+  getAddonMappingController
 );
 
 router.get(
@@ -63,7 +63,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemAddonListQuerySchema, 'query'),
-  listMenuItemAddonsController,
+  listMenuItemAddonsController
 );
 
 router.get(
@@ -73,7 +73,7 @@ router.get(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemAddonIdQuerySchema, 'query'),
-  getMenuItemAddonController,
+  getMenuItemAddonController
 );
 
 router.patch(
@@ -84,7 +84,7 @@ router.patch(
   requireOutletAccess,
   validateRequest(menuItemAddonIdQuerySchema, 'query'),
   validateRequest(updateMenuItemAddonSchema),
-  updateMenuItemAddonController,
+  updateMenuItemAddonController
 );
 
 router.delete(
@@ -94,7 +94,7 @@ router.delete(
   requireBrandAccess,
   requireOutletAccess,
   validateRequest(menuItemAddonIdQuerySchema, 'query'),
-  deleteMenuItemAddonController,
+  deleteMenuItemAddonController
 );
 
 export default router;

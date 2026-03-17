@@ -10,18 +10,18 @@ export const createVariationSchema = Joi.object({
     .valid(...VARIATION_DEPARTMENTS)
     .required(),
   isActive: Joi.boolean().default(true),
-  taxGroupId: objectId.optional().allow(null),
+  taxGroupId: objectId.optional().allow(null)
 });
 
 export const updateVariationSchema = Joi.object({
   name: Joi.string().trim().min(2),
   department: Joi.string().valid(...VARIATION_DEPARTMENTS),
   isActive: Joi.boolean(),
-  taxGroupId: objectId.optional().allow(null),
+  taxGroupId: objectId.optional().allow(null)
 });
 
 export const variationIdQuerySchema = Joi.object({
-  variationId: objectId.required(),
+  variationId: objectId.required()
 });
 
 export const variationListQuerySchema = Joi.object({
@@ -34,5 +34,5 @@ export const variationListQuerySchema = Joi.object({
   column: Joi.string()
     .valid('name', 'department', 'createdAt', 'updatedAt', 'isActive')
     .default('name'),
-  order: Joi.string().valid('ASC', 'DESC').default('ASC'),
+  order: Joi.string().valid('ASC', 'DESC').default('ASC')
 });

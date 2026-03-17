@@ -6,7 +6,7 @@ import {
   listActiveVariations,
   getVariation,
   updateVariation,
-  deleteVariation,
+  deleteVariation
 } from './variation.service';
 import { VariationListQuery } from './variation.types';
 
@@ -14,13 +14,13 @@ import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || '',
+  outletId: (req.headers['outlet-id'] as string | undefined) || ''
 });
 
 export const createVariationController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -29,14 +29,14 @@ export const createVariationController = async (
       res.locals.response = {
         status: false,
         code: 400,
-        message: 'Brand or outlet not found',
+        message: 'Brand or outlet not found'
       };
     } else {
       res.locals.response = {
         status: true,
         code: 201,
         message: API_MESSAGES.VARIATION_CREATED,
-        data: v,
+        data: v
       };
     }
     next();
@@ -59,7 +59,7 @@ export const listVariationsController = async (req: Request, res: Response, next
 export const listActiveVariationsController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -90,7 +90,7 @@ export const getVariationController = async (req: Request, res: Response, next: 
 export const updateVariationController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -103,7 +103,7 @@ export const updateVariationController = async (
         status: true,
         code: 200,
         message: API_MESSAGES.VARIATION_UPDATED,
-        data: v,
+        data: v
       };
     }
     next();
@@ -115,7 +115,7 @@ export const updateVariationController = async (
 export const deleteVariationController = async (
   req: Request,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -138,5 +138,5 @@ export default {
   listActiveVariationsController,
   getVariationController,
   updateVariationController,
-  deleteVariationController,
+  deleteVariationController
 };

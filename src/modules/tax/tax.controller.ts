@@ -18,7 +18,7 @@ export class TaxController {
         code: 201,
         status: true,
         message: 'Tax created successfully',
-        data: tax,
+        data: tax
       };
       next();
     } catch (error) {
@@ -38,7 +38,7 @@ export class TaxController {
         status: true,
         message: 'Taxes retrieved successfully',
         meta: result.meta,
-        data: result.data,
+        data: result.data
       };
       next();
     } catch (error) {
@@ -58,7 +58,7 @@ export class TaxController {
         code: 200,
         status: true,
         message: 'Tax retrieved successfully',
-        data: tax,
+        data: tax
       };
       next();
     } catch (error) {
@@ -78,7 +78,7 @@ export class TaxController {
         code: 200,
         status: true,
         message: 'Tax updated successfully',
-        data: tax,
+        data: tax
       };
       next();
     } catch (error) {
@@ -97,7 +97,7 @@ export class TaxController {
       res.locals.response = {
         code: 200,
         status: true,
-        message: 'Tax deleted successfully',
+        message: 'Tax deleted successfully'
       };
       next();
     } catch (error) {
@@ -116,7 +116,7 @@ export class TaxController {
         code: 200,
         status: true,
         message: 'Active taxes retrieved successfully',
-        data: taxes,
+        data: taxes
       };
       next();
     } catch (error) {
@@ -139,7 +139,7 @@ export class TaxController {
         code: 201,
         status: true,
         message: 'Tax Group created successfully',
-        data: taxGroup,
+        data: taxGroup
       };
       next();
     } catch (error) {
@@ -159,7 +159,7 @@ export class TaxController {
         status: true,
         message: 'Tax Groups retrieved successfully',
         meta: result.meta,
-        data: result.data,
+        data: result.data
       };
       next();
     } catch (error) {
@@ -179,7 +179,7 @@ export class TaxController {
         code: 200,
         status: true,
         message: 'Tax Group retrieved successfully',
-        data: taxGroup,
+        data: taxGroup
       };
       next();
     } catch (error) {
@@ -199,7 +199,7 @@ export class TaxController {
         code: 200,
         status: true,
         message: 'Tax Group updated successfully',
-        data: taxGroup,
+        data: taxGroup
       };
       next();
     } catch (error) {
@@ -218,7 +218,7 @@ export class TaxController {
       res.locals.response = {
         code: 200,
         status: true,
-        message: 'Tax Group deleted successfully',
+        message: 'Tax Group deleted successfully'
       };
       next();
     } catch (error) {
@@ -237,7 +237,7 @@ export class TaxController {
         code: 200,
         status: true,
         message: 'Active tax groups retrieved successfully',
-        data: groups,
+        data: groups
       };
       next();
     } catch (error) {

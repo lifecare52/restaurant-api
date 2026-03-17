@@ -59,6 +59,7 @@ async function runTests() {
         const brandId = '69a9a3abe46a664f8002a4eb';
         const outletId = '69a9a3c7e46a664f8002a4ef';
         const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5YTlhODIxZTQ2YTY2NGY4MDAyYTRmNyIsInJvbGUiOiJPV05FUiIsImJyYW5kSWQiOiI2OWE5YTNhYmU0NmE2NjRmODAwMmE0ZWIiLCJvdXRsZXRzIjpbIjY5YTlhM2M3ZTQ2YTY2NGY4MDAyYTRlZiJdLCJwZXJtaXNzaW9ucyI6WyJVU0VSX01BTkFHRU1FTlQiLCJCUkFORF9NQU5BR0VNRU5UIiwiT1VUTEVUX01BTkFHRU1FTlQiXSwiaWF0IjoxNzcyNzI2Mzk2LCJleHAiOjE3NzMzMzExOTZ9.VOlumiPiPvqi27qifWNxJoNP9yGQ1n8hBnrgMFiTcNM';
+        const staffId = '69ad0074dd5113c0e695b38f';
 
         const headers = {
             Authorization: `Bearer ${token}`,
