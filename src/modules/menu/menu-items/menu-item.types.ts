@@ -11,7 +11,7 @@ export interface MenuItemAddonInputCreate {
 }
 
 export interface MenuItemAddonInputUpdate extends MenuItemAddonInputCreate {
-  allowedItems?: string[];
+  allowedItemsId?: string[];
 }
 
 export interface MeasurementConfig {

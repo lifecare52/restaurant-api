@@ -149,7 +149,7 @@ export const updateMenuItemSchema = Joi.object({
               isSingleSelect: Joi.boolean().optional(),
               min: Joi.number().integer().min(0).allow(null).optional(),
               max: Joi.number().integer().min(0).allow(null).optional(),
-              allowedItems: Joi.array().items(objectId).optional()
+              allowedItemsId: Joi.array().items(objectId).optional()
             })
           )
           .when('isMeasurementBased', {
@@ -168,7 +168,7 @@ export const updateMenuItemSchema = Joi.object({
         isSingleSelect: Joi.boolean().optional(),
         min: Joi.number().integer().min(0).allow(null).optional(),
         max: Joi.number().integer().min(0).allow(null).optional(),
-        allowedItems: Joi.array().items(objectId).optional()
+        allowedItemsId: Joi.array().items(objectId).optional()
       })
     )
     .when('isMeasurementBased', {

@@ -40,11 +40,11 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
     const normalizeAddonCreate = (
       arr:
         | Array<{
-            addonId: string;
-            isSingleSelect?: boolean;
-            min?: number | null;
-            max?: number | null;
-          }>
+          addonId: string;
+          isSingleSelect?: boolean;
+          min?: number | null;
+          max?: number | null;
+        }>
         | undefined
     ) => {
       return (arr || []).map(a => ({
@@ -121,9 +121,9 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
         variationsInput.length > 0 || !dto.measurementConfig
           ? undefined
           : {
-              ...dto.measurementConfig,
-              measurementId: new Types.ObjectId(dto.measurementConfig.measurementId)
-            },
+            ...dto.measurementConfig,
+            measurementId: new Types.ObjectId(dto.measurementConfig.measurementId)
+          },
 
       isVariation: variationsInput.length > 0,
 
@@ -436,17 +436,17 @@ export const updateMenuItem = async (
     const normalizeAddonUpdate = (
       arr:
         | Array<{
-            addonId: string;
-            allowedItems?: string[];
-            isSingleSelect?: boolean;
-            min?: number | null;
-            max?: number | null;
-          }>
+          addonId: string;
+          allowedItemsId?: string[];
+          isSingleSelect?: boolean;
+          min?: number | null;
+          max?: number | null;
+        }>
         | undefined
     ) => {
       return (arr || []).map(a => ({
         addonId: a.addonId,
-        allowedItemIds: (a.allowedItems || []).map(s => s),
+        allowedItemIds: (a.allowedItemsId || []).map(s => s),
         isSingleSelect: a.isSingleSelect,
         min: a.min,
         max: a.max
@@ -913,31 +913,31 @@ export const getAddonMappingAggregationV2 = async (
 
     ...(addonObjectId
       ? [
-          {
-            $addFields: {
-              items: {
-                $filter: {
-                  input: '$items',
-                  as: 'i',
-                  cond: {
-                    $not: {
-                      $in: [
-                        addonObjectId,
-                        {
-                          $map: {
-                            input: { $ifNull: ['$$i.addons', []] },
-                            as: 'a',
-                            in: '$$a.addonId'
-                          }
+        {
+          $addFields: {
+            items: {
+              $filter: {
+                input: '$items',
+                as: 'i',
+                cond: {
+                  $not: {
+                    $in: [
+                      addonObjectId,
+                      {
+                        $map: {
+                          input: { $ifNull: ['$$i.addons', []] },
+                          as: 'a',
+                          in: '$$a.addonId'
                         }
-                      ]
-                    }
+                      }
+                    ]
                   }
                 }
               }
             }
           }
-        ]
+        }
+      ]
       : []),
 
     /* ---------------- GROUP CATEGORY ---------------- */
