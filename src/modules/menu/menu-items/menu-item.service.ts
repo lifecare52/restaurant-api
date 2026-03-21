@@ -4,9 +4,9 @@ import { getBrandById } from '@modules/brand/brand.service';
 import { getAddon } from '@modules/menu/addons/addon.service';
 import { listActiveCategories } from '@modules/menu/category/category.service';
 import {
-  listMenuItemAddons,
   createMenuItemAddon,
-  updateMenuItemAddon
+  listMenuItemAddons,
+  updateMenuItemAddons
 } from '@modules/menu/menu-item-addons/menu-item-addon.service';
 import {
   listMenuItemVariants,
@@ -19,9 +19,14 @@ import type { MenuItemVariant } from '@modules/menu/menu-item-variants/menu-item
 import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
 import type {
   MenuItem,
+  MenuItemAddonInputCreate,
+  MenuItemAddonInputUpdate,
+  MenuItemAddonView,
   MenuItemCreateDTO,
-  MenuItemUpdateDTO
+  MenuItemUpdateDTO,
+  BulkUpdateAvailabilityDTO
 } from '@modules/menu/menu-items/menu-item.types';
+import type { MenuItemAddonSyncVariationDTO } from '@modules/menu/menu-item-addons/menu-item-addon.types';
 import { getVariation, listActiveVariations } from '@modules/menu/variations/variation.service';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
@@ -37,16 +42,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
   if (!outlet) return null;
 
   try {
-    const normalizeAddonCreate = (
-      arr:
-        | Array<{
-          addonId: string;
-          isSingleSelect?: boolean;
-          min?: number | null;
-          max?: number | null;
-        }>
-        | undefined
-    ) => {
+    const normalizeAddonCreate = (arr: MenuItemAddonInputCreate[] | undefined) => {
       return (arr || []).map(a => ({
         addonId: a.addonId,
         isSingleSelect: a.isSingleSelect,
@@ -253,10 +249,14 @@ const buildMenuItemNested = async (
     order: 'ASC'
   });
 
-  const hasVariants = (variantsResult.items || []).length > 0;
+  const variantItems = (variantsResult.items || []) as (MenuItemVariant & {
+    _id: Types.ObjectId;
+  })[];
+
+  const hasVariants = variantItems.length > 0;
 
   const variations = await Promise.all(
-    (variantsResult.items || [])
+    variantItems
       .filter(v => v.isActive)
       .map(async v => {
         const variation = await getVariation(brandId, outletId, String(v.variationId));
@@ -266,8 +266,17 @@ const buildMenuItemNested = async (
           { page: 1, limit: 1000, column: 'createdAt', order: 'ASC' },
           { menuItemId: String(item?._id), menuItemVariantId: String(v._id) }
         );
+        const addonItems = (addonsResult.items || []) as Array<{
+          addonId: Types.ObjectId;
+          allowedItems?: unknown[];
+          isSingleSelect?: boolean;
+          min?: number | null;
+          max?: number | null;
+          isActive?: boolean;
+          _id: Types.ObjectId;
+        }>;
         const addons = await Promise.all(
-          (addonsResult.items || [])
+          addonItems
             .filter(a => a.isActive)
             .map(async a => {
               const addonDoc = await getAddon(brandId, outletId, String(a.addonId));
@@ -299,7 +308,7 @@ const buildMenuItemNested = async (
       })
   );
 
-  let topLevelAddons: Array<{ name: string; items: unknown[] }> | undefined;
+  let topLevelAddons: MenuItemAddonView[] | undefined;
   if (!hasVariants) {
     const itemAddonsResult = await listMenuItemAddons(
       brandId,
@@ -307,7 +316,17 @@ const buildMenuItemNested = async (
       { page: 1, limit: 1000, column: 'createdAt', order: 'ASC' },
       { menuItemId: String(item?._id) }
     );
-    const itemLevelActive = (itemAddonsResult.items || [])
+    const itemAddonItems = (itemAddonsResult.items || []) as Array<{
+      addonId: Types.ObjectId;
+      allowedItems?: unknown[];
+      isSingleSelect?: boolean;
+      min?: number | null;
+      max?: number | null;
+      isActive?: boolean;
+      menuItemVariantId?: Types.ObjectId;
+      _id: Types.ObjectId;
+    }>;
+    const itemLevelActive = itemAddonItems
       .filter(a => !a.menuItemVariantId)
       .filter(a => a.isActive);
     topLevelAddons = await Promise.all(
@@ -431,26 +450,20 @@ export const updateMenuItem = async (
     );
     if (!updated) return updated;
 
-    // If addons/variations provided, upsert menu_item_addons accordingly
     const outletId = String(updated.outletId);
-    const normalizeAddonUpdate = (
-      arr:
-        | Array<{
-          addonId: string;
-          allowedItemsId?: string[];
-          isSingleSelect?: boolean;
-          min?: number | null;
-          max?: number | null;
-        }>
-        | undefined
-    ) => {
-      return (arr || []).map(a => ({
-        addonId: a.addonId,
-        allowedItemIds: (a.allowedItemsId || []).map(s => s),
-        isSingleSelect: a.isSingleSelect,
-        min: a.min,
-        max: a.max
-      }));
+    const normalizeAddonUpdate = (arr: MenuItemAddonInputUpdate[] | undefined) => {
+      if (!arr) return undefined;
+      const map = new Map<string, string>();
+      for (const a of arr) {
+        const raw = a.addonId ?? '';
+        const trimmed = raw.trim();
+        if (!trimmed) continue;
+        const key = trimmed.toLowerCase();
+        if (!map.has(key)) {
+          map.set(key, trimmed);
+        }
+      }
+      return [...map.values()].map(addonId => ({ addonId }));
     };
 
     if (dto.variations && dto.variations.length > 0) {
@@ -465,6 +478,7 @@ export const updateMenuItem = async (
       (variants.items || []).forEach(v => byVariationId.set(String(v.variationId), String(v._id)));
 
       const processedVariantIds = new Set<string>();
+      const variantAddonPayload: MenuItemAddonSyncVariationDTO[] = [];
 
       for (const v of dto.variations) {
         let variantDocId: string | undefined = undefined;
@@ -481,7 +495,6 @@ export const updateMenuItem = async (
         }
 
         if (!variantDocId) {
-          // It's a new variation explicitly assigned to this menu item during an update call
           const exists = await getVariation(brandId, outletId, v.variationId);
           if (!exists) {
             throw { status: 404, code: 'VARIATION_NOT_FOUND', message: 'Variation not found' };
@@ -504,21 +517,11 @@ export const updateMenuItem = async (
           processedVariantIds.add(variantDocId);
 
           const addons = normalizeAddonUpdate(v.addons);
-          for (const a of addons) {
-            const created = await createMenuItemAddon(brandId, outletId, {
-              menuItemId,
-              addonId: a.addonId,
+          if (addons) {
+            variantAddonPayload.push({
               menuItemVariantId: variantDocId,
-              isSingleSelect: a.isSingleSelect,
-              min: a.min,
-              max: a.max,
-              isActive: true
+              addons
             });
-            if (created && a.allowedItemIds && a.allowedItemIds.length > 0) {
-              await updateMenuItemAddon(brandId, outletId, String(created._id), {
-                allowedItemIds: a.allowedItemIds
-              });
-            }
           }
           continue; // Finish processing this explicitly newly created variation
         }
@@ -534,37 +537,11 @@ export const updateMenuItem = async (
         });
 
         const addons = normalizeAddonUpdate(v.addons);
-        for (const a of addons) {
-          // Try find existing attachment
-          const existing = await listMenuItemAddons(
-            brandId,
-            outletId,
-            { page: 1, limit: 1, column: 'createdAt', order: 'ASC' },
-            { menuItemId, addonId: a.addonId, menuItemVariantId: variantDocId }
-          );
-          if (existing.items && existing.items.length > 0) {
-            await updateMenuItemAddon(brandId, outletId, String(existing.items[0]._id), {
-              allowedItemIds: a.allowedItemIds,
-              isSingleSelect: a.isSingleSelect,
-              min: a.min,
-              max: a.max
-            });
-          } else {
-            const created = await createMenuItemAddon(brandId, outletId, {
-              menuItemId,
-              addonId: a.addonId,
-              menuItemVariantId: variantDocId,
-              isSingleSelect: a.isSingleSelect,
-              min: a.min,
-              max: a.max,
-              isActive: true
-            });
-            if (created && a.allowedItemIds && a.allowedItemIds.length > 0) {
-              await updateMenuItemAddon(brandId, outletId, String(created._id), {
-                allowedItemIds: a.allowedItemIds
-              });
-            }
-          }
+        if (addons) {
+          variantAddonPayload.push({
+            menuItemVariantId: variantDocId,
+            addons
+          });
         }
       }
 
@@ -574,38 +551,25 @@ export const updateMenuItem = async (
           await deleteMenuItemVariant(brandId, outletId, String(existing._id));
         }
       }
-    } else if (dto.addons && dto.addons.length > 0 && !dto.isMeasurementBased) {
-      const addons = normalizeAddonUpdate(dto.addons);
-      for (const a of addons) {
-        const existing = await listMenuItemAddons(
+
+      if (variantAddonPayload.length > 0) {
+        await updateMenuItemAddons({
           brandId,
           outletId,
-          { page: 1, limit: 1, column: 'createdAt', order: 'ASC' },
-          { menuItemId, addonId: a.addonId }
-        );
-        if (existing.items && existing.items.length > 0) {
-          await updateMenuItemAddon(brandId, outletId, String(existing.items[0]._id), {
-            allowedItemIds: a.allowedItemIds,
-            isSingleSelect: a.isSingleSelect,
-            min: a.min,
-            max: a.max
-          });
-        } else {
-          const createdAddon = await createMenuItemAddon(brandId, outletId, {
-            menuItemId,
-            addonId: a.addonId,
-            isSingleSelect: a.isSingleSelect,
-            min: a.min,
-            max: a.max,
-            isActive: true
-          });
-          if (createdAddon && a.allowedItemIds && a.allowedItemIds.length > 0) {
-            await updateMenuItemAddon(brandId, outletId, String(createdAddon._id), {
-              allowedItemIds: a.allowedItemIds
-            });
-          }
-        }
+          menuItemId,
+          isVariation: true,
+          variations: variantAddonPayload
+        });
       }
+    } else if (dto.addons !== undefined && !dto.isMeasurementBased) {
+      const addons = normalizeAddonUpdate(dto.addons);
+      await updateMenuItemAddons({
+        brandId,
+        outletId,
+        menuItemId,
+        isVariation: false,
+        addons
+      });
     }
     // Recompute isVariation flag based on existing variants
     const variantCheck = await listMenuItemVariants(brandId, outletId, {
@@ -666,13 +630,6 @@ export const deleteMenuItem = async (brandId: string, menuItemId: string) => {
     { new: true }
   );
 };
-
-export interface BulkUpdateAvailabilityDTO {
-  _id: string;
-  online: boolean;
-  takeAway: boolean;
-  dineIn: boolean;
-}
 
 export const bulkUpdateMenuItemAvailability = async (
   brandId: string,
@@ -826,13 +783,48 @@ export const getAddonMappingAggregationV2 = async (
       }
     },
 
+    /* ---------------- DIRECT ADDONS (NON-VARIATION) ---------------- */
+
+    {
+      $lookup: {
+        from: 'menu_item_addons',
+        let: { menuItemId: '$_id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$menuItemId', '$$menuItemId'] },
+                  { $eq: ['$isDelete', false] },
+                  { $eq: ['$isActive', true] }
+                ]
+              }
+            }
+          }
+        ],
+        as: 'directAddons'
+      }
+    },
+
     /* ---------------- VARIANT ADDONS ---------------- */
 
     {
       $lookup: {
         from: 'menu_item_addons',
-        localField: 'variants._id',
-        foreignField: 'menuItemVariantId',
+        let: { variantIds: '$variants._id' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $in: ['$menuItemVariantId', '$$variantIds'] },
+                  { $eq: ['$isDelete', false] },
+                  { $eq: ['$isActive', true] }
+                ]
+              }
+            }
+          }
+        ],
         as: 'variantAddons'
       }
     },
@@ -853,7 +845,8 @@ export const getAddonMappingAggregationV2 = async (
             [
               {
                 menuId: '$_id',
-                name: '$name'
+                name: '$name',
+                addons: '$directAddons'
               }
             ],
 

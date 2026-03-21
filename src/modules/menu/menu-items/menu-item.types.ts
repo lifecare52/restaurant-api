@@ -14,6 +14,15 @@ export interface MenuItemAddonInputUpdate extends MenuItemAddonInputCreate {
   allowedItemsId?: string[];
 }
 
+export interface MenuItemAddonView {
+  name: string;
+  items: unknown[];
+  isSingleSelect: boolean;
+  min?: number | null;
+  max?: number | null;
+  _id: Types.ObjectId;
+}
+
 export interface MeasurementConfig {
   measurementId: string;
   basePrice: number;
@@ -117,4 +126,11 @@ export interface MenuItemUpdateDTO {
   addons?: MenuItemAddonInputUpdate[];
 
   isActive?: boolean;
+}
+
+export interface BulkUpdateAvailabilityDTO {
+  _id: string;
+  online: boolean;
+  takeAway: boolean;
+  dineIn: boolean;
 }

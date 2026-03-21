@@ -61,3 +61,21 @@ export interface MenuItemAddonFilterQuery {
   addonId?: string;
   menuItemVariantId?: string;
 }
+
+export interface MenuItemAddonSyncItemDTO {
+  addonId?: string | null;
+}
+
+export interface MenuItemAddonSyncVariationDTO {
+  menuItemVariantId: string;
+  addons?: MenuItemAddonSyncItemDTO[];
+}
+
+export interface MenuItemAddonSyncDTO {
+  brandId: string;
+  outletId: string;
+  menuItemId: string;
+  isVariation: boolean;
+  addons?: MenuItemAddonSyncItemDTO[];
+  variations?: MenuItemAddonSyncVariationDTO[];
+}

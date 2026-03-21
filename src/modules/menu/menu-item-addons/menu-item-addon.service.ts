@@ -10,7 +10,12 @@ import type { Dietary } from '@shared/enum';
 
 import MenuItemAddonEntity from './menu-item-addon.model';
 
-import type { MenuItemAddonListQuery, MenuItemAddonFilterQuery } from './menu-item-addon.types';
+import type {
+  MenuItemAddonListQuery,
+  MenuItemAddonFilterQuery,
+  MenuItemAddonSyncDTO,
+  MenuItemAddonSyncVariationDTO
+} from './menu-item-addon.types';
 import type {
   MenuItemAddonCreateDTO,
   MenuItemAddonUpdateDTO,
@@ -262,10 +267,194 @@ export const deleteMenuItemAddon = async (
   );
 };
 
+export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
+  const brandObjectId = new Types.ObjectId(input.brandId);
+  const outletObjectId = new Types.ObjectId(input.outletId);
+  const menuItemObjectId = new Types.ObjectId(input.menuItemId);
+
+  const bulkOps = [] as Parameters<typeof MenuItemAddonEntity.bulkWrite>[0];
+
+  if (!input.isVariation) {
+    if (input.addons === undefined) {
+      return null;
+    }
+
+    const incomingIds = new Set(
+      (input.addons || [])
+        .map(a => (a.addonId ?? '').trim())
+        .filter(Boolean)
+        .map(id => id.toLowerCase())
+    );
+
+    if (incomingIds.size === 0) {
+      bulkOps.push({
+        updateMany: {
+          filter: {
+            brandId: brandObjectId,
+            outletId: outletObjectId,
+            menuItemId: menuItemObjectId,
+            menuItemVariantId: { $exists: false },
+            isDelete: false
+          },
+          update: { $set: { isDelete: true } }
+        }
+      });
+    } else {
+      const existing = await MenuItemAddonEntity.find({
+        brandId: brandObjectId,
+        outletId: outletObjectId,
+        menuItemId: menuItemObjectId,
+        menuItemVariantId: { $exists: false },
+        isDelete: false
+      }).lean();
+
+      const existingIds = new Set(
+        existing.map(doc => String(doc.addonId).toLowerCase())
+      );
+
+      const toAdd = [...incomingIds].filter(id => !existingIds.has(id));
+      const toDelete = [...existingIds].filter(id => !incomingIds.has(id));
+
+      for (const id of toAdd) {
+        bulkOps.push({
+          insertOne: {
+            document: {
+              brandId: brandObjectId,
+              outletId: outletObjectId,
+              menuItemId: menuItemObjectId,
+              addonId: new Types.ObjectId(id),
+              isActive: true,
+              isDelete: false
+            }
+          }
+        });
+      }
+
+      if (toDelete.length > 0) {
+        bulkOps.push({
+          updateMany: {
+            filter: {
+              brandId: brandObjectId,
+              outletId: outletObjectId,
+              menuItemId: menuItemObjectId,
+              menuItemVariantId: { $exists: false },
+              addonId: { $in: toDelete.map(id => new Types.ObjectId(id)) },
+              isDelete: false
+            },
+            update: { $set: { isDelete: true } }
+          }
+        });
+      }
+    }
+  } else {
+    const variations = input.variations || [];
+    if (variations.length === 0) {
+      return null;
+    }
+
+    const variationsToProcess = variations.filter(v => v.addons !== undefined);
+    if (variationsToProcess.length === 0) {
+      return null;
+    }
+
+    const variantObjectIds = variationsToProcess.map(
+      v => new Types.ObjectId(v.menuItemVariantId)
+    );
+
+    const existing = await MenuItemAddonEntity.find({
+      brandId: brandObjectId,
+      outletId: outletObjectId,
+      menuItemId: menuItemObjectId,
+      menuItemVariantId: { $in: variantObjectIds },
+      isDelete: false
+    }).lean();
+
+    const existingByVariant = new Map<string, string[]>();
+    for (const doc of existing) {
+      const variantKey = String(doc.menuItemVariantId);
+      const list = existingByVariant.get(variantKey) || [];
+      list.push(String(doc.addonId).toLowerCase());
+      existingByVariant.set(variantKey, list);
+    }
+
+    for (const variation of variationsToProcess) {
+      const variantIdStr = variation.menuItemVariantId;
+      const variantObjectId = new Types.ObjectId(variantIdStr);
+
+      const incomingIds = new Set(
+        (variation.addons || [])
+          .map(a => (a.addonId ?? '').trim())
+          .filter(Boolean)
+          .map(id => id.toLowerCase())
+      );
+
+      if (incomingIds.size === 0) {
+        bulkOps.push({
+          updateMany: {
+            filter: {
+              brandId: brandObjectId,
+              outletId: outletObjectId,
+              menuItemId: menuItemObjectId,
+              menuItemVariantId: variantObjectId,
+              isDelete: false
+            },
+            update: { $set: { isDelete: true } }
+          }
+        });
+        continue;
+      }
+
+      const existingIds = new Set(existingByVariant.get(variantIdStr) || []);
+
+      const toAdd = [...incomingIds].filter(id => !existingIds.has(id));
+      const toDelete = [...existingIds].filter(id => !incomingIds.has(id));
+
+      for (const id of toAdd) {
+        bulkOps.push({
+          insertOne: {
+            document: {
+              brandId: brandObjectId,
+              outletId: outletObjectId,
+              menuItemId: menuItemObjectId,
+              menuItemVariantId: variantObjectId,
+              addonId: new Types.ObjectId(id),
+              isActive: true,
+              isDelete: false
+            }
+          }
+        });
+      }
+
+      if (toDelete.length > 0) {
+        bulkOps.push({
+          updateMany: {
+            filter: {
+              brandId: brandObjectId,
+              outletId: outletObjectId,
+              menuItemId: menuItemObjectId,
+              menuItemVariantId: variantObjectId,
+              addonId: { $in: toDelete.map(id => new Types.ObjectId(id)) },
+              isDelete: false
+            },
+            update: { $set: { isDelete: true } }
+          }
+        });
+      }
+    }
+  }
+
+  if (bulkOps.length === 0) {
+    return null;
+  }
+
+  return MenuItemAddonEntity.bulkWrite(bulkOps);
+};
+
 export default {
   createMenuItemAddon,
   listMenuItemAddons,
   getMenuItemAddon,
   updateMenuItemAddon,
-  deleteMenuItemAddon
+  deleteMenuItemAddon,
+  updateMenuItemAddons
 };
