@@ -14,7 +14,8 @@ import type {
   MenuItemAddonListQuery,
   MenuItemAddonFilterQuery,
   MenuItemAddonSyncDTO,
-  MenuItemAddonSyncVariationDTO
+  MenuItemAddonSyncVariationDTO,
+  MenuItemAddonSyncItemDTO
 } from './menu-item-addon.types';
 import type {
   MenuItemAddonCreateDTO,
@@ -267,6 +268,191 @@ export const deleteMenuItemAddon = async (
   );
 };
 
+type UpdateMenuItemAddonsSoftInput = {
+  brandId: string;
+  outletId: string;
+  menuItemId: string;
+  addons?: MenuItemAddonSyncItemDTO[];
+};
+
+export const updateMenuItemAddonsSoft = async ({
+  brandId,
+  outletId,
+  menuItemId,
+  addons
+}: UpdateMenuItemAddonsSoftInput) => {
+  const brandObjectId = new Types.ObjectId(brandId);
+  const outletObjectId = new Types.ObjectId(outletId);
+  const menuItemObjectId = new Types.ObjectId(menuItemId);
+
+  if (addons === undefined) {
+    return null;
+  }
+
+  const bulkOps = [] as Parameters<typeof MenuItemAddonEntity.bulkWrite>[0];
+
+  const incomingMap = new Map<string, MenuItemAddonSyncItemDTO>();
+  const incomingIds = new Set<string>();
+
+  for (const a of addons || []) {
+    const raw = a.addonId ?? '';
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    const key = trimmed.toLowerCase();
+    if (!incomingMap.has(key)) {
+      incomingMap.set(key, {
+        addonId: trimmed,
+        allowedItemsId: a.allowedItemsId,
+        isSingleSelect: a.isSingleSelect,
+        min: a.min,
+        max: a.max
+      });
+      incomingIds.add(key);
+    }
+  }
+
+  if (incomingIds.size === 0) {
+    bulkOps.push({
+      updateMany: {
+        filter: {
+          brandId: brandObjectId,
+          outletId: outletObjectId,
+          menuItemId: menuItemObjectId,
+          menuItemVariantId: { $exists: false },
+          isDelete: false
+        },
+        update: { $set: { isDelete: true } }
+      }
+    });
+  } else {
+    const existing = await MenuItemAddonEntity.find({
+      brandId: brandObjectId,
+      outletId: outletObjectId,
+      menuItemId: menuItemObjectId,
+      menuItemVariantId: { $exists: false },
+      isDelete: false
+    }).lean();
+
+    const existingIds = new Set(
+      existing.map(doc => String(doc.addonId).toLowerCase())
+    );
+
+    const toAdd = [...incomingIds].filter(id => !existingIds.has(id));
+    const toDelete = [...existingIds].filter(id => !incomingIds.has(id));
+    const toUpdate = [...incomingIds].filter(id => existingIds.has(id));
+
+    for (const id of toAdd) {
+      const src = incomingMap.get(id);
+      if (!src || !src.addonId) continue;
+
+      const addon = await getAddon(brandId, outletId, src.addonId);
+      let allowedItemIds: Types.ObjectId[] = [];
+      if (addon) {
+        const allowedIds = new Set(
+          (addon.items || []).map(i => String(i._id || '')).filter(Boolean)
+        );
+        const filtered =
+          (src.allowedItemsId || [])
+            .map((s: string | undefined | null) => (s ?? '').trim())
+            .filter((value: string) => Boolean(value))
+            .filter((val: string, idx: number, arr: string[]) => {
+              const lowerVal = val.toLowerCase();
+              return (
+                arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx
+              );
+            })
+            .filter((val: string) => allowedIds.has(val)) || [];
+        allowedItemIds = filtered.map(val => new Types.ObjectId(val));
+      }
+
+      bulkOps.push({
+        insertOne: {
+          document: {
+            brandId: brandObjectId,
+            outletId: outletObjectId,
+            menuItemId: menuItemObjectId,
+            addonId: new Types.ObjectId(src.addonId),
+            allowedItemIds,
+            isSingleSelect: src.isSingleSelect ?? false,
+            min: src.min ?? null,
+            max: src.max ?? null,
+            isActive: true,
+            isDelete: false
+          }
+        }
+      });
+    }
+
+    for (const id of toUpdate) {
+      const src = incomingMap.get(id);
+      if (!src || !src.addonId) continue;
+
+      const addon = await getAddon(brandId, outletId, src.addonId);
+      let allowedItemIds: Types.ObjectId[] = [];
+      if (addon) {
+        const allowedIds = new Set(
+          (addon.items || []).map(i => String(i._id || '')).filter(Boolean)
+        );
+        const filtered =
+          (src.allowedItemsId || [])
+            .map((s: string | undefined | null) => (s ?? '').trim())
+            .filter((value: string) => Boolean(value))
+            .filter((val: string, idx: number, arr: string[]) => {
+              const lowerVal = val.toLowerCase();
+              return (
+                arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx
+              );
+            })
+            .filter((val: string) => allowedIds.has(val)) || [];
+        allowedItemIds = filtered.map(val => new Types.ObjectId(val));
+      }
+
+      bulkOps.push({
+        updateMany: {
+          filter: {
+            brandId: brandObjectId,
+            outletId: outletObjectId,
+            menuItemId: menuItemObjectId,
+            menuItemVariantId: { $exists: false },
+            addonId: new Types.ObjectId(src.addonId),
+            isDelete: false
+          },
+          update: {
+            $set: {
+              allowedItemIds,
+              isSingleSelect: src.isSingleSelect ?? false,
+              min: src.min ?? null,
+              max: src.max ?? null
+            }
+          }
+        }
+      });
+    }
+
+    if (toDelete.length > 0) {
+      bulkOps.push({
+        updateMany: {
+          filter: {
+            brandId: brandObjectId,
+            outletId: outletObjectId,
+            menuItemId: menuItemObjectId,
+            menuItemVariantId: { $exists: false },
+            addonId: { $in: toDelete.map(id => new Types.ObjectId(id)) },
+            isDelete: false
+          },
+          update: { $set: { isDelete: true } }
+        }
+      });
+    }
+  }
+
+  if (bulkOps.length === 0) {
+    return null;
+  }
+
+  return MenuItemAddonEntity.bulkWrite(bulkOps);
+};
+
 export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
   const brandObjectId = new Types.ObjectId(input.brandId);
   const outletObjectId = new Types.ObjectId(input.outletId);
@@ -275,77 +461,12 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
   const bulkOps = [] as Parameters<typeof MenuItemAddonEntity.bulkWrite>[0];
 
   if (!input.isVariation) {
-    if (input.addons === undefined) {
-      return null;
-    }
-
-    const incomingIds = new Set(
-      (input.addons || [])
-        .map(a => (a.addonId ?? '').trim())
-        .filter(Boolean)
-        .map(id => id.toLowerCase())
-    );
-
-    if (incomingIds.size === 0) {
-      bulkOps.push({
-        updateMany: {
-          filter: {
-            brandId: brandObjectId,
-            outletId: outletObjectId,
-            menuItemId: menuItemObjectId,
-            menuItemVariantId: { $exists: false },
-            isDelete: false
-          },
-          update: { $set: { isDelete: true } }
-        }
-      });
-    } else {
-      const existing = await MenuItemAddonEntity.find({
-        brandId: brandObjectId,
-        outletId: outletObjectId,
-        menuItemId: menuItemObjectId,
-        menuItemVariantId: { $exists: false },
-        isDelete: false
-      }).lean();
-
-      const existingIds = new Set(
-        existing.map(doc => String(doc.addonId).toLowerCase())
-      );
-
-      const toAdd = [...incomingIds].filter(id => !existingIds.has(id));
-      const toDelete = [...existingIds].filter(id => !incomingIds.has(id));
-
-      for (const id of toAdd) {
-        bulkOps.push({
-          insertOne: {
-            document: {
-              brandId: brandObjectId,
-              outletId: outletObjectId,
-              menuItemId: menuItemObjectId,
-              addonId: new Types.ObjectId(id),
-              isActive: true,
-              isDelete: false
-            }
-          }
-        });
-      }
-
-      if (toDelete.length > 0) {
-        bulkOps.push({
-          updateMany: {
-            filter: {
-              brandId: brandObjectId,
-              outletId: outletObjectId,
-              menuItemId: menuItemObjectId,
-              menuItemVariantId: { $exists: false },
-              addonId: { $in: toDelete.map(id => new Types.ObjectId(id)) },
-              isDelete: false
-            },
-            update: { $set: { isDelete: true } }
-          }
-        });
-      }
-    }
+    return updateMenuItemAddonsSoft({
+      brandId: input.brandId,
+      outletId: input.outletId,
+      menuItemId: input.menuItemId,
+      addons: input.addons
+    });
   } else {
     const variations = input.variations || [];
     if (variations.length === 0) {
@@ -381,12 +502,25 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
       const variantIdStr = variation.menuItemVariantId;
       const variantObjectId = new Types.ObjectId(variantIdStr);
 
-      const incomingIds = new Set(
-        (variation.addons || [])
-          .map(a => (a.addonId ?? '').trim())
-          .filter(Boolean)
-          .map(id => id.toLowerCase())
-      );
+      const incomingMap = new Map<string, MenuItemAddonSyncItemDTO>();
+      const incomingIds = new Set<string>();
+
+      for (const a of variation.addons || []) {
+        const raw = a.addonId ?? '';
+        const trimmed = raw.trim();
+        if (!trimmed) continue;
+        const key = trimmed.toLowerCase();
+        if (!incomingMap.has(key)) {
+          incomingMap.set(key, {
+            addonId: trimmed,
+            allowedItemsId: a.allowedItemsId,
+            isSingleSelect: a.isSingleSelect,
+            min: a.min,
+            max: a.max
+          });
+          incomingIds.add(key);
+        }
+      }
 
       if (incomingIds.size === 0) {
         bulkOps.push({
@@ -408,8 +542,32 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
 
       const toAdd = [...incomingIds].filter(id => !existingIds.has(id));
       const toDelete = [...existingIds].filter(id => !incomingIds.has(id));
+      const toUpdate = [...incomingIds].filter(id => existingIds.has(id));
 
       for (const id of toAdd) {
+        const src = incomingMap.get(id);
+        if (!src || !src.addonId) continue;
+
+        const addon = await getAddon(input.brandId, input.outletId, src.addonId);
+        let allowedItemIds: Types.ObjectId[] = [];
+        if (addon) {
+          const allowedIds = new Set(
+            (addon.items || []).map(i => String(i._id || '')).filter(Boolean)
+          );
+          const filtered =
+            (src.allowedItemsId || [])
+              .map((s: string | undefined | null) => (s ?? '').trim())
+              .filter((value: string) => Boolean(value))
+              .filter((val: string, idx: number, arr: string[]) => {
+                const lowerVal = val.toLowerCase();
+                return (
+                  arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx
+                );
+              })
+              .filter((val: string) => allowedIds.has(val)) || [];
+          allowedItemIds = filtered.map(val => new Types.ObjectId(val));
+        }
+
         bulkOps.push({
           insertOne: {
             document: {
@@ -417,9 +575,59 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
               outletId: outletObjectId,
               menuItemId: menuItemObjectId,
               menuItemVariantId: variantObjectId,
-              addonId: new Types.ObjectId(id),
+              addonId: new Types.ObjectId(src.addonId),
+              allowedItemIds,
+              isSingleSelect: src.isSingleSelect ?? false,
+              min: src.min ?? null,
+              max: src.max ?? null,
               isActive: true,
               isDelete: false
+            }
+          }
+        });
+      }
+
+      for (const id of toUpdate) {
+        const src = incomingMap.get(id);
+        if (!src || !src.addonId) continue;
+
+        const addon = await getAddon(input.brandId, input.outletId, src.addonId);
+        let allowedItemIds: Types.ObjectId[] = [];
+        if (addon) {
+          const allowedIds = new Set(
+            (addon.items || []).map(i => String(i._id || '')).filter(Boolean)
+          );
+          const filtered =
+            (src.allowedItemsId || [])
+              .map((s: string | undefined | null) => (s ?? '').trim())
+              .filter((value: string) => Boolean(value))
+              .filter((val: string, idx: number, arr: string[]) => {
+                const lowerVal = val.toLowerCase();
+                return (
+                  arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx
+                );
+              })
+              .filter((val: string) => allowedIds.has(val)) || [];
+          allowedItemIds = filtered.map(val => new Types.ObjectId(val));
+        }
+
+        bulkOps.push({
+          updateMany: {
+            filter: {
+              brandId: brandObjectId,
+              outletId: outletObjectId,
+              menuItemId: menuItemObjectId,
+              menuItemVariantId: variantObjectId,
+              addonId: new Types.ObjectId(src.addonId),
+              isDelete: false
+            },
+            update: {
+              $set: {
+                allowedItemIds,
+                isSingleSelect: src.isSingleSelect ?? false,
+                min: src.min ?? null,
+                max: src.max ?? null
+              }
             }
           }
         });
@@ -456,5 +664,6 @@ export default {
   getMenuItemAddon,
   updateMenuItemAddon,
   deleteMenuItemAddon,
+  updateMenuItemAddonsSoft,
   updateMenuItemAddons
 };

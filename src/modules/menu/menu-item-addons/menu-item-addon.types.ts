@@ -64,6 +64,10 @@ export interface MenuItemAddonFilterQuery {
 
 export interface MenuItemAddonSyncItemDTO {
   addonId?: string | null;
+  allowedItemsId?: string[];
+  isSingleSelect?: boolean;
+  min?: number | null;
+  max?: number | null;
 }
 
 export interface MenuItemAddonSyncVariationDTO {

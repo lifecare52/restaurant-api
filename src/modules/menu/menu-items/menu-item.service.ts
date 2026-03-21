@@ -432,18 +432,24 @@ const normalizeAddonSyncItems = (
   addons: MenuItemAddonSyncItemDTO[] | undefined
 ): MenuItemAddonSyncItemDTO[] | undefined => {
   if (!addons) return undefined;
-  const map = new Map<string, string>();
+  const map = new Map<string, MenuItemAddonSyncItemDTO>();
   for (const a of addons) {
     const raw = a.addonId ?? '';
     const trimmed = raw.trim();
     if (!trimmed) continue;
     const key = trimmed.toLowerCase();
     if (!map.has(key)) {
-      map.set(key, trimmed);
+      map.set(key, {
+        addonId: trimmed,
+        allowedItemsId: a.allowedItemsId,
+        isSingleSelect: a.isSingleSelect,
+        min: a.min,
+        max: a.max
+      });
     }
   }
   if (map.size === 0) return [];
-  return [...map.values()].map(addonId => ({ addonId }));
+  return [...map.values()];
 };
 
 export const updateMenuItemVariations = async ({
@@ -518,9 +524,34 @@ export const updateMenuItemVariations = async ({
   const addonPayload: MenuItemAddonSyncVariationDTO[] = [];
 
   if (normalized.length === 0) {
+    const variantAddonPayload = existing.map(ev => ({
+      menuItemVariantId: String(ev._id),
+      addons: [] as MenuItemAddonSyncItemDTO[]
+    }));
+
+    if (variantAddonPayload.length > 0) {
+      await updateMenuItemAddons({
+        brandId,
+        outletId,
+        menuItemId,
+        isVariation: true,
+        variations: variantAddonPayload
+      });
+    }
+
+    await updateMenuItemAddons({
+      brandId,
+      outletId,
+      menuItemId,
+      isVariation: false,
+      addons: []
+    });
+
     for (const ev of existing) {
       await deleteMenuItemVariant(brandId, outletId, String(ev._id));
     }
+
+    return { added: 0, updated: 0, deleted: existing.length };
   } else {
     for (const id of toAddIds) {
       const v = normalized.find(n => n.variationId.toLowerCase() === id);
@@ -580,24 +611,46 @@ export const updateMenuItemVariations = async ({
       }
     }
 
+    const variantsToDelete: (MenuItemVariant & { _id: Types.ObjectId })[] = [];
     for (const id of toDeleteIds) {
       const ev = existingByVariationId.get(id);
       if (!ev) continue;
+      variantsToDelete.push(ev);
+      addonPayload.push({
+        menuItemVariantId: String(ev._id),
+        addons: []
+      });
+    }
+
+    if (addonPayload.length > 0) {
+      await updateMenuItemAddons({
+        brandId,
+        outletId,
+        menuItemId,
+        isVariation: true,
+        variations: addonPayload
+      });
+    }
+
+    for (const ev of variantsToDelete) {
       await deleteMenuItemVariant(brandId, outletId, String(ev._id));
     }
   }
 
-  if (addonPayload.length > 0) {
-    await updateMenuItemAddons({
-      brandId,
-      outletId,
-      menuItemId,
-      isVariation: true,
-      variations: addonPayload
-    });
-  }
-
   return { added: toAddIds.length, updated: toUpdateIds.length, deleted: toDeleteIds.length };
+};
+
+export const deleteAllVariationsWithAddons = async (
+  brandId: string,
+  outletId: string,
+  menuItemId: string
+) => {
+  return updateMenuItemVariations({
+    brandId,
+    outletId,
+    menuItemId,
+    variations: []
+  });
 };
 
 export const updateMenuItem = async (
@@ -648,20 +701,26 @@ export const updateMenuItem = async (
     const outletId = String(updated.outletId);
     const normalizeAddonUpdate = (arr: MenuItemAddonInputUpdate[] | undefined) => {
       if (!arr) return undefined;
-      const map = new Map<string, string>();
+      const map = new Map<string, MenuItemAddonSyncItemDTO>();
       for (const a of arr) {
         const raw = a.addonId ?? '';
         const trimmed = raw.trim();
         if (!trimmed) continue;
         const key = trimmed.toLowerCase();
         if (!map.has(key)) {
-          map.set(key, trimmed);
+          map.set(key, {
+            addonId: trimmed,
+            allowedItemsId: a.allowedItemsId,
+            isSingleSelect: a.isSingleSelect,
+            min: a.min,
+            max: a.max
+          });
         }
       }
-      return [...map.values()].map(addonId => ({ addonId }));
+      return [...map.values()];
     };
 
-    if (dto.variations !== undefined) {
+    if (dto.variations && dto.variations.length > 0) {
       await updateMenuItemVariations({
         brandId,
         outletId,
@@ -673,7 +732,13 @@ export const updateMenuItem = async (
             costPrice: v.costPrice,
             isMeasurementBased: v.isMeasurementBased,
             measurementConfig: v.measurementConfig,
-            addons: v.addons?.map(a => ({ addonId: a.addonId }))
+            addons: v.addons?.map(a => ({
+              addonId: a.addonId,
+              allowedItemsId: a.allowedItemsId,
+              isSingleSelect: a.isSingleSelect,
+              min: a.min,
+              max: a.max
+            }))
           })) || []
       });
     } else if (dto.addons !== undefined && !dto.isMeasurementBased) {
@@ -869,8 +934,20 @@ export const getAddonMappingAggregationV2 = async (
     {
       $lookup: {
         from: 'categories',
-        localField: 'categoryId',
-        foreignField: '_id',
+        let: { catId: '$categoryId' },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ['$_id', '$$catId'] },
+                  { $eq: ['$isDelete', false] },
+                  { $eq: ['$isActive', true] }
+                ]
+              }
+            }
+          }
+        ],
         as: 'category'
       }
     },
@@ -884,6 +961,22 @@ export const getAddonMappingAggregationV2 = async (
         localField: '_id',
         foreignField: 'menuItemId',
         as: 'variants'
+      }
+    },
+    {
+      $addFields: {
+        variants: {
+          $filter: {
+            input: '$variants',
+            as: 'v',
+            cond: {
+              $and: [
+                { $eq: ['$$v.isDelete', false] },
+                { $eq: ['$$v.isActive', true] }
+              ]
+            }
+          }
+        }
       }
     },
 
