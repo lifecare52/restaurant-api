@@ -15,7 +15,10 @@ import {
   updateMenuItemVariant,
   deleteMenuItemVariant
 } from '@modules/menu/menu-item-variants/menu-item-variant.service';
-import type { MenuItemVariant } from '@modules/menu/menu-item-variants/menu-item-variant.types';
+import type {
+  MenuItemVariant,
+  MenuItemVariantUpdateDTO
+} from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
 import type {
   MenuItem,
@@ -24,9 +27,13 @@ import type {
   MenuItemAddonView,
   MenuItemCreateDTO,
   MenuItemUpdateDTO,
-  BulkUpdateAvailabilityDTO
+  BulkUpdateAvailabilityDTO,
+  MeasurementConfig
 } from '@modules/menu/menu-items/menu-item.types';
-import type { MenuItemAddonSyncVariationDTO } from '@modules/menu/menu-item-addons/menu-item-addon.types';
+import type {
+  MenuItemAddonSyncItemDTO,
+  MenuItemAddonSyncVariationDTO
+} from '@modules/menu/menu-item-addons/menu-item-addon.types';
 import { getVariation, listActiveVariations } from '@modules/menu/variations/variation.service';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
@@ -405,6 +412,194 @@ export const getMenuItem = async (brandId: string, menuItemId: string) => {
   });
 };
 
+type UpdateMenuItemVariationInput = {
+  variationId: string;
+  basePrice?: number;
+  costPrice?: number;
+  isMeasurementBased?: boolean;
+  measurementConfig?: MeasurementConfig;
+  addons?: MenuItemAddonSyncItemDTO[];
+};
+
+type UpdateMenuItemVariationsInput = {
+  brandId: string;
+  outletId: string;
+  menuItemId: string;
+  variations?: UpdateMenuItemVariationInput[];
+};
+
+const normalizeAddonSyncItems = (
+  addons: MenuItemAddonSyncItemDTO[] | undefined
+): MenuItemAddonSyncItemDTO[] | undefined => {
+  if (!addons) return undefined;
+  const map = new Map<string, string>();
+  for (const a of addons) {
+    const raw = a.addonId ?? '';
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    const key = trimmed.toLowerCase();
+    if (!map.has(key)) {
+      map.set(key, trimmed);
+    }
+  }
+  if (map.size === 0) return [];
+  return [...map.values()].map(addonId => ({ addonId }));
+};
+
+export const updateMenuItemVariations = async ({
+  brandId,
+  outletId,
+  menuItemId,
+  variations
+}: UpdateMenuItemVariationsInput) => {
+  if (variations === undefined) {
+    return null;
+  }
+
+  const normalized: UpdateMenuItemVariationInput[] = [];
+  const seen = new Set<string>();
+
+  for (const v of variations || []) {
+    const raw = v.variationId ?? '';
+    const trimmed = raw.trim();
+    if (!trimmed) continue;
+    const key = trimmed.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    normalized.push({ ...v, variationId: trimmed });
+  }
+
+  const variantsResult = await listMenuItemVariants(brandId, outletId, {
+    page: 1,
+    limit: 1000,
+    menuItemId,
+    column: 'createdAt',
+    order: 'ASC'
+  });
+
+  const existing = (variantsResult.items || []) as (MenuItemVariant & {
+    _id: Types.ObjectId;
+  })[];
+
+  const existingByVariationId = new Map<string, MenuItemVariant & { _id: Types.ObjectId }>();
+  const existingIdSet = new Set<string>();
+
+  for (const ev of existing) {
+    const key = String(ev.variationId).toLowerCase();
+    if (!existingByVariationId.has(key)) {
+      existingByVariationId.set(key, ev);
+    }
+    existingIdSet.add(key);
+  }
+
+  const incomingIdSet = new Set<string>();
+  for (const v of normalized) {
+    incomingIdSet.add(v.variationId.toLowerCase());
+  }
+
+  const toAddIds: string[] = [];
+  const toUpdateIds: string[] = [];
+  const toDeleteIds: string[] = [];
+
+  for (const id of incomingIdSet) {
+    if (!existingIdSet.has(id)) {
+      toAddIds.push(id);
+    } else {
+      toUpdateIds.push(id);
+    }
+  }
+
+  for (const id of existingIdSet) {
+    if (!incomingIdSet.has(id)) {
+      toDeleteIds.push(id);
+    }
+  }
+
+  const addonPayload: MenuItemAddonSyncVariationDTO[] = [];
+
+  if (normalized.length === 0) {
+    for (const ev of existing) {
+      await deleteMenuItemVariant(brandId, outletId, String(ev._id));
+    }
+  } else {
+    for (const id of toAddIds) {
+      const v = normalized.find(n => n.variationId.toLowerCase() === id);
+      if (!v) continue;
+
+      const exists = await getVariation(brandId, outletId, v.variationId);
+      if (!exists) {
+        throw { status: 404, code: 'VARIATION_NOT_FOUND', message: 'Variation not found' };
+      }
+
+      const created = await createMenuItemVariant(brandId, outletId, {
+        menuItemId,
+        variationId: v.variationId,
+        basePrice: v.basePrice,
+        costPrice: v.costPrice,
+        isMeasurementBased: v.isMeasurementBased,
+        measurementConfig: v.measurementConfig,
+        isActive: true,
+        isDefault: false
+      });
+
+      if (!created) continue;
+
+      const variantDocId = String(created._id);
+      const addons = normalizeAddonSyncItems(v.addons);
+      if (addons) {
+        addonPayload.push({
+          menuItemVariantId: variantDocId,
+          addons
+        });
+      }
+    }
+
+    for (const id of toUpdateIds) {
+      const existingVariant = existingByVariationId.get(id);
+      if (!existingVariant) continue;
+
+      const v = normalized.find(n => n.variationId.toLowerCase() === id);
+      if (!v) continue;
+
+      const dto: MenuItemVariantUpdateDTO = {
+        variationId: v.variationId,
+        basePrice: v.basePrice,
+        costPrice: v.costPrice,
+        isMeasurementBased: v.isMeasurementBased,
+        measurementConfig: v.measurementConfig
+      };
+
+      await updateMenuItemVariant(brandId, outletId, String(existingVariant._id), dto);
+
+      const addons = normalizeAddonSyncItems(v.addons);
+      if (addons) {
+        addonPayload.push({
+          menuItemVariantId: String(existingVariant._id),
+          addons
+        });
+      }
+    }
+
+    for (const id of toDeleteIds) {
+      const ev = existingByVariationId.get(id);
+      if (!ev) continue;
+      await deleteMenuItemVariant(brandId, outletId, String(ev._id));
+    }
+  }
+
+  if (addonPayload.length > 0) {
+    await updateMenuItemAddons({
+      brandId,
+      outletId,
+      menuItemId,
+      isVariation: true,
+      variations: addonPayload
+    });
+  }
+
+  return { added: toAddIds.length, updated: toUpdateIds.length, deleted: toDeleteIds.length };
+};
+
 export const updateMenuItem = async (
   brandId: string,
   menuItemId: string,
@@ -466,101 +661,21 @@ export const updateMenuItem = async (
       return [...map.values()].map(addonId => ({ addonId }));
     };
 
-    if (dto.variations && dto.variations.length > 0) {
-      const variants = await listMenuItemVariants(brandId, outletId, {
-        page: 1,
-        limit: 1000,
+    if (dto.variations !== undefined) {
+      await updateMenuItemVariations({
+        brandId,
+        outletId,
         menuItemId,
-        column: 'createdAt',
-        order: 'ASC'
-      });
-      const byVariationId = new Map<string, string>();
-      (variants.items || []).forEach(v => byVariationId.set(String(v.variationId), String(v._id)));
-
-      const processedVariantIds = new Set<string>();
-      const variantAddonPayload: MenuItemAddonSyncVariationDTO[] = [];
-
-      for (const v of dto.variations) {
-        let variantDocId: string | undefined = undefined;
-
-        if (v.id) {
-          const match = (variants.items || []).find(existing => String(existing._id) === v.id);
-          if (match) {
-            variantDocId = String(match._id);
-          }
-        }
-
-        if (!variantDocId) {
-          variantDocId = byVariationId.get(v.variationId);
-        }
-
-        if (!variantDocId) {
-          const exists = await getVariation(brandId, outletId, v.variationId);
-          if (!exists) {
-            throw { status: 404, code: 'VARIATION_NOT_FOUND', message: 'Variation not found' };
-          }
-
-          const newVariant = await createMenuItemVariant(brandId, outletId, {
-            menuItemId,
+        variations:
+          dto.variations?.map(v => ({
             variationId: v.variationId,
             basePrice: v.basePrice,
             costPrice: v.costPrice,
             isMeasurementBased: v.isMeasurementBased,
             measurementConfig: v.measurementConfig,
-            isActive: true,
-            isDefault: false
-          });
-
-          if (!newVariant) continue;
-          variantDocId = String(newVariant._id);
-
-          processedVariantIds.add(variantDocId);
-
-          const addons = normalizeAddonUpdate(v.addons);
-          if (addons) {
-            variantAddonPayload.push({
-              menuItemVariantId: variantDocId,
-              addons
-            });
-          }
-          continue; // Finish processing this explicitly newly created variation
-        }
-
-        // Update variant details
-        processedVariantIds.add(variantDocId);
-        await updateMenuItemVariant(brandId, outletId, variantDocId, {
-          variationId: v.variationId,
-          basePrice: v.basePrice,
-          costPrice: v.costPrice,
-          isMeasurementBased: v.isMeasurementBased,
-          measurementConfig: v.measurementConfig
-        });
-
-        const addons = normalizeAddonUpdate(v.addons);
-        if (addons) {
-          variantAddonPayload.push({
-            menuItemVariantId: variantDocId,
-            addons
-          });
-        }
-      }
-
-      // NO-OP the untouched variations by deleting them since they aren't part of the DTO anymore
-      for (const existing of variants.items || []) {
-        if (!processedVariantIds.has(String(existing._id))) {
-          await deleteMenuItemVariant(brandId, outletId, String(existing._id));
-        }
-      }
-
-      if (variantAddonPayload.length > 0) {
-        await updateMenuItemAddons({
-          brandId,
-          outletId,
-          menuItemId,
-          isVariation: true,
-          variations: variantAddonPayload
-        });
-      }
+            addons: v.addons?.map(a => ({ addonId: a.addonId }))
+          })) || []
+      });
     } else if (dto.addons !== undefined && !dto.isMeasurementBased) {
       const addons = normalizeAddonUpdate(dto.addons);
       await updateMenuItemAddons({
