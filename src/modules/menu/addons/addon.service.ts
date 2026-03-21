@@ -2,7 +2,11 @@ import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
 import AddonEntity from '@modules/menu/addons/addon.model';
-import type { AddonCreateDTO, AddonUpdateDTO } from '@modules/menu/addons/addon.types';
+import type {
+  AddonCreateDTO,
+  AddonUpdateDTO,
+  AddonItemUpdateDTO
+} from '@modules/menu/addons/addon.types';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
@@ -92,6 +96,77 @@ export const getAddon = async (brandId: string, outletId: string, addonId: strin
   });
 };
 
+const applyAddonItemsDiff = (
+  addon: typeof AddonEntity.prototype,
+  items: AddonItemUpdateDTO[]
+) => {
+  const existingIds = new Set<string>(
+    (addon.items || []).map((i: { _id?: Types.ObjectId }) => String(i._id))
+  );
+
+  const incomingIdSet = new Set<string>();
+  const incomingById = new Map<string, AddonItemUpdateDTO>();
+  const newItems: AddonItemUpdateDTO[] = [];
+
+  for (const item of items || []) {
+    const rawId = item._id ?? '';
+    const id = rawId.trim();
+    if (id && existingIds.has(id)) {
+      incomingIdSet.add(id);
+      incomingById.set(id, item);
+    } else {
+      newItems.push(item);
+    }
+  }
+
+  for (const [id, item] of incomingById) {
+    const sub = addon.items.id(id) as (typeof addon.items)[0] | null;
+    if (!sub) continue;
+    sub.name = item.name;
+    sub.price = item.price;
+    sub.sapCode = item.sapCode;
+    sub.dietary = item.dietary;
+    if (typeof item.available === 'boolean') {
+      sub.available = item.available;
+    }
+  }
+
+  for (const sub of [...addon.items]) {
+    const id = String(sub._id);
+    if (!incomingIdSet.has(id)) {
+      sub.deleteOne();
+    }
+  }
+
+  for (const item of newItems) {
+    addon.items.push({
+      name: item.name,
+      price: item.price,
+      sapCode: item.sapCode,
+      dietary: item.dietary,
+      available: item.available ?? true
+    } as never);
+  }
+};
+
+export const updateAddonItems = async (
+  brandId: string,
+  outletId: string,
+  addonId: string,
+  items: AddonItemUpdateDTO[]
+) => {
+  const addon = await AddonEntity.findOne({
+    _id: new Types.ObjectId(addonId),
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId)
+  });
+  if (!addon) return null;
+
+  applyAddonItemsDiff(addon, items);
+  await addon.save();
+  return addon;
+};
+
 export const updateAddon = async (
   brandId: string,
   outletId: string,
@@ -99,20 +174,28 @@ export const updateAddon = async (
   dto: AddonUpdateDTO
 ) => {
   try {
-    return AddonEntity.findOneAndUpdate(
-      {
-        _id: new Types.ObjectId(addonId),
-        brandId: new Types.ObjectId(brandId),
-        outletId: new Types.ObjectId(outletId)
-      },
-      {
-        $set: {
-          ...dto,
-          taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : undefined
-        }
-      },
-      { new: true }
-    );
+    const addon = await AddonEntity.findOne({
+      _id: new Types.ObjectId(addonId),
+      brandId: new Types.ObjectId(brandId),
+      outletId: new Types.ObjectId(outletId)
+    });
+    if (!addon) return null;
+
+    if (dto.name !== undefined) {
+      addon.name = dto.name;
+    }
+    if (dto.isActive !== undefined) {
+      addon.isActive = dto.isActive;
+    }
+    if (dto.taxGroupId !== undefined) {
+      addon.taxGroupId = dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : undefined;
+    }
+    if (dto.items) {
+      applyAddonItemsDiff(addon, dto.items);
+    }
+
+    await addon.save();
+    return addon;
   } catch (err) {
     const e = err as { code?: number };
     if (e?.code === 11000) {
@@ -139,6 +222,7 @@ export default {
   listAddons,
   listActiveAddons,
   getAddon,
+  updateAddonItems,
   updateAddon,
   deleteAddon
 };

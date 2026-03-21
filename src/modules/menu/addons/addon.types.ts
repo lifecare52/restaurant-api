@@ -10,6 +10,10 @@ export interface AddonItemDTO {
   available?: boolean;
 }
 
+export interface AddonItemUpdateDTO extends AddonItemDTO {
+  _id?: string;
+}
+
 export interface AddonCreateDTO {
   name: string;
   items: AddonItemDTO[];
@@ -19,7 +23,7 @@ export interface AddonCreateDTO {
 
 export interface AddonUpdateDTO {
   name?: string;
-  items?: AddonItemDTO[];
+  items?: AddonItemUpdateDTO[];
   isActive?: boolean;
   taxGroupId?: string;
 }

@@ -26,6 +26,7 @@ export const updateAddonSchema = Joi.object({
   name: Joi.string().trim().min(2).max(100),
   items: Joi.array().items(
     Joi.object({
+      _id: objectId.optional().allow(null),
       name: Joi.string().trim().min(1).max(100).required(),
       price: Joi.number().min(0).required(),
       sapCode: Joi.string().trim().max(50).optional(),
