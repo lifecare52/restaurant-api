@@ -1279,7 +1279,37 @@ export const getOpenApiSpec = () => {
             category: { type: 'string' },
             items: {
               type: 'array',
-              items: { $ref: '#/components/schemas/MenuItemWithNested' }
+              items: {
+                allOf: [
+                  { $ref: '#/components/schemas/MenuItemWithNested' },
+                  {
+                    type: 'object',
+                    properties: {
+                      taxGroup: {
+                        type: 'object',
+                        nullable: true,
+                        properties: {
+                          _id: { type: 'string' },
+                          name: { type: 'string' },
+                          taxes: {
+                            type: 'array',
+                            items: {
+                              type: 'object',
+                              properties: {
+                                _id: { type: 'string' },
+                                name: { type: 'string' },
+                                rate: { type: 'number' },
+                                type: { type: 'string' },
+                                isInclusive: { type: 'boolean' }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                ]
+              }
             }
           },
           required: ['categoryId', 'category', 'items']
@@ -5436,77 +5466,6 @@ export const getOpenApiSpec = () => {
                           data: {
                             type: 'array',
                             items: { $ref: '#/components/schemas/ItemSalesReportItem' }
-                          }
-                        }
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      '/api/v1/order/menu-items': {
-        get: {
-          tags: ['Order'],
-          summary: 'Get POS Menu Category Wise',
-          description: 'Fetches the menu with all variants, addons, measurements, and taxes (if GST enabled) populated.',
-          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
-          responses: {
-            200: {
-              description: 'OK',
-              content: {
-                'application/json': {
-                  schema: {
-                    allOf: [
-                      { $ref: '#/components/schemas/ApiResponse' },
-                      {
-                        type: 'object',
-                        properties: {
-                          data: {
-                            type: 'array',
-                            items: {
-                              type: 'object',
-                              properties: {
-                                categoryId: { type: 'string' },
-                                category: { type: 'string' },
-                                items: {
-                                  type: 'array',
-                                  items: {
-                                    allOf: [
-                                      { $ref: '#/components/schemas/MenuItemWithNested' },
-                                      {
-                                        type: 'object',
-                                        properties: {
-                                          taxGroup: {
-                                            type: 'object',
-                                            nullable: true,
-                                            properties: {
-                                              _id: { type: 'string' },
-                                              name: { type: 'string' },
-                                              taxes: {
-                                                type: 'array',
-                                                items: {
-                                                  type: 'object',
-                                                  properties: {
-                                                    _id: { type: 'string' },
-                                                    name: { type: 'string' },
-                                                    rate: { type: 'number' },
-                                                    type: { type: 'string' },
-                                                    isInclusive: { type: 'boolean' }
-                                                  }
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    ]
-                                  }
-                                }
-                              }
-                            }
                           }
                         }
                       }
