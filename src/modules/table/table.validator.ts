@@ -31,8 +31,8 @@ export const updateTableStatusSchema = Joi.object({
 });
 
 export const tableListQuerySchema = Joi.object({
-  page: Joi.number().integer().min(1).default(1),
-  limit: Joi.number().integer().min(1).default(20),
+  page: Joi.number().integer().min(1).optional(),
+  limit: Joi.number().integer().min(1).optional(),
   searchText: Joi.string().allow('').optional(),
   column: Joi.string().optional(),
   order: Joi.string().valid('ASC', 'DESC').optional(),

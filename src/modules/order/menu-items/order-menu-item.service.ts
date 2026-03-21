@@ -1,6 +1,7 @@
 import { Types } from 'mongoose';
 
 import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
+import OutletEntity from '@modules/outlet/outlet.model';
 
 /**
  * Returns the full POS menu grouped by category for a given brand/outlet.
@@ -18,6 +19,9 @@ import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
 export const getPosMenuCategoryWise = async (brandId: string, outletId: string) => {
   const brandObjectId = new Types.ObjectId(brandId);
   const outletObjectId = new Types.ObjectId(outletId);
+
+  const outlet = await OutletEntity.findById(outletObjectId).select('settings.gstEnabled').lean();
+  const isGstEnabled = outlet?.settings?.gstEnabled === true;
 
   return MenuItemEntity.aggregate([
     /* ─── 1. MATCH active, non-deleted menu items ─── */
@@ -40,6 +44,36 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
       }
     },
     { $unwind: { path: '$categoryDoc', preserveNullAndEmptyArrays: false } },
+
+    ...(isGstEnabled
+      ? [
+          /* ─── 2.0.1 RESOLVE EFFECTIVE TAX GROUP ID ─── */
+          {
+            $addFields: {
+              effectiveTaxGroupId: { $ifNull: ['$taxGroupId', '$categoryDoc.taxGroupId'] }
+            }
+          },
+
+          /* ─── 2.1 TAX GROUP & TAXES ─── */
+          {
+            $lookup: {
+              from: 'tax_groups',
+              localField: 'effectiveTaxGroupId',
+              foreignField: '_id',
+              as: 'taxGroupDoc'
+            }
+          },
+          { $unwind: { path: '$taxGroupDoc', preserveNullAndEmptyArrays: true } },
+          {
+            $lookup: {
+              from: 'taxes',
+              localField: 'taxGroupDoc.taxes',
+              foreignField: '_id',
+              as: 'taxDocs'
+            }
+          }
+        ]
+      : []),
 
     /* ─── 3. VARIANTS (active, non-deleted) ─── */
     {
@@ -149,6 +183,33 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
     /* ─── 11. PROJECT full item shape ─── */
     {
       $addFields: {
+        /* ----- taxGroup ----- */
+        taxGroup: {
+          $cond: [
+            { $ifNull: ['$taxGroupDoc', false] },
+            {
+              _id: '$taxGroupDoc._id',
+              name: '$taxGroupDoc.name',
+              taxes: {
+                $map: {
+                  input: '$taxDocs',
+                  as: 't',
+                  in: {
+                    _id: '$$t._id',
+                    name: '$$t.name',
+                    rate: '$$t.rate',
+                    type: '$$t.type',
+                    isInclusive: '$$t.isInclusive',
+                    calculationMethod: '$$t.calculationMethod',
+                    applicableOrderTypes: '$$t.applicableOrderTypes'
+                  }
+                }
+              }
+            },
+            null
+          ]
+        },
+
         /* ----- dietaryShort ----- */
         dietaryShort: {
           $switch: {
@@ -395,6 +456,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         isActive: 1,
         isMeasurementBased: 1,
         measurementConfig: 1,
+        taxGroup: 1,
         variations: 1,
         addons: 1,
         createdAt: 1,
@@ -436,6 +498,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
               isActive: '$$it.isActive',
               isMeasurementBased: '$$it.isMeasurementBased',
               measurementConfig: '$$it.measurementConfig',
+              taxGroup: '$$it.taxGroup',
               variations: '$$it.variations',
               addons: '$$it.addons',
               createdAt: '$$it.createdAt',

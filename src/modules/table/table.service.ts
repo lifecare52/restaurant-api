@@ -34,10 +34,6 @@ export const createTable = async (brandId: string, outletId: string, dto: TableC
 };
 
 export const listTables = async (brandId: string, outletId: string, query: TableListQuery) => {
-  const page = query.page && query.page > 0 ? query.page : 1;
-  const limit = query.limit && query.limit > 0 ? query.limit : 20;
-  const skip = (page - 1) * limit;
-
   const filter: FilterQuery<Table> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
@@ -63,13 +59,19 @@ export const listTables = async (brandId: string, outletId: string, query: Table
   const sortColumn = query.column || 'createdAt';
   const sortOrder = query.order === 'ASC' ? 1 : -1;
 
+  let dbQuery = TableEntity.find(filter)
+    .populate('zoneId', 'name')
+    .sort({ [sortColumn]: sortOrder });
+
+  if (query.page !== undefined || query.limit !== undefined) {
+    const page = query.page && query.page > 0 ? query.page : 1;
+    const limit = query.limit && query.limit > 0 ? query.limit : 20;
+    const skip = (page - 1) * limit;
+    dbQuery = dbQuery.skip(skip).limit(limit) as any;
+  }
+
   const [items, total] = await Promise.all([
-    TableEntity.find(filter)
-      .populate('zoneId', 'name')
-      .sort({ [sortColumn]: sortOrder })
-      .skip(skip)
-      .limit(limit)
-      .lean(),
+    dbQuery.lean(),
     TableEntity.countDocuments(filter)
   ]);
 

@@ -6997,7 +6997,7 @@
             "required": false,
             "schema": {
               "type": "number",
-              "default": 1
+              "description": "Optional page number. If page and limit are not provided, returns all tables."
             }
           },
           {
@@ -7006,7 +7006,7 @@
             "required": false,
             "schema": {
               "type": "number",
-              "default": 20
+              "description": "Optional page size. If page and limit are not provided, returns all tables."
             }
           },
           {
