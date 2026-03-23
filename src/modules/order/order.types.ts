@@ -33,10 +33,8 @@ export interface Order {
   // Payment
   paymentStatus: PAYMENT_STATUS;
   paymentMethod?: PAYMENT_METHOD | null;
-  // Delivery
   shippingAddress?: string | null;
-  deliveryNotes?: string | null;
-  // Lifecycle timestamps
+  notes?: string | null;
   confirmedAt?: Date | null;
   closedAt?: Date | null;
   // Cancellation
