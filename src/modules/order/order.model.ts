@@ -34,23 +34,29 @@ const OrderSchema = new Schema<Order>(
       enum: Object.values(ORDER_STATUS).filter(v => !isNaN(Number(v))),
       default: ORDER_STATUS.OPEN
     },
-    // Financials
     subtotal: { type: Number, required: true, min: 0 },
     discountAmount: { type: Number, required: true, min: 0, default: 0 },
     discountType: { type: Number, default: null },
     discountValue: { type: Number, default: null },
     totalAmount: { type: Number, required: true, min: 0 },
-    // Payment
     paymentStatus: {
       type: Number,
       enum: Object.values(PAYMENT_STATUS).filter(v => !isNaN(Number(v))),
       default: PAYMENT_STATUS.UNPAID
     },
     paymentMethod: { type: Number, default: null },
-    // Delivery
     shippingAddress: { type: String, default: null },
-    deliveryNotes: { type: String, default: null },
-    // Lifecycle timestamps
+    notes: {
+      type: String,
+      trim: true,
+      default: null,
+      maxlength: 500,
+      set: (value: string | null | undefined) => {
+        if (typeof value !== 'string') return value ?? null;
+        const trimmed = value.trim();
+        return trimmed === '' ? null : trimmed;
+      }
+    },
     confirmedAt: { type: Date, default: null },
     closedAt: { type: Date, default: null },
     // Cancellation
@@ -101,7 +107,17 @@ const OrderItemSchema = new Schema<OrderItem>(
     measurement: { type: MeasurementSelectionSchema, default: undefined },
     variationId: { type: Schema.Types.ObjectId, ref: 'MenuItemVariant', default: null },
     variationName: { type: String, default: null },
-    instruction: { type: String, default: null },
+    instruction: {
+      type: String,
+      trim: true,
+      default: null,
+      maxlength: 300,
+      set: (value: string | null | undefined) => {
+        if (typeof value !== 'string') return value ?? null;
+        const trimmed = value.trim();
+        return trimmed === '' ? null : trimmed;
+      }
+    },
     totalPrice: { type: Number, required: true, min: 0 },
     // Item-level kitchen status
     itemStatus: {

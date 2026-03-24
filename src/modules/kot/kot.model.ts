@@ -21,6 +21,17 @@ const KOTSchema = new Schema<KOT>(
     waiterId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     tokenNo: { type: String, default: null },
     tableName: { type: String, default: null },
+    notes: {
+      type: String,
+      trim: true,
+      default: null,
+      maxlength: 500,
+      set: (value: string | null | undefined) => {
+        if (typeof value !== 'string') return value ?? null;
+        const trimmed = value.trim();
+        return trimmed === '' ? null : trimmed;
+      }
+    },
     status: {
       type: Number,
       enum: Object.values(KOT_STATUS).filter(v => !isNaN(Number(v))),
@@ -50,6 +61,17 @@ const KOTItemSchema = new Schema<KOTItem>(
     kotId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'KOT' },
     orderItemId: { type: Schema.Types.ObjectId, required: true, ref: 'OrderItem' },
     quantity: { type: Number, required: true, min: 1 },
+    instruction: {
+      type: String,
+      trim: true,
+      default: null,
+      maxlength: 300,
+      set: (value: string | null | undefined) => {
+        if (typeof value !== 'string') return value ?? null;
+        const trimmed = value.trim();
+        return trimmed === '' ? null : trimmed;
+      }
+    },
     // Per-item kitchen status
     itemStatus: {
       type: Number,

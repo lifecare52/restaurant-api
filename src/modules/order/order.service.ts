@@ -392,7 +392,6 @@ export const createOrder = async (
     // For DINE_IN, tokenNo remains null as per requirements
   }
 
-  // ── Transaction ───────────────────────────────────────────────────────────
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -410,6 +409,7 @@ export const createOrder = async (
       subtotal,
       discountAmount: 0,
       totalAmount,
+      notes: dto.notes && dto.notes.trim().length > 0 ? dto.notes.trim() : null,
       isActive: true,
       isDelete: false
     };
@@ -815,10 +815,15 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
 
   const formattedItems = items.map(item => ({
     ...item,
+    instruction: item.instruction ?? null,
     addons: addons.filter(addon => String(addon.orderItemId) === String(item._id))
   }));
 
-  const result: any = { ...order, items: formattedItems };
+  const result: any = {
+    ...order,
+    notes: (order as any).notes ?? null,
+    items: formattedItems
+  };
 
   // Requirement: Do NOT include tokenNumber in the API response for DINE_IN
   if (order.orderType === ORDER_TYPE.DINE_IN) {
@@ -1014,7 +1019,12 @@ export const listOrders = async (
     OrderEntity.countDocuments(filter)
   ]);
 
-  return { items, total };
+  const normalizedItems = items.map(item => ({
+    ...item,
+    notes: (item as any).notes ?? null
+  }));
+
+  return { items: normalizedItems, total };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

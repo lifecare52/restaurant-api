@@ -1396,6 +1396,7 @@ export const getOpenApiSpec = () => {
               description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE'
             },
             waiterId: { type: 'string', nullable: true },
+            notes: { type: 'string', nullable: true, maxLength: 500 },
             createdAt: { type: 'string', format: 'date-time' }
           },
           required: ['_id', 'orderNumber', 'orderType', 'status', 'totalAmount']
@@ -1432,7 +1433,12 @@ export const getOpenApiSpec = () => {
             menuItemId: { type: 'string' },
             quantity: { type: 'number', minimum: 1 },
             variationId: { type: 'string' },
-            instruction: { type: 'string', maxLength: 300 },
+            instruction: {
+              type: 'string',
+              maxLength: 300,
+              nullable: true,
+              example: 'No onion, less spicy'
+            },
             addons: { type: 'array', items: { $ref: '#/components/schemas/AddonItemDTO' } }
           },
           required: ['menuItemId', 'quantity']
@@ -1452,8 +1458,16 @@ export const getOpenApiSpec = () => {
               items: { $ref: '#/components/schemas/AddItemToOrderItemDTO' },
               minItems: 1
             },
-            notes: { type: 'string', maxLength: 500 },
-            shippingAddress: { type: 'string', description: 'Required when orderType=3 (DELIVERY)' }
+            notes: {
+              type: 'string',
+              maxLength: 500,
+              nullable: true,
+              example: 'Urgent order, serve fast'
+            },
+            shippingAddress: {
+              type: 'string',
+              description: 'Required when orderType=3 (DELIVERY)'
+            }
           },
           required: ['orderType', 'items']
         },
@@ -1525,6 +1539,12 @@ export const getOpenApiSpec = () => {
             _id: { type: 'string' },
             orderItemId: { type: 'string' },
             quantity: { type: 'number' },
+            instruction: {
+              type: 'string',
+              nullable: true,
+              maxLength: 300,
+              example: 'No onion, less spicy'
+            },
             itemStatus: {
               type: 'number',
               enum: [1, 2, 3, 4, 5],
@@ -1548,6 +1568,12 @@ export const getOpenApiSpec = () => {
             waiterId: { type: 'string', nullable: true },
             tokenNo: { type: 'string', nullable: true },
             tableName: { type: 'string', nullable: true },
+            notes: {
+              type: 'string',
+              nullable: true,
+              maxLength: 500,
+              example: 'Urgent order, serve fast'
+            },
             status: {
               type: 'number',
               enum: [1, 2, 3, 4, 5],
@@ -1555,7 +1581,12 @@ export const getOpenApiSpec = () => {
             },
             isPrinted: { type: 'boolean' },
             items: { type: 'array', items: { $ref: '#/components/schemas/KOTItem' } },
-            createdAt: { type: 'string', format: 'date-time' }
+            createdAt: { type: 'string', format: 'date-time' },
+            printLines: {
+              type: 'array',
+              items: { type: 'string' },
+              description: 'Preformatted lines for kitchen printing'
+            }
           },
           required: ['_id', 'orderId', 'kotNumber', 'kotType', 'status']
         },

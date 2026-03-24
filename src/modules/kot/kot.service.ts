@@ -62,30 +62,64 @@ export const generateKOT = async (
 ) => {
   if (!items || items.length === 0) return null;
 
+  const orderObjectId = new Types.ObjectId(orderId);
+  const brandObjectId = new Types.ObjectId(brandId);
+  const outletObjectId = new Types.ObjectId(outletId);
+
+  const [order, orderItems] = await Promise.all([
+    OrderEntity.findOne({
+      _id: orderObjectId,
+      brandId: brandObjectId,
+      outletId: outletObjectId,
+      isDelete: false
+    })
+      .select('notes')
+      .lean(),
+    OrderItemEntity.find({
+      _id: { $in: items.map(item => new Types.ObjectId(item.orderItemId)) },
+      isDelete: false
+    })
+      .select('instruction')
+      .lean()
+  ]);
+
+  const instructionMap = new Map<string, string | null>();
+  for (const orderItem of orderItems) {
+    const rawInstruction = (orderItem as any).instruction as string | null | undefined;
+    if (typeof rawInstruction === 'string') {
+      const trimmed = rawInstruction.trim();
+      instructionMap.set(String(orderItem._id), trimmed.length > 0 ? trimmed : null);
+    } else {
+      instructionMap.set(String(orderItem._id), null);
+    }
+  }
+
   const seq = await getNextKotSeq(brandId, outletId);
   const todayStr = new Date().toISOString().split('T')[0].replace(/-/g, '');
   const kotNumber = `KOT-${todayStr}-${String(seq).padStart(4, '0')}`;
 
   const createdKOT = await KOTEntity.create({
-    brandId: new Types.ObjectId(brandId),
-    outletId: new Types.ObjectId(outletId),
-    orderId: new Types.ObjectId(orderId),
+    brandId: brandObjectId,
+    outletId: outletObjectId,
+    orderId: orderObjectId,
     kotNumber,
     kotType,
     waiterId: waiterId ? new Types.ObjectId(waiterId) : null,
     tokenNo: tokenNo || null,
     tableName: tableName || null,
+    notes: order && typeof order.notes === 'string' && order.notes.trim().length > 0 ? order.notes.trim() : null,
     status: KOT_STATUS.PENDING,
     isActive: true,
     isDelete: false
   });
 
   const kotItemsToInsert = items.map(item => ({
-    brandId: new Types.ObjectId(brandId),
-    outletId: new Types.ObjectId(outletId),
+    brandId: brandObjectId,
+    outletId: outletObjectId,
     kotId: createdKOT._id,
     orderItemId: new Types.ObjectId(item.orderItemId),
     quantity: item.quantity,
+    instruction: instructionMap.get(item.orderItemId) ?? null,
     itemStatus: ITEM_STATUS.PENDING,
     isActive: true,
     isDelete: false
@@ -128,10 +162,43 @@ export const listKOTsByOrder = async (brandId: string, outletId: string, orderId
     .populate('orderItemId', 'itemName instruction quantity variationName')
     .lean();
 
-  return kots.map(kot => ({
-    ...kot,
-    items: kotItems.filter(item => String(item.kotId) === String(kot._id))
-  }));
+  return kots.map(kot => {
+    const itemsForKot = kotItems.filter(item => String(item.kotId) === String(kot._id));
+    const printLines: string[] = [];
+
+    for (const item of itemsForKot) {
+      const orderItem = item.orderItemId as any;
+      const nameParts: string[] = [];
+      if (orderItem && orderItem.itemName) nameParts.push(orderItem.itemName);
+      if (orderItem && orderItem.variationName) nameParts.push(orderItem.variationName);
+      const baseName = nameParts.join(' - ');
+      const line = baseName ? `${baseName} x${item.quantity}` : `x${item.quantity}`;
+      printLines.push(line);
+
+      const rawInstruction =
+        (item.instruction as string | null | undefined) ??
+        (orderItem ? ((orderItem.instruction as string | null | undefined) ?? null) : null);
+      if (typeof rawInstruction === 'string') {
+        const trimmed = rawInstruction.trim();
+        if (trimmed.length > 0) {
+          printLines.push(`  ${trimmed}`);
+        }
+      }
+    }
+
+    const rawNotes = (kot as any).notes as string | null | undefined;
+    if (typeof rawNotes === 'string') {
+      const trimmedNotes = rawNotes.trim();
+      if (trimmedNotes.length > 0) {
+        if (printLines.length > 0) {
+          printLines.push('');
+        }
+        printLines.push(`NOTE: ${trimmedNotes}`);
+      }
+    }
+
+    return { ...kot, items: itemsForKot, printLines };
+  });
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -166,10 +233,43 @@ export const listAllKOTs = async (brandId: string, outletId: string, statusFilte
     .populate('orderItemId', 'itemName instruction quantity variationName')
     .lean();
 
-  return kots.map(kot => ({
-    ...kot,
-    items: kotItems.filter(item => String(item.kotId) === String(kot._id))
-  }));
+  return kots.map(kot => {
+    const itemsForKot = kotItems.filter(item => String(item.kotId) === String(kot._id));
+    const printLines: string[] = [];
+
+    for (const item of itemsForKot) {
+      const orderItem = item.orderItemId as any;
+      const nameParts: string[] = [];
+      if (orderItem && orderItem.itemName) nameParts.push(orderItem.itemName);
+      if (orderItem && orderItem.variationName) nameParts.push(orderItem.variationName);
+      const baseName = nameParts.join(' - ');
+      const line = baseName ? `${baseName} x${item.quantity}` : `x${item.quantity}`;
+      printLines.push(line);
+
+      const rawInstruction =
+        (item.instruction as string | null | undefined) ??
+        (orderItem ? ((orderItem.instruction as string | null | undefined) ?? null) : null);
+      if (typeof rawInstruction === 'string') {
+        const trimmed = rawInstruction.trim();
+        if (trimmed.length > 0) {
+          printLines.push(`  ${trimmed}`);
+        }
+      }
+    }
+
+    const rawNotes = (kot as any).notes as string | null | undefined;
+    if (typeof rawNotes === 'string') {
+      const trimmedNotes = rawNotes.trim();
+      if (trimmedNotes.length > 0) {
+        if (printLines.length > 0) {
+          printLines.push('');
+        }
+        printLines.push(`NOTE: ${trimmedNotes}`);
+      }
+    }
+
+    return { ...kot, items: itemsForKot, printLines };
+  });
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

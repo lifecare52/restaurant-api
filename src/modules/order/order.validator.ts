@@ -23,9 +23,9 @@ const orderItemSchema = Joi.object({
   quantity: Joi.number().integer().min(1).optional(),
   measurement: measurementSchema.optional(),
   variationId: objectId.optional(),
-  instruction: Joi.string().max(300).optional().allow('', null),
+  instruction: Joi.string().trim().max(300).optional().allow('', null),
   addons: Joi.array().items(addonSchema).optional().default([])
-}).or('quantity', 'measurement'); // Must provide at least one
+}).or('quantity', 'measurement');
 
 // ─── Create Order ─────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ export const createOrderSchema = Joi.object({
     'array.min': 'At least one item is required',
     'any.required': 'items array is required'
   }),
-  notes: Joi.string().max(500).optional().allow('', null),
+  notes: Joi.string().trim().max(500).optional().allow('', null),
   shippingAddress: Joi.when('orderType', {
     is: ORDER_TYPE.DELIVERY,
     then: Joi.string()
@@ -77,7 +77,7 @@ export const updateOrderItemSchema = Joi.object({
   orderId: objectId.required(),
   orderItemId: objectId.required(),
   quantity: Joi.number().integer().min(1).optional(),
-  instruction: Joi.string().max(300).optional().allow('', null)
+  instruction: Joi.string().trim().max(300).optional().allow('', null)
 }).or('quantity', 'instruction');
 
 // ─── Close Order ──────────────────────────────────────────────────────────────
