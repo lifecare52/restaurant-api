@@ -1,5 +1,6 @@
 import { Types } from 'mongoose';
 
+import { ORDER_STATUS } from '@shared/enum/order.enum';
 import type { Order, OrderItem } from '@modules/order/order.types';
 import TableEntity from '@modules/table/table.model';
 import type {
@@ -75,7 +76,31 @@ export const listTables = async (brandId: string, outletId: string, query: Table
     TableEntity.countDocuments(filter)
   ]);
 
-  return { items, total };
+  if (!items.length) {
+    return { items, total };
+  }
+
+  const { OrderEntity } = require('@modules/order/order.model');
+  const tableIds = items.map(t => t._id);
+  const activeOrders = await OrderEntity.find({
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    tableId: { $in: tableIds },
+    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
+    isDelete: false
+  }).select('_id tableId').lean();
+
+  const orderMap = new Map<string, string>();
+  activeOrders.forEach((order: any) => {
+    orderMap.set(String(order.tableId), String(order._id));
+  });
+
+  const processedItems = items.map(item => ({
+    ...item,
+    currentOrderId: orderMap.get(String(item._id)) || null
+  }));
+
+  return { items: processedItems, total };
 };
 
 export const listActiveTables = async (brandId: string, outletId: string) => {
@@ -89,11 +114,32 @@ export const listActiveTables = async (brandId: string, outletId: string) => {
     .populate('zoneId', 'name')
     .lean()
     .sort({ name: 1 });
-  return items;
+
+  if (!items.length) return items;
+
+  const { OrderEntity } = require('@modules/order/order.model');
+  const tableIds = items.map((t: any) => t._id);
+  const activeOrders = await OrderEntity.find({
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    tableId: { $in: tableIds },
+    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
+    isDelete: false
+  }).select('_id tableId').lean();
+
+  const orderMap = new Map<string, string>();
+  activeOrders.forEach((order: any) => {
+    orderMap.set(String(order.tableId), String(order._id));
+  });
+
+  return items.map((item: any) => ({
+    ...item,
+    currentOrderId: orderMap.get(String(item._id)) || null
+  }));
 };
 
 export const getTable = async (brandId: string, outletId: string, tableId: string) => {
-  return TableEntity.findOne({
+  const item = await TableEntity.findOne({
     _id: new Types.ObjectId(tableId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
@@ -101,6 +147,22 @@ export const getTable = async (brandId: string, outletId: string, tableId: strin
   })
     .populate('zoneId', 'name')
     .lean();
+
+  if (!item) return null;
+
+  const { OrderEntity } = require('@modules/order/order.model');
+  const activeOrder = await OrderEntity.findOne({
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    tableId: new Types.ObjectId(tableId),
+    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
+    isDelete: false
+  }).select('_id').lean();
+
+  return {
+    ...item,
+    currentOrderId: activeOrder ? String(activeOrder._id) : null
+  };
 };
 
 export const updateTable = async (
@@ -175,7 +237,7 @@ export const getTableLiveOrders = async (brandId: string, outletId: string, tabl
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     tableId: new Types.ObjectId(tableId),
-    status: { $in: ['OPEN', 'IN_PROGRESS'] }, // ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS
+    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
     isDelete: false
   }).lean();
 

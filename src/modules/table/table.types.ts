@@ -44,6 +44,8 @@ export interface Table {
   capacity: number;
   status: TABLE_STATUS;
 
+  currentOrderId?: Types.ObjectId | string | null;
+
   isActive: boolean;
   isDelete: boolean;
 }
