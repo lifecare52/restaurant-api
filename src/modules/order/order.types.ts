@@ -180,3 +180,31 @@ export interface CancelOrderDTO {
   orderId: string;
   cancellationReason?: string;
 }
+
+export interface KOTFriendlyItem {
+  name: string;
+  variation: string | null;
+  quantity: number;
+  instruction: string | null;
+  addons: Array<{
+    name: string;
+    quantity: number;
+  }>;
+}
+
+export interface KOTFriendlyBatch {
+  kotNumber: string;
+  createdAt: string | null;
+  items: KOTFriendlyItem[];
+}
+
+export interface KOTFriendlyResponse {
+  orderId: string;
+  orderNumber: string;
+  orderType: ORDER_TYPE;
+  table: string | null;
+  status: ORDER_STATUS;
+  notes: string | null;
+  kots: KOTFriendlyBatch[];
+}
+

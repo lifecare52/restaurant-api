@@ -29,7 +29,10 @@ import {
   type OrderItemAddon,
   type ProcessedOrderItem,
   type ProcessedOrderItemAddon,
-  type MeasurementSelectionDTO
+  type MeasurementSelectionDTO,
+  type KOTFriendlyResponse,
+  type KOTFriendlyBatch,
+  type KOTFriendlyItem
 } from '@modules/order/order.types';
 import TableEntity from '@modules/table/table.model';
 import { TABLE_STATUS } from '@modules/table/table.types';
@@ -1069,4 +1072,65 @@ export const getTokenDisplay = async (brandId: string, outletId: string) => {
   }
 
   return { preparing, ready } as TokenDisplayResponse;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const transformOrderToKOTFormat = (order: any): KOTFriendlyResponse => {
+  const kotsMap = new Map<string, KOTFriendlyItem[]>();
+
+  const items = order.items || [];
+  for (const item of items) {
+    const timeKey = item.kotSentAt ? new Date(item.kotSentAt).toISOString() : 'UNSENT';
+
+    if (!kotsMap.has(timeKey)) {
+      kotsMap.set(timeKey, []);
+    }
+
+    kotsMap.get(timeKey)!.push({
+      name: item.itemName,
+      variation: item.variationName || null,
+      quantity: item.quantity,
+      instruction: item.instruction || null,
+      addons: (item.addons || []).map((addon: any) => ({
+        name: addon.addonItemName || addon.addonName,
+        quantity: addon.quantity
+      }))
+    });
+  }
+
+  const sortedKeys = Array.from(kotsMap.keys()).sort((a, b) => {
+    if (a === 'UNSENT') return 1;
+    if (b === 'UNSENT') return -1;
+    return new Date(a).getTime() - new Date(b).getTime();
+  });
+
+  const kots: KOTFriendlyBatch[] = sortedKeys.map((key, index) => {
+    return {
+      kotNumber: `KOT-${index + 1}`,
+      createdAt: key === 'UNSENT' ? null : key,
+      items: kotsMap.get(key)!
+    };
+  });
+
+  return {
+    orderId: String(order._id),
+    orderNumber: order.orderNumber,
+    orderType: order.orderType,
+    table: order.tableId?.name || null,
+    status: order.status,
+    notes: order.notes || null,
+    kots
+  };
+};
+
+export const getKOTOrderDetails = async (
+  brandId: string,
+  outletId: string,
+  orderId: string
+): Promise<KOTFriendlyResponse | null> => {
+  const order = await getOrderById(brandId, outletId, orderId);
+  if (!order) return null;
+
+  return transformOrderToKOTFormat(order);
 };

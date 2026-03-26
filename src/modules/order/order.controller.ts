@@ -1,6 +1,6 @@
 import {
   createOrder,
-  getOrderById,
+  getKOTOrderDetails,
   closeOrder,
   listOrders,
   cancelOrder,
@@ -99,7 +99,7 @@ export const getOrderController = async (req: Request, res: Response, next: Next
   try {
     const { brandId, outletId } = getTenant(req);
     const { orderId } = req.query as { orderId: string };
-    const item = await getOrderById(brandId, outletId, orderId);
+    const item = await getKOTOrderDetails(brandId, outletId, orderId);
     if (!item) {
       res.locals.response = { status: false, code: 404, message: 'Order not found' };
     } else {
