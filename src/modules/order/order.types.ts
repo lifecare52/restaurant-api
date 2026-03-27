@@ -181,30 +181,14 @@ export interface CancelOrderDTO {
   cancellationReason?: string;
 }
 
-export interface KOTFriendlyItem {
-  name: string;
-  variation: string | null;
-  quantity: number;
-  instruction: string | null;
-  addons: Array<{
-    name: string;
-    quantity: number;
-  }>;
-}
+export type Cleaned<T> = Omit<T, 'brandId' | 'outletId' | '__v'>;
 
 export interface KOTFriendlyBatch {
   kotNumber: string;
   createdAt: string | null;
-  items: KOTFriendlyItem[];
+  items: Array<Cleaned<OrderItem> & { addons: Cleaned<OrderItemAddon>[] }>;
 }
 
-export interface KOTFriendlyResponse {
-  orderId: string;
-  orderNumber: string;
-  orderType: ORDER_TYPE;
-  table: string | null;
-  status: ORDER_STATUS;
-  notes: string | null;
+export type KOTFriendlyResponse = Cleaned<Order> & {
   kots: KOTFriendlyBatch[];
-}
-
+};
