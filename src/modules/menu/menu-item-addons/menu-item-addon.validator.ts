@@ -47,7 +47,7 @@ export const menuItemAddonIdQuerySchema = Joi.object({
 export const menuItemAddonListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(20),
-  searchText: Joi.string().trim().optional(),
+  searchText: Joi.string().trim().allow('').optional(),
   menuItemId: objectId.optional(),
   addonId: objectId.optional(),
   menuItemVariantId: objectId.optional(),

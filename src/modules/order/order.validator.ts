@@ -106,7 +106,7 @@ export const listOrdersQuerySchema = Joi.object({
   orderType: Joi.number().integer().optional(),
   tableId: objectId.optional(),
   waiterId: objectId.optional(),
-  orderNumber: Joi.string().optional(),
+  orderNumber: Joi.string().allow('').optional(),
   fromDate: Joi.string().isoDate().optional(),
   toDate: Joi.string().isoDate().optional()
 });

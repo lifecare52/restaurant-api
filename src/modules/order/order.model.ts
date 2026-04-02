@@ -22,7 +22,7 @@ const OrderSchema = new Schema<Order>(
     outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
     waiterId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     orderNumber: { type: String, required: true, index: true },
-    tokenNo: { type: String, default: null },
+    tokenNo: { type: String, default: '' },
     orderType: {
       type: Number,
       enum: Object.values(ORDER_TYPE).filter(v => !isNaN(Number(v))),
@@ -45,22 +45,17 @@ const OrderSchema = new Schema<Order>(
       default: PAYMENT_STATUS.UNPAID
     },
     paymentMethod: { type: Number, default: null },
-    shippingAddress: { type: String, default: null },
+    shippingAddress: { type: String, default: '' },
     notes: {
       type: String,
       trim: true,
-      default: null,
-      maxlength: 500,
-      set: (value: string | null | undefined) => {
-        if (typeof value !== 'string') return value ?? null;
-        const trimmed = value.trim();
-        return trimmed === '' ? null : trimmed;
-      }
+      default: '',
+      maxlength: 500
     },
     confirmedAt: { type: Date, default: null },
     closedAt: { type: Date, default: null },
     // Cancellation
-    cancellationReason: { type: String, default: null },
+    cancellationReason: { type: String, default: '' },
     cancelledBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     // Soft delete
     isActive: { type: Boolean, default: true },
@@ -106,17 +101,12 @@ const OrderItemSchema = new Schema<OrderItem>(
     quantity: { type: Number, required: true, min: 1 },
     measurement: { type: MeasurementSelectionSchema, default: undefined },
     variationId: { type: Schema.Types.ObjectId, ref: 'MenuItemVariant', default: null },
-    variationName: { type: String, default: null },
+    variationName: { type: String, default: '' },
     instruction: {
       type: String,
       trim: true,
-      default: null,
-      maxlength: 300,
-      set: (value: string | null | undefined) => {
-        if (typeof value !== 'string') return value ?? null;
-        const trimmed = value.trim();
-        return trimmed === '' ? null : trimmed;
-      }
+      default: '',
+      maxlength: 300
     },
     totalPrice: { type: Number, required: true, min: 0 },
     // Item-level kitchen status
@@ -127,7 +117,7 @@ const OrderItemSchema = new Schema<OrderItem>(
     },
     kotSentAt: { type: Date, default: null },
     // Cancellation
-    cancelReason: { type: String, default: null },
+    cancelReason: { type: String, default: '' },
     cancelledAt: { type: Date, default: null },
     cancelledBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     // Soft delete
@@ -158,7 +148,7 @@ const OrderItemAddonSchema = new Schema<OrderItemAddon>(
     addonId: { type: Schema.Types.ObjectId, required: true, ref: 'Addon' },
     addonItemId: { type: Schema.Types.ObjectId, required: true, ref: 'AddonItem' },
     addonName: { type: String, required: true },
-    addonItemName: { type: String, default: null },
+    addonItemName: { type: String, default: '' },
     price: { type: Number, required: true, min: 0 },
     quantity: { type: Number, required: true, min: 1 },
     isActive: { type: Boolean, default: true },

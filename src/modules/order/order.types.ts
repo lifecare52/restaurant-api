@@ -20,7 +20,7 @@ export interface Order {
   /** The staff member who created / owns the order */
   waiterId?: Types.ObjectId | null;
   orderNumber: string;
-  tokenNo?: string | null;
+  tokenNo?: string;
   orderType: ORDER_TYPE;
   tableId?: Types.ObjectId | null;
   status: ORDER_STATUS;
@@ -33,12 +33,12 @@ export interface Order {
   // Payment
   paymentStatus: PAYMENT_STATUS;
   paymentMethod?: PAYMENT_METHOD | null;
-  shippingAddress?: string | null;
-  notes?: string | null;
+  shippingAddress?: string;
+  notes?: string;
   confirmedAt?: Date | null;
   closedAt?: Date | null;
   // Cancellation
-  cancellationReason?: string | null;
+  cancellationReason?: string;
   cancelledBy?: Types.ObjectId | null;
   // Soft delete
   isActive: boolean;
@@ -69,15 +69,15 @@ export interface OrderItem {
   quantity: number;
   measurement?: MeasurementSelectionDTO;
   variationId?: Types.ObjectId | null;
-  variationName?: string | null;
-  instruction?: string | null;
+  variationName?: string;
+  instruction?: string;
   totalPrice: number;
   /** Per-item kitchen lifecycle status */
   itemStatus: ITEM_STATUS;
   /** When this item was sent to KOT the first time */
   kotSentAt?: Date | null;
   /** Cancellation info (if itemStatus = CANCELLED) */
-  cancelReason?: string | null;
+  cancelReason?: string;
   cancelledAt?: Date | null;
   cancelledBy?: Types.ObjectId | null;
   isActive: boolean;
@@ -95,7 +95,7 @@ export interface OrderItemAddon {
   addonId: Types.ObjectId;
   addonItemId: Types.ObjectId;
   addonName: string;
-  addonItemName?: string | null;
+  addonItemName?: string;
   price: number;
   quantity: number;
   isActive: boolean;

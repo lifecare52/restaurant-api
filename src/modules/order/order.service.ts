@@ -143,7 +143,7 @@ const processItems = (
     const menuItem = menuItemMap.get(item.menuItemId);
     if (!menuItem) throw { status: 404, message: `MenuItem ${item.menuItemId} not found` };
 
-    let variationName: string | null = null;
+    let variationName: string = '';
     let variant: any = null;
     let measurementConfig: any = null;
     let isMeasurementItem = false;
@@ -163,7 +163,7 @@ const processItems = (
       }
 
       if (!variant) throw { status: 404, message: `Variation ${item.variationId} not found` };
-      variationName = (variant.variationId as any)?.name || null;
+      variationName = (variant.variationId as any)?.name || undefined;
 
       // Check for measurement config in variation (Priority 1)
       if (variant.isMeasurementBased && variant.measurementConfig) {
@@ -324,7 +324,7 @@ const processItems = (
       measurement: measurementSnapshot,
       variationId: item.variationId ? new Types.ObjectId(item.variationId) : null,
       variationName,
-      instruction: item.instruction || null,
+      instruction: item.instruction,
       totalPrice: itemTotal,
       itemStatus: ITEM_STATUS.PENDING,
       kotSentAt: null,
@@ -381,8 +381,8 @@ export const createOrder = async (
   const orderNumber = `ORD-${todayStr}-${String(orderSeq).padStart(4, '0')}`;
 
   // Token number
-  let tokenNo: string | null = null;
-  let tableName: string | null = null;
+  let tokenNo: string | undefined = undefined;
+  let tableName: string | undefined = undefined;
 
   if (dto.orderType === ORDER_TYPE.TAKEAWAY || dto.orderType === ORDER_TYPE.DELIVERY) {
     const tokenSeq = await getNextSequence(brandId, outletId, 'TOKEN');
@@ -411,7 +411,7 @@ export const createOrder = async (
       subtotal,
       discountAmount: 0,
       totalAmount,
-      notes: dto.notes && dto.notes.trim().length > 0 ? dto.notes.trim() : null,
+      notes: dto.notes && dto.notes.trim().length > 0 ? dto.notes.trim() : undefined,
       isActive: true,
       isDelete: false
     };
@@ -557,7 +557,7 @@ export const addItemsToOrder = async (
   }
 
   // Generate supplemental KOT
-  let tableName: string | null = null;
+  let tableName: string | undefined = undefined;
   if (order.tableId) {
     const table = await TableEntity.findById(order.tableId).lean();
     if (table) tableName = table.name;
@@ -633,7 +633,7 @@ export const removeItemFromOrder = async (
       {
         $set: {
           itemStatus: ITEM_STATUS.CANCELLED,
-          cancelReason: dto.cancelReason || null,
+          cancelReason: dto.cancelReason || undefined,
           cancelledAt: now,
           cancelledBy: performedBy ? new Types.ObjectId(performedBy) : null
         }

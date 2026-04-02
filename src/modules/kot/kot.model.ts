@@ -19,18 +19,13 @@ const KOTSchema = new Schema<KOT>(
       default: KOT_TYPE.REGULAR
     },
     waiterId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
-    tokenNo: { type: String, default: null },
-    tableName: { type: String, default: null },
+    tokenNo: { type: String, default: '' },
+    tableName: { type: String, default: '' },
     notes: {
       type: String,
       trim: true,
-      default: null,
-      maxlength: 500,
-      set: (value: string | null | undefined) => {
-        if (typeof value !== 'string') return value ?? null;
-        const trimmed = value.trim();
-        return trimmed === '' ? null : trimmed;
-      }
+      default: '',
+      maxlength: 500
     },
     status: {
       type: Number,
@@ -64,13 +59,8 @@ const KOTItemSchema = new Schema<KOTItem>(
     instruction: {
       type: String,
       trim: true,
-      default: null,
-      maxlength: 300,
-      set: (value: string | null | undefined) => {
-        if (typeof value !== 'string') return value ?? null;
-        const trimmed = value.trim();
-        return trimmed === '' ? null : trimmed;
-      }
+      default: '',
+      maxlength: 300
     },
     // Per-item kitchen status
     itemStatus: {

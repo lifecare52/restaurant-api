@@ -21,7 +21,7 @@ export const createTaxSchema = Joi.object({
 });
 
 export const updateTaxSchema = Joi.object({
-  name: Joi.string().min(1).max(100).optional(),
+  name: Joi.string().min(1).max(100).allow('').optional(),
   rate: Joi.number().min(0).optional(),
   type: Joi.string()
     .valid(...Object.values(TAX_TYPES))
@@ -43,7 +43,7 @@ export const createTaxGroupSchema = Joi.object({
 });
 
 export const updateTaxGroupSchema = Joi.object({
-  name: Joi.string().min(1).max(100).optional(),
+  name: Joi.string().min(1).max(100).allow('').optional(),
   taxes: Joi.array().items(Joi.string().hex().length(24)).min(1).optional(),
   isActive: Joi.boolean().optional()
 });

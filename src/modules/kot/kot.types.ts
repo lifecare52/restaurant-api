@@ -16,9 +16,9 @@ export interface KOT {
   kotType: KOT_TYPE;
   /** Staff who generated this KOT */
   waiterId?: Types.ObjectId | null;
-  tokenNo?: string | null;
-  tableName?: string | null;
-  notes?: string | null;
+  tokenNo?: string;
+  tableName?: string;
+  notes?: string;
   status: KOT_STATUS;
   isPrinted: boolean;
   isActive: boolean;
@@ -34,7 +34,7 @@ export interface KOTItem {
   kotId: Types.ObjectId;
   orderItemId: Types.ObjectId;
   quantity: number;
-   instruction?: string | null;
+   instruction?: string;
   /** Per-item kitchen status — mirrors OrderItem.itemStatus */
   itemStatus: ITEM_STATUS;
   /** When kitchen started preparing this specific item */

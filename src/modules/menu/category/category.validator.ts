@@ -4,18 +4,18 @@ import { SORT_ORDERS } from '@shared/enum';
 
 export const createCategorySchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
-  onlineName: Joi.string().trim().min(2).optional(),
+  onlineName: Joi.string().trim().min(2).allow('').optional(),
   logo: Joi.string().uri().optional().allow(''),
   isActive: Joi.boolean().default(true),
-  taxGroupId: Joi.string().hex().length(24).optional().allow(null)
+  taxGroupId: Joi.string().hex().length(24).optional().allow('')
 });
 
 export const updateCategorySchema = Joi.object({
-  name: Joi.string().trim().min(2),
-  onlineName: Joi.string().trim().min(2),
+  name: Joi.string().trim().min(2).allow(''),
+  onlineName: Joi.string().trim().min(2).optional().allow(''),
   logo: Joi.string().uri().optional().allow(''),
   isActive: Joi.boolean(),
-  taxGroupId: Joi.string().hex().length(24).optional().allow(null)
+  taxGroupId: Joi.string().hex().length(24).optional().allow('')
 });
 
 export const categoryListHeaderSchema = Joi.object({
@@ -26,7 +26,7 @@ export const categoryListHeaderSchema = Joi.object({
 export const categoryListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(20),
-  searchText: Joi.string().trim().min(1).max(100).optional(),
+  searchText: Joi.string().trim().min(1).max(100).allow('').optional(),
   column: Joi.string()
     .valid('name', 'onlineName', 'createdAt', 'updatedAt', 'isActive')
     .optional()

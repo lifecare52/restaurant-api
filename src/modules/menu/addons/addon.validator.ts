@@ -10,7 +10,7 @@ export const createAddonSchema = Joi.object({
       Joi.object({
         name: Joi.string().trim().min(1).max(100).required(),
         price: Joi.number().min(0).required(),
-        sapCode: Joi.string().trim().max(50).optional(),
+        sapCode: Joi.string().trim().max(50).optional().allow(''),
         dietary: Joi.string()
           .valid(...DIETARIES)
           .optional(),
@@ -19,17 +19,17 @@ export const createAddonSchema = Joi.object({
     )
     .required(),
   isActive: Joi.boolean().default(true),
-  taxGroupId: objectId.optional().allow(null)
+  taxGroupId: objectId.optional().allow('')
 });
 
 export const updateAddonSchema = Joi.object({
   name: Joi.string().trim().min(2).max(100),
   items: Joi.array().items(
     Joi.object({
-      _id: objectId.optional().allow(null),
+      _id: objectId.optional(),
       name: Joi.string().trim().min(1).max(100).required(),
       price: Joi.number().min(0).required(),
-      sapCode: Joi.string().trim().max(50).optional(),
+      sapCode: Joi.string().trim().max(50).optional().allow(''),
       dietary: Joi.string()
         .valid(...DIETARIES)
         .optional(),
@@ -37,7 +37,7 @@ export const updateAddonSchema = Joi.object({
     })
   ),
   isActive: Joi.boolean(),
-  taxGroupId: objectId.optional().allow(null)
+  taxGroupId: objectId.optional().allow('')
 });
 
 export const addonListQuerySchema = Joi.object({
