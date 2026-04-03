@@ -22,7 +22,7 @@ export const createTaxSchema = Joi.object({
 
 export const updateTaxSchema = Joi.object({
   name: Joi.string().min(1).max(100).allow('').optional(),
-  rate: Joi.number().min(0).optional(),
+  rate: Joi.number().min(0).allow(null).optional(),
   type: Joi.string()
     .valid(...Object.values(TAX_TYPES))
     .optional(),

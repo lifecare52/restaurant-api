@@ -15,12 +15,12 @@ const measurementSchema = Joi.object({
   measurementId: Joi.string().optional(),
   unit: Joi.string().required(),
   enteredQuantity: Joi.number().positive().required(),
-  totalPrice: Joi.number().positive().optional()
+  totalPrice: Joi.number().positive().allow(null).optional()
 });
 
 const orderItemSchema = Joi.object({
   menuItemId: objectId.required(),
-  quantity: Joi.number().integer().min(1).optional(),
+  quantity: Joi.number().integer().min(1).allow(null).optional(),
   measurement: measurementSchema.optional(),
   variationId: objectId.optional(),
   instruction: Joi.string().trim().max(300).optional().allow('', null),
@@ -102,8 +102,8 @@ export const cancelOrderSchema = Joi.object({
 export const listOrdersQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).optional().default(1),
   limit: Joi.number().integer().min(1).max(100).optional().default(20),
-  status: Joi.number().integer().optional(),
-  orderType: Joi.number().integer().optional(),
+  status: Joi.number().integer().allow(null).optional(),
+  orderType: Joi.number().integer().allow(null).optional(),
   tableId: objectId.optional(),
   waiterId: objectId.optional(),
   orderNumber: Joi.string().allow('').optional(),

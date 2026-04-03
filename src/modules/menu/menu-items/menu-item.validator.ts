@@ -29,7 +29,7 @@ export const createMenuItemSchema = Joi.object({
     .required(),
 
   basePrice: Joi.number().min(0).allow(null).optional(),
-  costPrice: Joi.number().min(0).optional(),
+  costPrice: Joi.number().min(0).allow(null).optional(),
 
   isMeasurementBased: Joi.boolean().default(false),
   measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
@@ -42,12 +42,12 @@ export const createMenuItemSchema = Joi.object({
     .items(
       Joi.object({
         variationId: objectId.required(),
-        basePrice: Joi.number().min(0).when('isMeasurementBased', {
+        basePrice: Joi.number().min(0).allow(null).when('isMeasurementBased', {
           is: true,
           then: Joi.optional(),
           otherwise: Joi.required()
         }),
-        costPrice: Joi.number().min(0).optional(),
+        costPrice: Joi.number().min(0).allow(null).optional(),
 
         isMeasurementBased: Joi.boolean().default(false),
         measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
@@ -112,7 +112,7 @@ export const updateMenuItemSchema = Joi.object({
   dietary: Joi.string().valid(...DIETARIES),
 
   basePrice: Joi.number().min(0).allow(null).optional(),
-  costPrice: Joi.number().min(0).optional(),
+  costPrice: Joi.number().min(0).allow(null).optional(),
 
   online: Joi.boolean().default(false),
   takeAway: Joi.boolean().default(false),
@@ -130,8 +130,8 @@ export const updateMenuItemSchema = Joi.object({
       Joi.object({
         id: objectId.optional(),
         variationId: objectId.required(),
-        basePrice: Joi.number().min(0).optional(),
-        costPrice: Joi.number().min(0).optional(),
+        basePrice: Joi.number().min(0).allow(null).optional(),
+        costPrice: Joi.number().min(0).allow(null).optional(),
         // Measurement fields for variation
         isMeasurementBased: Joi.boolean().optional(),
         measurementConfig: measurementConfigSchema.when('isMeasurementBased', {

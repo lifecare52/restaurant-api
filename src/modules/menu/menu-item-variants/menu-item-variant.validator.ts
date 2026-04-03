@@ -5,18 +5,18 @@ import { objectId } from '@shared/utils/common.validation';
 
 const measurementConfigSchema = Joi.object({
   measurementId: objectId.required(),
-  rate: Joi.number().min(0).optional(),
-  baseValue: Joi.number().min(0).optional(),
-  minValue: Joi.number().min(0).optional(),
-  maxValue: Joi.number().min(0).optional(),
-  stepValue: Joi.number().min(0).optional()
+  rate: Joi.number().min(0).allow(null).optional(),
+  baseValue: Joi.number().min(0).allow(null).optional(),
+  minValue: Joi.number().min(0).allow(null).optional(),
+  maxValue: Joi.number().min(0).allow(null).optional(),
+  stepValue: Joi.number().min(0).allow(null).optional()
 });
 
 export const createMenuItemVariantSchema = Joi.object({
   menuItemId: objectId.required(),
   variationId: objectId.required(),
   basePrice: Joi.number().min(0).required(),
-  costPrice: Joi.number().min(0),
+  costPrice: Joi.number().min(0).allow(null).optional(),
 
   isMeasurementBased: Joi.boolean().default(false),
   measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
@@ -30,8 +30,8 @@ export const createMenuItemVariantSchema = Joi.object({
 });
 
 export const updateMenuItemVariantSchema = Joi.object({
-  basePrice: Joi.number().min(0),
-  costPrice: Joi.number().min(0),
+  basePrice: Joi.number().min(0).allow(null).optional(),
+  costPrice: Joi.number().min(0).allow(null).optional(),
 
   isMeasurementBased: Joi.boolean(),
   measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
