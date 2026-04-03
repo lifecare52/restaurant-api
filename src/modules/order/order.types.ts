@@ -33,6 +33,8 @@ export interface Order {
   // Payment
   paymentStatus: PAYMENT_STATUS;
   paymentMethod?: PAYMENT_METHOD | null;
+  /** Running total of all payment transactions recorded against this order */
+  paidAmount?: number;
   shippingAddress?: string;
   notes?: string;
   confirmedAt?: Date | null;

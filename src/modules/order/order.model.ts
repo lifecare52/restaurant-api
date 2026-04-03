@@ -45,6 +45,8 @@ const OrderSchema = new Schema<Order>(
       default: PAYMENT_STATUS.UNPAID
     },
     paymentMethod: { type: Number, default: null },
+    /** Running total of all payments recorded against this order */
+    paidAmount: { type: Number, default: 0, min: 0 },
     shippingAddress: { type: String, default: '' },
     notes: {
       type: String,
