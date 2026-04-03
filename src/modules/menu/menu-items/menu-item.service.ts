@@ -41,12 +41,69 @@ import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 import CategoryEntity from '../category/category.model';
 
+/**
+ * Validates that none of the incoming shortCodes are already used by another
+ * active (isDelete: false) menu item in the same brand + outlet.
+ *
+ * @param brandId    - tenant brand id
+ * @param outletId   - tenant outlet id
+ * @param shortCodes - raw shortCodes from the DTO (pre-normalisation is applied inside)
+ * @param excludeId  - optional menu item id to exclude (used for updates)
+ */
+const checkDuplicateShortCodes = async (
+  brandId: string,
+  outletId: string,
+  shortCodes: string[] | undefined,
+  excludeId?: string
+): Promise<void> => {
+  if (!shortCodes || shortCodes.length === 0) return;
+
+  // Normalise to uppercase to match what the model stores
+  const normalised = shortCodes.map(s => s.trim().toUpperCase()).filter(Boolean);
+  if (normalised.length === 0) return;
+
+  const query: Record<string, unknown> = {
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false,
+    shortCodes: { $in: normalised }
+  };
+
+  if (excludeId) {
+    query._id = { $ne: new Types.ObjectId(excludeId) };
+  }
+
+  // Find all conflicting documents and collect which codes are duplicated
+  const conflicts = await MenuItemEntity.find(query).select('shortCodes name').lean();
+
+  if (conflicts.length === 0) return;
+
+  // Determine which exact codes are conflicting
+  const takenCodes = new Set<string>();
+  for (const doc of conflicts) {
+    for (const code of doc.shortCodes ?? []) {
+      if (normalised.includes((code ?? '').toUpperCase())) {
+        takenCodes.add((code ?? '').toUpperCase());
+      }
+    }
+  }
+
+  throw {
+    status: 409,
+    code: 'DUPLICATE_SHORTCODE',
+    message: `Short code(s) already in use for this outlet: ${[...takenCodes].join(', ')}`
+  };
+};
+
 export const createMenuItem = async (brandId: string, outletId: string, dto: MenuItemCreateDTO) => {
   const brand = await getBrandById(brandId);
   if (!brand) return null;
 
   const outlet = await getOutletById(brandId, outletId);
   if (!outlet) return null;
+
+  // Explicit duplicate shortCode check (scoped to brand + outlet, isDelete: false)
+  await checkDuplicateShortCodes(brandId, outletId, dto.shortCodes);
 
   try {
     const normalizeAddonCreate = (arr: MenuItemAddonInputCreate[] | undefined) => {
@@ -658,6 +715,26 @@ export const updateMenuItem = async (
   menuItemId: string,
   dto: MenuItemUpdateDTO
 ) => {
+  // Explicit duplicate shortCode check before update (exclude current item)
+  if (dto.shortCodes && dto.shortCodes.length > 0) {
+    const existing = await MenuItemEntity.findOne({
+      _id: new Types.ObjectId(menuItemId),
+      brandId: new Types.ObjectId(brandId),
+      isDelete: false
+    })
+      .select('outletId')
+      .lean();
+
+    if (existing) {
+      await checkDuplicateShortCodes(
+        brandId,
+        String(existing.outletId),
+        dto.shortCodes,
+        menuItemId
+      );
+    }
+  }
+
   try {
     const updateData: Record<string, unknown> = { ...dto };
     let unsetData: Record<string, unknown> | undefined;

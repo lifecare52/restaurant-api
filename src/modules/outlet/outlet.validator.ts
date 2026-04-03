@@ -6,7 +6,7 @@ import { GstScheme } from '@shared/enum';
 export const createOutletSchema = Joi.object({
   basicInfo: Joi.object({
     name: Joi.string().trim().min(2).required(),
-    logo: Joi.string().uri().optional(),
+    logo: Joi.string().uri().allow('').optional(),
     cuisineType: Joi.array()
       .items(Joi.string().valid(...CUISINE_TYPES))
       .optional(),
@@ -39,14 +39,14 @@ export const createOutletSchema = Joi.object({
         otherwise: Joi.optional()
       })
       .default(GstScheme.NONE),
-    currency: Joi.string().trim().optional()
+    currency: Joi.string().trim().allow('').optional()
   }).optional()
 });
 
 export const updateOutletSchema = Joi.object({
   basicInfo: Joi.object({
-    name: Joi.string().trim().min(2),
-    logo: Joi.string().uri(),
+    name: Joi.string().trim().min(2).allow(''),
+    logo: Joi.string().uri().allow(''),
     cuisineType: Joi.array().items(Joi.string().valid(...CUISINE_TYPES)),
     outletType: Joi.string().valid(...OUTLET_TYPES)
   }),

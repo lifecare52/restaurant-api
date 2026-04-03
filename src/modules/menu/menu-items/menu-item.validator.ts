@@ -20,20 +20,19 @@ export const createMenuItemSchema = Joi.object({
     .max(2)
     .unique((a, b) => a.toLowerCase() === b.toLowerCase())
     .messages({ 'array.unique': 'shortCodes must be unique (case-insensitive)' })
-    .allow(null)
     .optional(),
   categoryId: objectId.required(),
-  taxGroupId: objectId.optional().allow(null),
+  taxGroupId: objectId.optional().allow(''),
 
   dietary: Joi.string()
     .valid(...DIETARIES)
     .required(),
 
   basePrice: Joi.number().min(0).allow(null).optional(),
-  costPrice: Joi.number().min(0).optional(),
+  costPrice: Joi.number().min(0).allow(null).optional(),
 
   isMeasurementBased: Joi.boolean().default(false),
-  measurementConfig: measurementConfigSchema.allow(null).when('isMeasurementBased', {
+  measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
     is: true,
     then: Joi.required(),
     otherwise: Joi.optional()
@@ -43,15 +42,15 @@ export const createMenuItemSchema = Joi.object({
     .items(
       Joi.object({
         variationId: objectId.required(),
-        basePrice: Joi.number().min(0).when('isMeasurementBased', {
+        basePrice: Joi.number().min(0).allow(null).when('isMeasurementBased', {
           is: true,
           then: Joi.optional(),
           otherwise: Joi.required()
         }),
-        costPrice: Joi.number().min(0).optional(),
+        costPrice: Joi.number().min(0).allow(null).optional(),
 
         isMeasurementBased: Joi.boolean().default(false),
-        measurementConfig: measurementConfigSchema.allow(null).when('isMeasurementBased', {
+        measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
           is: true,
           then: Joi.required(),
           otherwise: Joi.optional()
@@ -106,22 +105,21 @@ export const updateMenuItemSchema = Joi.object({
     .max(2)
     .unique((a, b) => a.toLowerCase() === b.toLowerCase())
     .messages({ 'array.unique': 'shortCodes must be unique (case-insensitive)' })
-    .allow(null)
     .optional(),
   categoryId: objectId,
-  taxGroupId: objectId.optional().allow(null),
+  taxGroupId: objectId.optional().allow(''),
 
   dietary: Joi.string().valid(...DIETARIES),
 
   basePrice: Joi.number().min(0).allow(null).optional(),
-  costPrice: Joi.number().min(0).optional(),
+  costPrice: Joi.number().min(0).allow(null).optional(),
 
   online: Joi.boolean().default(false),
   takeAway: Joi.boolean().default(false),
   dineIn: Joi.boolean().default(false),
 
   isMeasurementBased: Joi.boolean(),
-  measurementConfig: measurementConfigSchema.allow(null).when('isMeasurementBased', {
+  measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
     is: true,
     then: Joi.required(),
     otherwise: Joi.optional()
@@ -132,11 +130,11 @@ export const updateMenuItemSchema = Joi.object({
       Joi.object({
         id: objectId.optional(),
         variationId: objectId.required(),
-        basePrice: Joi.number().min(0).optional(),
-        costPrice: Joi.number().min(0).optional(),
+        basePrice: Joi.number().min(0).allow(null).optional(),
+        costPrice: Joi.number().min(0).allow(null).optional(),
         // Measurement fields for variation
         isMeasurementBased: Joi.boolean().optional(),
-        measurementConfig: measurementConfigSchema.allow(null).when('isMeasurementBased', {
+        measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
           is: true,
           then: Joi.required(),
           otherwise: Joi.optional()
@@ -159,7 +157,6 @@ export const updateMenuItemSchema = Joi.object({
           })
       })
     )
-    .allow(null)
     .optional(),
   addons: Joi.array()
     .items(
@@ -184,8 +181,8 @@ export const menuItemListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).default(20),
   searchText: Joi.string().allow('').optional(),
-  column: Joi.string().optional(),
-  order: Joi.string().valid('ASC', 'DESC').optional(),
+  column: Joi.string().allow('').optional(),
+  order: Joi.string().valid('ASC', 'DESC').allow('').optional(),
   categoryId: objectId.optional()
 });
 

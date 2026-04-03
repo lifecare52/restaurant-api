@@ -3,16 +3,15 @@ import mongoose, { Types, type FilterQuery } from 'mongoose';
 import { KOTEntity } from '@modules/kot/kot.model';
 import { generateKOT } from '@modules/kot/kot.service';
 import { KOT_STATUS, KOT_TYPE, type KOT } from '@modules/kot/kot.types';
+import MeasurementEntity from '@modules/measurement/measurement.model';
 import AddonEntity from '@modules/menu/addons/addon.model';
 import type { AddonItem } from '@modules/menu/addons/addon.types';
 import MenuItemVariantEntity from '@modules/menu/menu-item-variants/menu-item-variant.model';
 import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
-import MeasurementEntity from '@modules/measurement/measurement.model';
 import DailySequenceEntity from '@modules/order/daily-sequence.model';
 import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
 import { logOrderAction } from '@modules/order/order-audit.service';
 import { OrderEntity, OrderItemEntity, OrderItemAddonEntity } from '@modules/order/order.model';
-import OutletEntity from '@modules/outlet/outlet.model';
 import {
   ORDER_STATUS,
   ORDER_TYPE,
@@ -29,14 +28,16 @@ import {
   type OrderItemAddon,
   type ProcessedOrderItem,
   type ProcessedOrderItemAddon,
-  type MeasurementSelectionDTO
+  type MeasurementSelectionDTO,
+  type KOTFriendlyResponse,
+  type KOTFriendlyBatch
 } from '@modules/order/order.types';
+import OutletEntity from '@modules/outlet/outlet.model';
 import TableEntity from '@modules/table/table.model';
 import { TABLE_STATUS } from '@modules/table/table.types';
 
 import { orderEvents } from '@shared/events/order.events';
 import type { TokenDisplayItem, TokenDisplayResponse } from '@shared/interfaces';
-
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -74,10 +75,7 @@ const batchFetchMenuData = async (items: AddItemToOrderDTO[]) => {
     MenuItemEntity.find({ _id: { $in: menuItemIds }, isDelete: false }).lean(),
     variantIds.length
       ? MenuItemVariantEntity.find({
-        $or: [
-          { _id: { $in: variantIds } },
-          { variationId: { $in: variantIds } }
-        ]
+        $or: [{ _id: { $in: variantIds } }, { variationId: { $in: variantIds } }]
       })
         .populate('variationId', 'name')
         .lean()
@@ -88,10 +86,12 @@ const batchFetchMenuData = async (items: AddItemToOrderDTO[]) => {
   // Collect measurement IDs
   const measurementIds = new Set<string>();
   menuItems.forEach((m: any) => {
-    if (m.measurementConfig?.measurementId) measurementIds.add(String(m.measurementConfig.measurementId));
+    if (m.measurementConfig?.measurementId)
+      measurementIds.add(String(m.measurementConfig.measurementId));
   });
   variants.forEach((v: any) => {
-    if (v.measurementConfig?.measurementId) measurementIds.add(String(v.measurementConfig.measurementId));
+    if (v.measurementConfig?.measurementId)
+      measurementIds.add(String(v.measurementConfig.measurementId));
   });
 
   const measurements = measurementIds.size
@@ -143,7 +143,7 @@ const processItems = (
     const menuItem = menuItemMap.get(item.menuItemId);
     if (!menuItem) throw { status: 404, message: `MenuItem ${item.menuItemId} not found` };
 
-    let variationName: string | null = null;
+    let variationName: string = '';
     let variant: any = null;
     let measurementConfig: any = null;
     let isMeasurementItem = false;
@@ -156,13 +156,14 @@ const processItems = (
       // Try shared Variation ID match within the scope of this MenuItem
       if (!variant) {
         variant = variants.find(
-          (v) => String(v.variationId?._id || v.variationId) === String(item.variationId) &&
+          v =>
+            String(v.variationId?._id || v.variationId) === String(item.variationId) &&
             String(v.menuItemId) === String(item.menuItemId)
         );
       }
 
       if (!variant) throw { status: 404, message: `Variation ${item.variationId} not found` };
-      variationName = (variant.variationId as any)?.name || null;
+      variationName = (variant.variationId as any)?.name || undefined;
 
       // Check for measurement config in variation (Priority 1)
       if (variant.isMeasurementBased && variant.measurementConfig) {
@@ -263,7 +264,6 @@ const processItems = (
         basePrice: basePrice,
         totalPrice: priceForOneUnit
       };
-
     } else {
       // Quantity Based
       if (!item.quantity) {
@@ -324,7 +324,7 @@ const processItems = (
       measurement: measurementSnapshot,
       variationId: item.variationId ? new Types.ObjectId(item.variationId) : null,
       variationName,
-      instruction: item.instruction || null,
+      instruction: item.instruction,
       totalPrice: itemTotal,
       itemStatus: ITEM_STATUS.PENDING,
       kotSentAt: null,
@@ -356,7 +356,9 @@ export const createOrder = async (
   }
 
   // Batch-fetch menu data (no N+1)
-  const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(dto.items);
+  const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(
+    dto.items
+  );
 
   // Process items
   const { processedItems, processedAddons, subtotal } = processItems(
@@ -379,8 +381,8 @@ export const createOrder = async (
   const orderNumber = `ORD-${todayStr}-${String(orderSeq).padStart(4, '0')}`;
 
   // Token number
-  let tokenNo: string | null = null;
-  let tableName: string | null = null;
+  let tokenNo: string | undefined = undefined;
+  let tableName: string | undefined = undefined;
 
   if (dto.orderType === ORDER_TYPE.TAKEAWAY || dto.orderType === ORDER_TYPE.DELIVERY) {
     const tokenSeq = await getNextSequence(brandId, outletId, 'TOKEN');
@@ -409,7 +411,7 @@ export const createOrder = async (
       subtotal,
       discountAmount: 0,
       totalAmount,
-      notes: dto.notes && dto.notes.trim().length > 0 ? dto.notes.trim() : null,
+      notes: dto.notes && dto.notes.trim().length > 0 ? dto.notes.trim() : undefined,
       isActive: true,
       isDelete: false
     };
@@ -496,12 +498,23 @@ export const addItemsToOrder = async (
   if (!dto.items || dto.items.length === 0)
     throw { status: 400, message: 'At least one item required' };
 
-  const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(dto.items);
+  const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(
+    dto.items
+  );
   const {
     processedItems,
     processedAddons,
     subtotal: newSubtotal
-  } = processItems(dto.items, brandId, outletId, menuItemMap, variantMap, variants, addonMap, measurementMap);
+  } = processItems(
+    dto.items,
+    brandId,
+    outletId,
+    menuItemMap,
+    variantMap,
+    variants,
+    addonMap,
+    measurementMap
+  );
 
   const now = new Date();
 
@@ -544,7 +557,7 @@ export const addItemsToOrder = async (
   }
 
   // Generate supplemental KOT
-  let tableName: string | null = null;
+  let tableName: string | undefined = undefined;
   if (order.tableId) {
     const table = await TableEntity.findById(order.tableId).lean();
     if (table) tableName = table.name;
@@ -620,7 +633,7 @@ export const removeItemFromOrder = async (
       {
         $set: {
           itemStatus: ITEM_STATUS.CANCELLED,
-          cancelReason: dto.cancelReason || null,
+          cancelReason: dto.cancelReason || undefined,
           cancelledAt: now,
           cancelledBy: performedBy ? new Types.ObjectId(performedBy) : null
         }
@@ -1069,4 +1082,80 @@ export const getTokenDisplay = async (brandId: string, outletId: string) => {
   }
 
   return { preparing, ready } as TokenDisplayResponse;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const removeUnwantedFields = <T>(obj: T): any => {
+  if (!obj || typeof obj !== 'object') return obj;
+
+  if (Array.isArray(obj)) {
+    return obj.map(removeUnwantedFields);
+  }
+
+  if (obj instanceof Date || obj instanceof mongoose.Types.ObjectId) {
+    return obj;
+  }
+
+  const clone = { ...obj } as Record<string, unknown>;
+  delete clone.brandId;
+  delete clone.outletId;
+  delete clone.__v;
+
+  for (const key of Object.keys(clone)) {
+    if (clone[key] && typeof clone[key] === 'object') {
+      clone[key] = removeUnwantedFields(clone[key]);
+    }
+  }
+
+  return clone;
+};
+
+export const transformOrderToKOTFormat = (
+  order: Order & { items?: any[] }
+): KOTFriendlyResponse => {
+  const cleanedOrder = removeUnwantedFields(order);
+  const kotsMap = new Map<string, any[]>();
+
+  const items = cleanedOrder.items || [];
+  for (const item of items) {
+    const timeKey = item.kotSentAt ? new Date(item.kotSentAt).toISOString() : 'UNSENT';
+
+    if (!kotsMap.has(timeKey)) {
+      kotsMap.set(timeKey, []);
+    }
+
+    kotsMap.get(timeKey)!.push(item);
+  }
+
+  const sortedKeys = Array.from(kotsMap.keys()).sort((a, b) => {
+    if (a === 'UNSENT') return 1;
+    if (b === 'UNSENT') return -1;
+    return new Date(a).getTime() - new Date(b).getTime();
+  });
+
+  const kots: KOTFriendlyBatch[] = sortedKeys.map((key, index) => {
+    return {
+      kotNumber: `KOT-${index + 1}`,
+      createdAt: key === 'UNSENT' ? null : key,
+      items: kotsMap.get(key)!
+    };
+  });
+
+  delete cleanedOrder.items;
+  cleanedOrder.kots = kots;
+
+  return cleanedOrder;
+};
+
+export const getKOTOrderDetails = async (
+  brandId: string,
+  outletId: string,
+  orderId: string
+): Promise<KOTFriendlyResponse | null> => {
+  const order = await getOrderById(brandId, outletId, orderId);
+  if (!order) return null;
+
+  return transformOrderToKOTFormat(order);
 };

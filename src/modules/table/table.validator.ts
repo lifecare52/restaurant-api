@@ -17,7 +17,7 @@ export const createTableSchema = Joi.object({
 export const updateTableSchema = Joi.object({
   name: Joi.string().trim().min(2).optional(),
   capacity: Joi.number().integer().min(1).optional(),
-  zoneId: objectId.optional().allow(null),
+  zoneId: objectId.optional(),
   status: Joi.string()
     .valid(...Object.values(TABLE_STATUS))
     .optional(),
@@ -34,8 +34,8 @@ export const tableListQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).optional(),
   limit: Joi.number().integer().min(1).optional(),
   searchText: Joi.string().allow('').optional(),
-  column: Joi.string().optional(),
-  order: Joi.string().valid('ASC', 'DESC').optional(),
+  column: Joi.string().allow('').optional(),
+  order: Joi.string().valid('ASC', 'DESC').allow('').optional(),
   isActive: Joi.boolean().optional(),
   zoneId: objectId.optional(),
   status: Joi.string()
