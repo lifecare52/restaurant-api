@@ -7,6 +7,7 @@ import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
 import { logOrderAction } from '@modules/order/order-audit.service';
 import { OrderEntity } from '@modules/order/order.model';
 import { OrderItemEntity } from '@modules/order/order.model';
+import { checkAndAutoCloseOrder } from '@modules/order/order.service';
 import { ORDER_STATUS } from '@modules/order/order.types';
 
 import { orderEvents } from '@shared/events/order.events';
@@ -390,6 +391,9 @@ export const updateKOTItemStatus = async (
         { $set: { status: KOT_STATUS.SERVED } }
       );
     }
+
+    // Evaluate auto-close: if all KOT items are served, and order is fully paid, close it.
+    await checkAndAutoCloseOrder(brandId, outletId, String(kot.orderId));
   }
 
   orderEvents.emit('kot.item.status.updated', {

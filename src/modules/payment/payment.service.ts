@@ -3,6 +3,7 @@ import mongoose, { Types, type FilterQuery } from 'mongoose';
 import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
 import { logOrderAction } from '@modules/order/order-audit.service';
 import { OrderEntity } from '@modules/order/order.model';
+import { checkAndAutoCloseOrder } from '@modules/order/order.service';
 import { ORDER_STATUS } from '@modules/order/order.types';
 import { PaymentEntity } from '@modules/payment/payment.model';
 import {
@@ -130,6 +131,13 @@ export const recordPayment = async (
       newPaymentStatus
     }
   });
+
+  // ── 5. Auto-close Evaluation ────────────────────────────────────────────
+  if (newPaymentStatus === PAYMENT_STATUS.PAID) {
+    // Attempt auto-close. If KOT items are completely ready, it will close the order.
+    // We execute this concurrently or sequentially.
+    await checkAndAutoCloseOrder(brandId, outletId, dto.orderId, userId);
+  }
 
   return {
     payment: savedPayment!,

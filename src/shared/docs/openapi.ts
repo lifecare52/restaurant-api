@@ -270,7 +270,11 @@ export const getOpenApiSpec = () => {
             zoneId: { type: 'string' },
             name: { type: 'string' },
             capacity: { type: 'number' },
-            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            status: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=AVAILABLE, 2=OCCUPIED, 3=BILL_PRINTED, 4=CLEANING, 5=RESERVED'
+            },
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
@@ -293,7 +297,11 @@ export const getOpenApiSpec = () => {
             name: { type: 'string', minLength: 2 },
             capacity: { type: 'number', minimum: 1 },
             zoneId: { type: 'string' },
-            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            status: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=AVAILABLE, 2=OCCUPIED, 3=BILL_PRINTED, 4=CLEANING, 5=RESERVED'
+            },
             isActive: { type: 'boolean', default: true }
           },
           required: ['name']
@@ -304,14 +312,22 @@ export const getOpenApiSpec = () => {
             name: { type: 'string', minLength: 2 },
             capacity: { type: 'number', minimum: 1 },
             zoneId: { type: 'string', nullable: true },
-            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            status: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=AVAILABLE, 2=OCCUPIED, 3=BILL_PRINTED, 4=CLEANING, 5=RESERVED'
+            },
             isActive: { type: 'boolean' }
           }
         },
         UpdateTableStatusRequest: {
           type: 'object',
           properties: {
-            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] }
+            status: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=AVAILABLE, 2=OCCUPIED, 3=BILL_PRINTED, 4=CLEANING, 5=RESERVED'
+            }
           },
           required: ['status']
         },

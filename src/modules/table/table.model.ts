@@ -13,8 +13,8 @@ const TableSchema = new Schema<Table>(
     name: { type: String, required: true, trim: true },
     capacity: { type: Number, default: 4 },
     status: {
-      type: String,
-      enum: Object.values(TABLE_STATUS),
+      type: Number,
+      enum: Object.values(TABLE_STATUS).filter(v => !isNaN(Number(v))),
       default: TABLE_STATUS.AVAILABLE
     },
 

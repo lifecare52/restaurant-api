@@ -16,6 +16,7 @@ import {
   ORDER_STATUS,
   ORDER_TYPE,
   ITEM_STATUS,
+  PAYMENT_STATUS,
   type CreateOrderDTO,
   type AddItemToOrderDTO,
   type AddItemsToOrderDTO,
@@ -848,6 +849,78 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Validates if an order meets conditions to be automatically closed:
+ * 1. Payment is fully completed
+ * 2. All active items are fully processed (SERVED)
+ */
+export const checkAndAutoCloseOrder = async (
+  brandId: string,
+  outletId: string,
+  orderId: string,
+  performedBy?: string
+) => {
+  const order = await OrderEntity.findOne({
+    _id: new Types.ObjectId(orderId),
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false
+  }).lean();
+
+  if (!order || ![ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS].includes(order.status)) {
+    return false;
+  }
+
+  // Condition 1: Payment must be fully completed
+  const currentPaidAmount = order.paidAmount ?? 0;
+  // +0.001 for float tolerance
+  if (currentPaidAmount < order.totalAmount - 0.001) {
+    return false;
+  }
+
+  // Condition 2: All items must be fully processed
+  const pendingItemsCount = await OrderItemEntity.countDocuments({
+    orderId: order._id,
+    itemStatus: { $nin: [ITEM_STATUS.SERVED, ITEM_STATUS.CANCELLED] },
+    isDelete: false
+  });
+
+  if (pendingItemsCount > 0) {
+    return false;
+  }
+
+  // Both conditions met, auto-close the order
+  await OrderEntity.updateOne(
+    { _id: order._id },
+    {
+      $set: {
+        status: ORDER_STATUS.COMPLETED,
+        closedAt: new Date()
+      }
+    }
+  );
+
+  // Update table status to CLEANING
+  if (order.tableId) {
+    await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.CLEANING });
+  }
+
+  const userIdStr = performedBy ? String(performedBy) : null;
+  logOrderAction({
+    brandId,
+    outletId,
+    orderId: String(order._id),
+    action: ORDER_AUDIT_ACTION.ORDER_CLOSED,
+    performedBy: userIdStr,
+    metadata: { reason: 'auto_closed' }
+  });
+  orderEvents.emit('order.closed', { orderId: String(order._id), brandId, outletId });
+
+  return true;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const closeOrder = async (
   brandId: string,
   outletId: string,
@@ -901,7 +974,7 @@ export const closeOrder = async (
       isDelete: false
     });
     if (openOrdersCount === 0) {
-      await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.AVAILABLE });
+      await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.CLEANING });
     }
   }
 
