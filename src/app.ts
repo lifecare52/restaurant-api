@@ -2,6 +2,7 @@ import express from 'express';
 import swaggerUi from 'swagger-ui-express';
 
 import brandRoutes from '@modules/brand/brand.route';
+import customerRoutes from '@modules/customer/customer.route';
 import kotRoutes from '@modules/kot/kot.route';
 import measurementRoutes from '@modules/measurement/measurement.route';
 import menuRoutes from '@modules/menu/menu.route';
@@ -9,6 +10,7 @@ import metaRoutes from '@modules/meta/meta.route';
 import orderRoutes from '@modules/order/order.route';
 import outletRoutes from '@modules/outlet/outlet.route';
 import reportRoutes from '@modules/report/report.route';
+import tagRoutes from '@modules/tag/tag.route';
 import tableRoutes from '@modules/table/table.route';
 import { TaxRoutes } from '@modules/tax/tax.route';
 import userRoutes from '@modules/user/user.route';
@@ -20,14 +22,8 @@ import corsMiddleware from '@middlewares/cors.middleware';
 import { notFoundHandler, errorHandler } from '@middlewares/error.middleware';
 import responseMiddleware from '@middlewares/response.middleware';
 
-/**
- * Application entrypoint (skeleton).
- * TODO: Register module routers when implemented.
- * TODO: Attach global middlewares (auth, error) once implemented.
- */
 export const createApp = (): express.Express => {
   const app = express();
-  // TODO: Add body parsers, CORS, logging, etc. when needed.
   app.use(corsMiddleware);
   app.use(express.json());
   app.get('/api-docs.json', (_req, res) => res.json(getOpenApiSpec()));
@@ -44,6 +40,8 @@ export const createApp = (): express.Express => {
   app.use('/api/v1/taxes', TaxRoutes);
   app.use('/api/v1/kot', kotRoutes);
   app.use('/api/v1/report', reportRoutes);
+  app.use('/api/v1/tags', tagRoutes);
+  app.use('/api/v1/customers', customerRoutes);
   app.use(responseMiddleware);
   app.use(notFoundHandler);
   app.use(errorHandler);

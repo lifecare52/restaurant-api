@@ -29,6 +29,267 @@
       }
     },
     "schemas": {
+      "Tax": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "brandId": {
+            "type": "string"
+          },
+          "outletId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "rate": {
+            "type": "number"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERCENTAGE",
+              "FLAT_AMOUNT"
+            ]
+          },
+          "isInclusive": {
+            "type": "boolean"
+          },
+          "calculationMethod": {
+            "type": "string",
+            "enum": [
+              "STANDARD",
+              "CUMULATIVE"
+            ]
+          },
+          "applicableOrderTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DINE_IN",
+                "TAKE_AWAY",
+                "ONLINE"
+              ]
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isDelete": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "_id",
+          "brandId",
+          "outletId",
+          "name",
+          "rate",
+          "type",
+          "isInclusive",
+          "calculationMethod",
+          "applicableOrderTypes",
+          "isActive",
+          "isDelete"
+        ]
+      },
+      "TaxGroup": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "brandId": {
+            "type": "string"
+          },
+          "outletId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "taxes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tax"
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "isDelete": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "_id",
+          "brandId",
+          "outletId",
+          "name",
+          "taxes",
+          "isActive",
+          "isDelete"
+        ]
+      },
+      "CreateTaxRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rate": {
+            "type": "number",
+            "minimum": 0
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERCENTAGE",
+              "FLAT_AMOUNT"
+            ],
+            "default": "PERCENTAGE"
+          },
+          "isInclusive": {
+            "type": "boolean",
+            "default": false
+          },
+          "calculationMethod": {
+            "type": "string",
+            "enum": [
+              "STANDARD",
+              "CUMULATIVE"
+            ],
+            "default": "STANDARD"
+          },
+          "applicableOrderTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DINE_IN",
+                "TAKE_AWAY",
+                "ONLINE"
+              ]
+            },
+            "default": [
+              "DINE_IN",
+              "TAKE_AWAY",
+              "ONLINE"
+            ]
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "rate"
+        ]
+      },
+      "UpdateTaxRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "rate": {
+            "type": "number",
+            "minimum": 0
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "PERCENTAGE",
+              "FLAT_AMOUNT"
+            ]
+          },
+          "isInclusive": {
+            "type": "boolean"
+          },
+          "calculationMethod": {
+            "type": "string",
+            "enum": [
+              "STANDARD",
+              "CUMULATIVE"
+            ]
+          },
+          "applicableOrderTypes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "DINE_IN",
+                "TAKE_AWAY",
+                "ONLINE"
+              ]
+            }
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "CreateTaxGroupRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "taxes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "isActive": {
+            "type": "boolean",
+            "default": true
+          }
+        },
+        "required": [
+          "name",
+          "taxes"
+        ]
+      },
+      "UpdateTaxGroupRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "taxes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
       "Zone": {
         "type": "object",
         "properties": {
@@ -674,21 +935,24 @@
           "settings": {
             "type": "object",
             "properties": {
+              "gstEnabled": {
+                "type": "boolean",
+                "default": false
+              },
               "gstNo": {
                 "type": "string"
               },
+              "gstScheme": {
+                "type": "string",
+                "enum": [
+                  "REGULAR",
+                  "COMPOSITION",
+                  "NONE"
+                ],
+                "default": "NONE"
+              },
               "currency": {
                 "type": "string"
-              },
-              "CGST": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 100
-              },
-              "SGST": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 100
               }
             }
           }
@@ -764,21 +1028,22 @@
           "settings": {
             "type": "object",
             "properties": {
+              "gstEnabled": {
+                "type": "boolean"
+              },
               "gstNo": {
                 "type": "string"
               },
+              "gstScheme": {
+                "type": "string",
+                "enum": [
+                  "REGULAR",
+                  "COMPOSITION",
+                  "NONE"
+                ]
+              },
               "currency": {
                 "type": "string"
-              },
-              "CGST": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 100
-              },
-              "SGST": {
-                "type": "number",
-                "minimum": 0,
-                "maximum": 100
               }
             }
           }
@@ -855,17 +1120,22 @@
           "settings": {
             "type": "object",
             "properties": {
+              "gstEnabled": {
+                "type": "boolean"
+              },
               "gstNo": {
                 "type": "string"
               },
+              "gstScheme": {
+                "type": "string",
+                "enum": [
+                  "REGULAR",
+                  "COMPOSITION",
+                  "NONE"
+                ]
+              },
               "currency": {
                 "type": "string"
-              },
-              "CGST": {
-                "type": "number"
-              },
-              "SGST": {
-                "type": "number"
               }
             }
           },
@@ -1130,12 +1400,27 @@
       "VariationWithAddonsSimple": {
         "type": "object",
         "properties": {
+          "variationId": {
+            "type": "string"
+          },
           "name": {
             "type": "string"
           },
-          "price": {
+          "basePrice": {
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "nullable": true
+          },
+          "costPrice": {
+            "type": "number",
+            "minimum": 0,
+            "nullable": true
+          },
+          "isMeasurementBased": {
+            "type": "boolean"
+          },
+          "measurementConfig": {
+            "$ref": "#/components/schemas/MeasurementConfig"
           },
           "addons": {
             "type": "array",
@@ -1145,8 +1430,9 @@
           }
         },
         "required": [
+          "variationId",
           "name",
-          "price",
+          "isMeasurementBased",
           "addons"
         ]
       },
@@ -1232,24 +1518,36 @@
           "measurementId": {
             "type": "string"
           },
-          "rate": {
-            "type": "number"
+          "basePrice": {
+            "type": "number",
+            "minimum": 0
+          },
+          "costPrice": {
+            "type": "number",
+            "minimum": 0,
+            "nullable": true
           },
           "baseValue": {
-            "type": "number"
+            "type": "number",
+            "minimum": 0,
+            "nullable": true
           },
           "minValue": {
-            "type": "number"
+            "type": "number",
+            "nullable": true
           },
           "maxValue": {
-            "type": "number"
+            "type": "number",
+            "nullable": true
           },
           "stepValue": {
-            "type": "number"
+            "type": "number",
+            "nullable": true
           }
         },
         "required": [
-          "measurementId"
+          "measurementId",
+          "basePrice"
         ]
       },
       "CreateMenuItemRequest": {
@@ -1755,23 +2053,8 @@
           "isMeasurementBased": {
             "type": "boolean"
           },
-          "measurementId": {
-            "type": "string"
-          },
-          "rate": {
-            "type": "number"
-          },
-          "baseValue": {
-            "type": "number"
-          },
-          "minValue": {
-            "type": "number"
-          },
-          "maxValue": {
-            "type": "number"
-          },
-          "stepValue": {
-            "type": "number"
+          "measurementConfig": {
+            "$ref": "#/components/schemas/MeasurementConfig"
           },
           "isActive": {
             "type": "boolean"
@@ -2323,7 +2606,504 @@
           "items"
         ]
       },
-      "Tax": {
+      "OrderMenuCategoryGroup": {
+        "type": "object",
+        "description": "A category with its active menu items, variants, and addons for POS ordering",
+        "properties": {
+          "categoryId": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/components/schemas/MenuItemWithNested"
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "taxGroup": {
+                      "type": "object",
+                      "nullable": true,
+                      "properties": {
+                        "_id": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "taxes": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "_id": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "rate": {
+                                "type": "number"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "isInclusive": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "required": [
+          "categoryId",
+          "category",
+          "items"
+        ]
+      },
+      "OrderItemAddon": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "addonId": {
+            "type": "string"
+          },
+          "addonItemId": {
+            "type": "string"
+          },
+          "addonName": {
+            "type": "string"
+          },
+          "addonItemName": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "addonId",
+          "addonItemId",
+          "quantity"
+        ]
+      },
+      "OrderItem": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "menuItemId": {
+            "type": "string"
+          },
+          "itemName": {
+            "type": "string"
+          },
+          "basePrice": {
+            "type": "number"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "variationId": {
+            "type": "string",
+            "nullable": true
+          },
+          "variationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "instruction": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalPrice": {
+            "type": "number"
+          },
+          "itemStatus": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "description": "1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED"
+          },
+          "kotSentAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "cancelReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "cancelledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "addons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/OrderItemAddon"
+            }
+          }
+        },
+        "required": [
+          "_id",
+          "menuItemId",
+          "itemName",
+          "basePrice",
+          "quantity",
+          "totalPrice",
+          "itemStatus"
+        ]
+      },
+      "OrderSummary": {
+        "type": "object",
+        "description": "Lightweight order object returned in list endpoints",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "orderNumber": {
+            "type": "string"
+          },
+          "tokenNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "orderType": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3
+            ],
+            "description": "1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY"
+          },
+          "tableId": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "1=OPEN, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED"
+          },
+          "subtotal": {
+            "type": "number"
+          },
+          "taxAmount": {
+            "type": "number"
+          },
+          "discountAmount": {
+            "type": "number"
+          },
+          "totalAmount": {
+            "type": "number"
+          },
+          "paymentStatus": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "1=UNPAID, 2=PARTIAL, 3=PAID, 4=REFUNDED"
+          },
+          "paymentMethod": {
+            "type": "number",
+            "nullable": true,
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "description": "1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE"
+          },
+          "waiterId": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "_id",
+          "orderNumber",
+          "orderType",
+          "status",
+          "totalAmount"
+        ]
+      },
+      "OrderDetail": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/OrderSummary"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "items": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/OrderItem"
+                }
+              },
+              "cancellationReason": {
+                "type": "string",
+                "nullable": true
+              },
+              "closedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "confirmedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              }
+            }
+          }
+        ]
+      },
+      "AddonItemDTO": {
+        "type": "object",
+        "properties": {
+          "addonId": {
+            "type": "string"
+          },
+          "addonItemId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "addonId",
+          "addonItemId",
+          "quantity"
+        ]
+      },
+      "AddItemToOrderItemDTO": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1
+          },
+          "variationId": {
+            "type": "string"
+          },
+          "instruction": {
+            "type": "string",
+            "maxLength": 300,
+            "nullable": true,
+            "example": "No onion, less spicy"
+          },
+          "addons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddonItemDTO"
+            }
+          }
+        },
+        "required": [
+          "menuItemId",
+          "quantity"
+        ]
+      },
+      "CreateOrderRequest": {
+        "type": "object",
+        "properties": {
+          "orderType": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3
+            ],
+            "description": "1=DINE_IN (requires tableId), 2=TAKEAWAY, 3=DELIVERY (requires shippingAddress)"
+          },
+          "tableId": {
+            "type": "string",
+            "description": "Required when orderType=1 (DINE_IN)"
+          },
+          "customerId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Optional customer linked to the order"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddItemToOrderItemDTO"
+            },
+            "minItems": 1
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true,
+            "example": "Urgent order, serve fast"
+          },
+          "shippingAddress": {
+            "type": "string",
+            "description": "Required when orderType=3 (DELIVERY)"
+          }
+        },
+        "required": [
+          "orderType",
+          "items"
+        ]
+      },
+      "AddItemsToOrderRequest": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddItemToOrderItemDTO"
+            },
+            "minItems": 1
+          }
+        },
+        "required": [
+          "orderId",
+          "items"
+        ]
+      },
+      "RemoveOrderItemRequest": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "orderItemId": {
+            "type": "string"
+          },
+          "cancelReason": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "orderId",
+          "orderItemId"
+        ]
+      },
+      "UpdateOrderItemRequest": {
+        "type": "object",
+        "description": "Update quantity or instruction of a PENDING order item. At least one of quantity or instruction must be provided.",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "orderItemId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1
+          },
+          "instruction": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "orderId",
+          "orderItemId"
+        ]
+      },
+      "CloseOrderRequest": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "paymentMethod": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "description": "1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE"
+          }
+        },
+        "required": [
+          "orderId"
+        ]
+      },
+      "CancelOrderRequest": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string"
+          },
+          "cancellationReason": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "orderId"
+        ]
+      },
+      "CustomerTag": {
         "type": "object",
         "properties": {
           "_id": {
@@ -2338,154 +3118,76 @@
           "name": {
             "type": "string"
           },
-          "rate": {
-            "type": "number"
-          },
-          "type": {
+          "discountType": {
             "type": "string",
             "enum": [
               "PERCENTAGE",
-              "FLAT_AMOUNT"
+              "FLAT",
+              "NONE"
             ]
           },
-          "isInclusive": {
+          "discountValue": {
+            "type": "number"
+          },
+          "minOrderAmount": {
+            "type": "number"
+          },
+          "priority": {
+            "type": "number"
+          },
+          "isActive": {
             "type": "boolean"
           },
-          "calculationMethod": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "_id",
+          "brandId",
+          "outletId",
+          "name",
+          "discountType",
+          "discountValue",
+          "minOrderAmount",
+          "priority",
+          "isActive"
+        ]
+      },
+      "CreateCustomerTagRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "discountType": {
             "type": "string",
             "enum": [
-              "STANDARD",
-              "CUMULATIVE"
+              "PERCENTAGE",
+              "FLAT",
+              "NONE"
             ]
           },
-          "applicableOrderTypes": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "DINE_IN",
-                "TAKE_AWAY",
-                "ONLINE"
-              ]
-            }
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "isDelete": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "_id",
-          "brandId",
-          "outletId",
-          "name",
-          "rate",
-          "type",
-          "isInclusive",
-          "calculationMethod",
-          "applicableOrderTypes",
-          "isActive",
-          "isDelete"
-        ]
-      },
-      "TaxGroup": {
-        "type": "object",
-        "properties": {
-          "_id": {
-            "type": "string"
-          },
-          "brandId": {
-            "type": "string"
-          },
-          "outletId": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          },
-          "taxes": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Tax"
-            }
-          },
-          "isActive": {
-            "type": "boolean"
-          },
-          "isDelete": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string"
-          },
-          "updatedAt": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "_id",
-          "brandId",
-          "outletId",
-          "name",
-          "taxes",
-          "isActive",
-          "isDelete"
-        ]
-      },
-      "CreateTaxRequest": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1
-          },
-          "rate": {
+          "discountValue": {
             "type": "number",
             "minimum": 0
           },
-          "type": {
-            "type": "string",
-            "enum": [
-              "PERCENTAGE",
-              "FLAT_AMOUNT"
-            ],
-            "default": "PERCENTAGE"
+          "minOrderAmount": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0
           },
-          "isInclusive": {
-            "type": "boolean",
-            "default": false
-          },
-          "calculationMethod": {
-            "type": "string",
-            "enum": [
-              "STANDARD",
-              "CUMULATIVE"
-            ],
-            "default": "STANDARD"
-          },
-          "applicableOrderTypes": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "DINE_IN",
-                "TAKE_AWAY",
-                "ONLINE"
-              ]
-            },
-            "default": [
-              "DINE_IN",
-              "TAKE_AWAY",
-              "ONLINE"
-            ]
+          "priority": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
           },
           "isActive": {
             "type": "boolean",
@@ -2494,66 +3196,161 @@
         },
         "required": [
           "name",
-          "rate"
+          "discountType"
         ]
       },
-      "UpdateTaxRequest": {
+      "UpdateCustomerTagRequest": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 2,
+            "maxLength": 100
           },
-          "rate": {
-            "type": "number",
-            "minimum": 0
-          },
-          "type": {
+          "discountType": {
             "type": "string",
             "enum": [
               "PERCENTAGE",
-              "FLAT_AMOUNT"
+              "FLAT",
+              "NONE"
             ]
           },
-          "isInclusive": {
-            "type": "boolean"
+          "discountValue": {
+            "type": "number",
+            "minimum": 0
           },
-          "calculationMethod": {
-            "type": "string",
-            "enum": [
-              "STANDARD",
-              "CUMULATIVE"
-            ]
+          "minOrderAmount": {
+            "type": "number",
+            "minimum": 0
           },
-          "applicableOrderTypes": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "DINE_IN",
-                "TAKE_AWAY",
-                "ONLINE"
-              ]
-            }
+          "priority": {
+            "type": "integer",
+            "minimum": 0
           },
           "isActive": {
             "type": "boolean"
           }
         }
       },
-      "CreateTaxGroupRequest": {
+      "Customer": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "brandId": {
+            "type": "string"
+          },
+          "outletId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "mobile": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomerTag"
+            }
+          },
+          "loyaltyPoints": {
+            "type": "number"
+          },
+          "totalSpent": {
+            "type": "number"
+          },
+          "totalOrders": {
+            "type": "number"
+          },
+          "lastVisitAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "creditBalance": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "_id",
+          "brandId",
+          "outletId",
+          "name",
+          "mobile",
+          "tags",
+          "loyaltyPoints",
+          "totalSpent",
+          "totalOrders",
+          "creditBalance",
+          "isActive"
+        ]
+      },
+      "CreateCustomerRequest": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 2,
+            "maxLength": 120
           },
-          "taxes": {
+          "mobile": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 20
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          },
+          "tags": {
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "minItems": 1
+            }
+          },
+          "loyaltyPoints": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0
+          },
+          "totalSpent": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0
+          },
+          "totalOrders": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0
+          },
+          "lastVisitAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "creditBalance": {
+            "type": "number",
+            "default": 0
           },
           "isActive": {
             "type": "boolean",
@@ -2562,25 +3359,315 @@
         },
         "required": [
           "name",
-          "taxes"
+          "mobile"
         ]
       },
-      "UpdateTaxGroupRequest": {
+      "UpdateCustomerRequest": {
         "type": "object",
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 2,
+            "maxLength": 120
           },
-          "taxes": {
+          "mobile": {
+            "type": "string",
+            "minLength": 6,
+            "maxLength": 20
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "loyaltyPoints": {
+            "type": "number",
+            "minimum": 0
+          },
+          "totalSpent": {
+            "type": "number",
+            "minimum": 0
+          },
+          "totalOrders": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "lastVisitAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "creditBalance": {
+            "type": "number"
+          },
+          "isActive": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AssignCustomerTagsRequest": {
+        "type": "object",
+        "properties": {
+          "tagIds": {
             "type": "array",
             "items": {
               "type": "string"
             },
-            "minItems": 1
+            "minItems": 1,
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "tagIds"
+        ]
+      },
+      "TokenDisplayItem": {
+        "type": "object",
+        "properties": {
+          "tokenNo": {
+            "type": "string",
+            "nullable": true
           },
-          "isActive": {
+          "orderId": {
+            "type": "string"
+          },
+          "orderNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "orderId",
+          "orderNumber"
+        ]
+      },
+      "KOTItem": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "orderItemId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "instruction": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 300,
+            "example": "No onion, less spicy"
+          },
+          "itemStatus": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "description": "1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED"
+          },
+          "preparedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "servedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          }
+        }
+      },
+      "KOTDetail": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "kotNumber": {
+            "type": "string"
+          },
+          "kotType": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3
+            ],
+            "description": "1=REGULAR, 2=VOID, 3=REPRINT"
+          },
+          "waiterId": {
+            "type": "string",
+            "nullable": true
+          },
+          "customerId": {
+            "type": "string",
+            "nullable": true
+          },
+          "tokenNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "tableName": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 500,
+            "example": "Urgent order, serve fast"
+          },
+          "status": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "description": "1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED"
+          },
+          "isPrinted": {
             "type": "boolean"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/KOTItem"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "printLines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Preformatted lines for kitchen printing"
+          }
+        },
+        "required": [
+          "_id",
+          "orderId",
+          "kotNumber",
+          "kotType",
+          "status"
+        ]
+      },
+      "UpdateKOTStatusRequest": {
+        "type": "object",
+        "properties": {
+          "kotId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "description": "1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED. State machine enforced."
+          }
+        },
+        "required": [
+          "kotId",
+          "status"
+        ]
+      },
+      "UpdateKOTItemStatusRequest": {
+        "type": "object",
+        "properties": {
+          "kotItemId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3,
+              4,
+              5
+            ],
+            "description": "1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED"
+          }
+        },
+        "required": [
+          "kotItemId",
+          "status"
+        ]
+      },
+      "SalesReportItem": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date"
+          },
+          "orderType": {
+            "type": "number",
+            "enum": [
+              1,
+              2,
+              3
+            ],
+            "description": "1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY"
+          },
+          "totalOrders": {
+            "type": "number"
+          },
+          "totalAmount": {
+            "type": "number"
+          },
+          "tax": {
+            "type": "number"
+          },
+          "discount": {
+            "type": "number"
+          }
+        }
+      },
+      "ItemSalesReportItem": {
+        "type": "object",
+        "properties": {
+          "menuItemId": {
+            "type": "string"
+          },
+          "itemName": {
+            "type": "string"
+          },
+          "variationId": {
+            "type": "string",
+            "nullable": true
+          },
+          "variationName": {
+            "type": "string",
+            "nullable": true
+          },
+          "quantitySold": {
+            "type": "number"
+          },
+          "totalRevenue": {
+            "type": "number"
           }
         }
       }
@@ -2618,9 +3705,502 @@
     {
       "name": "Menu-Item-Addons",
       "description": "Requires brand-id and outlet-id on all endpoints. Set via Authorize."
+    },
+    {
+      "name": "Orders",
+      "description": "Requires brand-id and outlet-id on all endpoints. Set via Authorize."
+    },
+    {
+      "name": "KOTs",
+      "description": "Kitchen Order Tickets. Requires brand-id and outlet-id on all endpoints."
+    },
+    {
+      "name": "Reports",
+      "description": "Requires brand-id and outlet-id on all endpoints."
     }
   ],
   "paths": {
+    "/api/v1/taxes": {
+      "get": {
+        "tags": [
+          "Tax"
+        ],
+        "summary": "Get all active taxes",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "brandIdHeader": []
+          },
+          {
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 20
+            }
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "column",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "rate",
+                "type",
+                "isActive",
+                "createdAt",
+                "updatedAt"
+              ],
+              "default": "name"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "ASC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tax"
+        ],
+        "summary": "Create a new tax",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "brandIdHeader": []
+          },
+          {
+            "outletIdHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaxRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/taxes/{id}": {
+      "get": {
+        "tags": [
+          "Tax"
+        ],
+        "summary": "Get a specific tax by ID",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "brandIdHeader": []
+          },
+          {
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Tax"
+        ],
+        "summary": "Update a specific tax",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "brandIdHeader": []
+          },
+          {
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaxRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Tax"
+        ],
+        "summary": "Delete a specific tax",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "brandIdHeader": []
+          },
+          {
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/v1/taxes/groups": {
+      "get": {
+        "tags": [
+          "TaxGroup"
+        ],
+        "summary": "Get all active tax groups",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "brandIdHeader": []
+          },
+          {
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "default": 20
+            }
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TaxGroup"
+        ],
+        "summary": "Create a new tax group",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "brandIdHeader": []
+          },
+          {
+            "outletIdHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTaxGroupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          }
+        }
+      }
+    },
+    "/api/v1/taxes/groups/{id}": {
+      "get": {
+        "tags": [
+          "TaxGroup"
+        ],
+        "summary": "Get a specific tax group by ID",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "brandIdHeader": []
+          },
+          {
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "TaxGroup"
+        ],
+        "summary": "Update a specific tax group",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "brandIdHeader": []
+          },
+          {
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTaxGroupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "TaxGroup"
+        ],
+        "summary": "Delete a specific tax group",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "brandIdHeader": []
+          },
+          {
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/v1/order/menu-items": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "List active POS menu items grouped by category",
+        "description": "Fetches the complete menu structure including variants and addons for the POS. Mandatory headers: brand-id, outlet-id.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/OrderMenuCategoryGroup"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/meta/types": {
       "get": {
         "tags": [
@@ -4160,10 +5740,10 @@
         }
       }
     },
-    "/api/v1/menu/menu-items/addon-mapping": {
+    "/api/v1/menu/menu-item-addons/addon-mapping": {
       "get": {
         "tags": [
-          "Menu-Items"
+          "Menu-Item-Addons"
         ],
         "summary": "Get addon mapping structure",
         "description": "Mandatory headers: brand-id, outlet-id (set via Authorize).",
@@ -4282,27 +5862,6 @@
         ],
         "parameters": [
           {
-            "name": "page",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "number",
-              "minimum": 1,
-              "default": 1
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "number",
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20
-            }
-          },
-          {
             "name": "searchText",
             "in": "query",
             "required": false,
@@ -4322,14 +5881,6 @@
                 "QUANTITY",
                 "CUSTOM"
               ]
-            }
-          },
-          {
-            "name": "isActive",
-            "in": "query",
-            "required": false,
-            "schema": {
-              "type": "boolean"
             }
           },
           {
@@ -6917,8 +8468,8 @@
         "tags": [
           "Tables"
         ],
-        "summary": "List active tables (no pagination)",
-        "description": "Returns all tables where isDelete=false and isActive=true. Mandatory headers: brand-id, outlet-id (set via Authorize).",
+        "summary": "List active tables",
+        "description": "Mandatory headers: brand-id, outlet-id.",
         "security": [
           {
             "bearerAuth": [],
@@ -6997,7 +8548,7 @@
             "required": false,
             "schema": {
               "type": "number",
-              "description": "Optional page number. If page and limit are not provided, returns all tables."
+              "default": 1
             }
           },
           {
@@ -7006,7 +8557,7 @@
             "required": false,
             "schema": {
               "type": "number",
-              "description": "Optional page size. If page and limit are not provided, returns all tables."
+              "default": 20
             }
           },
           {
@@ -7259,51 +8810,33 @@
         }
       }
     },
-    "/api/v1/taxes": {
+    "/api/v1/menu/menu-item-addons/detail": {
       "get": {
         "tags": [
-          "Tax"
+          "Menu-Item-Addons"
         ],
-        "summary": "Get all active taxes",
+        "summary": "Get menu item addon by id",
+        "description": "Mandatory headers: brand-id, outlet-id (set via Authorize).",
         "security": [
           {
-            "bearerAuth": []
-          },
-          {
-            "brandIdHeader": []
-          },
-          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
             "outletIdHeader": []
           }
         ],
         "parameters": [
           {
-            "name": "page",
+            "name": "menuItemAddonId",
             "in": "query",
+            "required": true,
             "schema": {
-              "type": "number",
-              "default": 1
-            }
-          },
-          {
-            "name": "limit",
-            "in": "query",
-            "schema": {
-              "type": "number",
-              "default": 20
-            }
-          },
-          {
-            "name": "isActive",
-            "in": "query",
-            "schema": {
-              "type": "boolean"
+              "type": "string"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success",
+            "description": "OK",
             "content": {
               "application/json": {
                 "schema": {
@@ -7311,38 +8844,9 @@
                 }
               }
             }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Tax"
-        ],
-        "summary": "Create a new tax",
-        "security": [
-          {
-            "bearerAuth": []
           },
-          {
-            "brandIdHeader": []
-          },
-          {
-            "outletIdHeader": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTaxRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Created",
+          "404": {
+            "description": "Not Found",
             "content": {
               "application/json": {
                 "schema": {
@@ -7354,27 +8858,24 @@
         }
       }
     },
-    "/api/v1/taxes/{id}": {
+    "/api/v1/tables/live-orders": {
       "get": {
         "tags": [
-          "Tax"
+          "Tables"
         ],
-        "summary": "Get a specific tax by ID",
+        "summary": "Get live orders for a table",
+        "description": "Mandatory headers: brand-id, outlet-id.",
         "security": [
           {
-            "bearerAuth": []
-          },
-          {
-            "brandIdHeader": []
-          },
-          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
             "outletIdHeader": []
           }
         ],
         "parameters": [
           {
-            "name": "id",
-            "in": "path",
+            "name": "tableId",
+            "in": "query",
             "required": true,
             "schema": {
               "type": "string"
@@ -7383,37 +8884,30 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "404": {
-            "description": "Not Found"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
           }
         }
-      },
-      "patch": {
+      }
+    },
+    "/api/v1/order": {
+      "post": {
         "tags": [
-          "Tax"
+          "Orders"
         ],
-        "summary": "Update a specific tax",
+        "summary": "Create a new order",
+        "description": "Creates an order with items, generates KOT automatically. Mandatory headers: brand-id, outlet-id. The waiterId is taken from the authenticated user token.",
         "security": [
           {
-            "bearerAuth": []
-          },
-          {
-            "brandIdHeader": []
-          },
-          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
             "outletIdHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "requestBody": {
@@ -7421,70 +8915,66 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateTaxRequest"
+                "$ref": "#/components/schemas/CreateOrderRequest"
               }
             }
           }
         },
         "responses": {
-          "200": {
-            "description": "Success"
+          "201": {
+            "description": "Order created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/OrderDetail"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           },
-          "404": {
-            "description": "Not Found"
+          "400": {
+            "description": "Validation error (missing tableId for DINE_IN, no items, etc.)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Joi validation failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
           }
         }
       },
-      "delete": {
-        "tags": [
-          "Tax"
-        ],
-        "summary": "Delete a specific tax",
-        "security": [
-          {
-            "bearerAuth": []
-          },
-          {
-            "brandIdHeader": []
-          },
-          {
-            "outletIdHeader": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Success"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/api/v1/taxes/groups": {
       "get": {
         "tags": [
-          "TaxGroup"
+          "Orders"
         ],
-        "summary": "Get all active tax groups",
+        "summary": "List orders",
+        "description": "Paginated order list with filters. Mandatory headers: brand-id, outlet-id.",
         "security": [
           {
-            "bearerAuth": []
-          },
-          {
-            "brandIdHeader": []
-          },
-          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
             "outletIdHeader": []
           }
         ],
@@ -7494,6 +8984,7 @@
             "in": "query",
             "schema": {
               "type": "number",
+              "minimum": 1,
               "default": 1
             }
           },
@@ -7502,7 +8993,535 @@
             "in": "query",
             "schema": {
               "type": "number",
+              "minimum": 1,
+              "maximum": 100,
               "default": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "enum": [
+                1,
+                2,
+                3,
+                4
+              ],
+              "description": "1=OPEN, 2=IN_PROGRESS, 3=COMPLETED, 4=CANCELLED"
+            }
+          },
+          {
+            "name": "orderType",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "enum": [
+                1,
+                2,
+                3
+              ],
+              "description": "1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY"
+            }
+          },
+          {
+            "name": "tableId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "waiterId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "orderNumber",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fromDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "toDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/OrderSummary"
+                          }
+                        },
+                        "total": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/order/detail": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Get order detail",
+        "description": "Returns full order with items, addons, and populated waiter info. Mandatory headers: brand-id, outlet-id.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/OrderDetail"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/order/add-items": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Add items to an existing order",
+        "description": "Adds new items to an OPEN or IN_PROGRESS order. Generates a new supplemental KOT. Does NOT replace existing items.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddItemsToOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Items added",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/OrderDetail"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order not found or not active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/order/remove-item": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Cancel a specific item from an order",
+        "description": "Marks a single OrderItem as CANCELLED and generates a VOID KOT to signal the kitchen to stop preparing it. Recalculates order totals.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RemoveOrderItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/OrderDetail"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Item already cancelled or served",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Item or order not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/order/update-item": {
+      "patch": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Update a pending order item",
+        "description": "Change quantity or instruction on a PENDING item only (not yet sent to kitchen). At least one of quantity or instruction must be provided.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateOrderItemRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/OrderDetail"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot modify non-PENDING item",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/order/close": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Close (complete) an order",
+        "description": "Marks order as COMPLETED. Requires paymentStatus to be PAID or PARTIAL. Releases table if no other active orders.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CloseOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order closed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Order not in valid state or payment not recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/order/cancel": {
+      "post": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Cancel an order",
+        "description": "Cancels an OPEN or IN_PROGRESS order. Cancels all active KOTs. Releases table.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CancelOrderRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order cancelled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Cannot cancel a completed order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/order/tokens": {
+      "get": {
+        "tags": [
+          "Orders"
+        ],
+        "summary": "Token display (customer-facing board)",
+        "description": "Returns all active TAKEAWAY orders split into preparing and ready lists.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token display data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "preparing": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/TokenDisplayItem"
+                              }
+                            },
+                            "ready": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/TokenDisplayItem"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tags": {
+      "get": {
+        "tags": [
+          "Customer Tags"
+        ],
+        "summary": "Get customer tags",
+        "description": "Returns customer tags filtered by brand-id and outlet-id with search, active filter, and pagination.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchText",
+            "in": "query",
+            "schema": {
+              "type": "string"
             }
           },
           {
@@ -7511,27 +9530,114 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "column",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "discountType",
+                "discountValue",
+                "minOrderAmount",
+                "priority",
+                "isActive",
+                "createdAt",
+                "updatedAt"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "DESC"
+            }
           }
         ],
         "responses": {
           "200": {
-            "description": "Success"
+            "description": "Customer tags retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "data": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/CustomerTag"
+                              }
+                            },
+                            "pagination": {
+                              "type": "object",
+                              "properties": {
+                                "total": {
+                                  "type": "number"
+                                },
+                                "page": {
+                                  "type": "number"
+                                },
+                                "limit": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       },
       "post": {
         "tags": [
-          "TaxGroup"
+          "Customer Tags"
         ],
-        "summary": "Create a new tax group",
+        "summary": "Create customer tag",
+        "description": "Creates a customer tag scoped to brand-id and outlet-id.",
         "security": [
           {
-            "bearerAuth": []
-          },
-          {
-            "brandIdHeader": []
-          },
-          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
             "outletIdHeader": []
           }
         ],
@@ -7540,32 +9646,47 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateTaxGroupRequest"
+                "$ref": "#/components/schemas/CreateCustomerTagRequest"
               }
             }
           }
         },
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Customer tag created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CustomerTag"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       }
     },
-    "/api/v1/taxes/groups/{id}": {
+    "/api/v1/tags/{id}": {
       "get": {
         "tags": [
-          "TaxGroup"
+          "Customer Tags"
         ],
-        "summary": "Get a specific tax group by ID",
+        "summary": "Get customer tag by id",
         "security": [
           {
-            "bearerAuth": []
-          },
-          {
-            "brandIdHeader": []
-          },
-          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
             "outletIdHeader": []
           }
         ],
@@ -7581,26 +9702,38 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "404": {
-            "description": "Not Found"
+            "description": "Customer tag retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CustomerTag"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       },
-      "patch": {
+      "put": {
         "tags": [
-          "TaxGroup"
+          "Customer Tags"
         ],
-        "summary": "Update a specific tax group",
+        "summary": "Update customer tag",
         "security": [
           {
-            "bearerAuth": []
-          },
-          {
-            "brandIdHeader": []
-          },
-          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
             "outletIdHeader": []
           }
         ],
@@ -7619,33 +9752,45 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/UpdateTaxGroupRequest"
+                "$ref": "#/components/schemas/UpdateCustomerTagRequest"
               }
             }
           }
         },
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "404": {
-            "description": "Not Found"
+            "description": "Customer tag updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CustomerTag"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       },
       "delete": {
         "tags": [
-          "TaxGroup"
+          "Customer Tags"
         ],
-        "summary": "Delete a specific tax group",
+        "summary": "Soft delete customer tag",
         "security": [
           {
-            "bearerAuth": []
-          },
-          {
-            "brandIdHeader": []
-          },
-          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
             "outletIdHeader": []
           }
         ],
@@ -7661,56 +9806,863 @@
         ],
         "responses": {
           "200": {
-            "description": "Success"
-          },
-          "404": {
-            "description": "Not Found"
+            "description": "Customer tag deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/CustomerTag"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
       }
-    }
-  },
-  "/api/v1/menu/menu-item-addons/detail": {
-    "get": {
-      "tags": [
-        "Menu-Item-Addons"
-      ],
-      "summary": "Get menu item addon by id",
-      "description": "Mandatory headers: brand-id, outlet-id (set via Authorize).",
-      "security": [
-        {
-          "bearerAuth": [],
-          "brandIdHeader": [],
-          "outletIdHeader": []
-        }
-      ],
-      "parameters": [
-        {
-          "name": "menuItemAddonId",
-          "in": "query",
-          "required": true,
-          "schema": {
-            "type": "string"
+    },
+    "/api/v1/customers": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Get customers",
+        "description": "Returns customers filtered by brand-id and outlet-id with search, tag filter, active filter, and pagination.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "searchText",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tagId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "column",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "name",
+                "mobile",
+                "email",
+                "loyaltyPoints",
+                "totalSpent",
+                "totalOrders",
+                "lastVisitAt",
+                "creditBalance",
+                "isActive",
+                "createdAt",
+                "updatedAt"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "order",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ],
+              "default": "DESC"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customers retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "object",
+                          "properties": {
+                            "data": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/components/schemas/Customer"
+                              }
+                            },
+                            "pagination": {
+                              "type": "object",
+                              "properties": {
+                                "total": {
+                                  "type": "number"
+                                },
+                                "page": {
+                                  "type": "number"
+                                },
+                                "limit": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
           }
         }
-      ],
-      "responses": {
-        "200": {
-          "description": "OK",
+      },
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Create customer",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ApiResponse"
+                "$ref": "#/components/schemas/CreateCustomerRequest"
               }
             }
           }
         },
-        "404": {
-          "description": "Not Found",
+        "responses": {
+          "201": {
+            "description": "Customer created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Customer"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customers/{id}": {
+      "get": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Get customer by id",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Customer"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Update customer",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ApiResponse"
+                "$ref": "#/components/schemas/UpdateCustomerRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Customer"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Soft delete customer",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Customer"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customers/{id}/tags": {
+      "post": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Assign tags to customer",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignCustomerTagsRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Tags assigned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Customer"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/customers/{id}/tags/{tagId}": {
+      "delete": {
+        "tags": [
+          "Customers"
+        ],
+        "summary": "Remove tag from customer",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tagId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tag removed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/Customer"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/kot": {
+      "get": {
+        "tags": [
+          "KOTs"
+        ],
+        "summary": "List KOTs for a specific order",
+        "description": "Returns all KOTs (including VOID KOTs) for a given orderId. Mandatory headers: brand-id, outlet-id.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "minimum": 1,
+              "default": 50
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/KOTDetail"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/kot/kitchen": {
+      "get": {
+        "tags": [
+          "KOTs"
+        ],
+        "summary": "Kitchen Display System (KDS) â€” all active KOTs",
+        "description": "Returns all non-completed KOTs for an outlet, sorted FIFO. Optionally filter by status. For Kitchen Display screens.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "number",
+              "enum": [
+                1,
+                2,
+                3
+              ],
+              "description": "1=PENDING, 2=PREPARING, 3=READY. Omit to get all active KOTs."
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/KOTDetail"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/kot/status": {
+      "patch": {
+        "tags": [
+          "KOTs"
+        ],
+        "summary": "Update KOT status",
+        "description": "Update KOT-level status. Enforces state machine:\n- PENDING â†’ PREPARING or CANCELLED\n- PREPARING â†’ READY or CANCELLED\n- READY â†’ SERVED or CANCELLED\n- Transitions outside these rules return HTTP 400.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKOTStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "KOT status updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "$ref": "#/components/schemas/KOTDetail"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid state transition",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "KOT not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/kot/item-status": {
+      "patch": {
+        "tags": [
+          "KOTs"
+        ],
+        "summary": "Update individual KOT item status",
+        "description": "Update status of a single item within a KOT (e.g., mark starter as SERVED while main is still PREPARING). Auto-advances KOT to SERVED when all items are served.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateKOTItemStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "KOT item status updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "KOT does not belong to your outlet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "KOT item not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/report/sales": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Get Sales Report",
+        "description": "Mandatory headers: brand-id, outlet-id.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/SalesReportItem"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/report/item-sales": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Get Item Sales Report",
+        "description": "Mandatory headers: brand-id, outlet-id.",
+        "security": [
+          {
+            "bearerAuth": [],
+            "brandIdHeader": [],
+            "outletIdHeader": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/ApiResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ItemSalesReportItem"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
               }
             }
           }

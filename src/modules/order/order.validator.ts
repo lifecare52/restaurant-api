@@ -3,8 +3,6 @@ import Joi from 'joi';
 import { ORDER_TYPE, PAYMENT_METHOD } from '@shared/enum/order.enum';
 import { objectId } from '@shared/utils/common.validation';
 
-// ─── Reusable ──────────────────────────────────────────────────────────────────
-
 const addonSchema = Joi.object({
   addonId: objectId.required(),
   addonItemId: objectId.required(),
@@ -27,8 +25,6 @@ const orderItemSchema = Joi.object({
   addons: Joi.array().items(addonSchema).optional().default([])
 }).or('quantity', 'measurement');
 
-// ─── Create Order ─────────────────────────────────────────────────────────────
-
 export const createOrderSchema = Joi.object({
   orderType: Joi.number()
     .valid(...Object.values(ORDER_TYPE).filter(v => !isNaN(Number(v))))
@@ -39,6 +35,7 @@ export const createOrderSchema = Joi.object({
     then: Joi.required().messages({ 'any.required': 'tableId is required for DINE_IN orders' }),
     otherwise: Joi.optional().allow(null, '')
   }),
+  customerId: objectId.optional().allow(null, ''),
   items: Joi.array().items(orderItemSchema).min(1).required().messages({
     'array.min': 'At least one item is required',
     'any.required': 'items array is required'
@@ -54,8 +51,6 @@ export const createOrderSchema = Joi.object({
   })
 });
 
-// ─── Add Items ────────────────────────────────────────────────────────────────
-
 export const addItemsToOrderSchema = Joi.object({
   orderId: objectId.required(),
   items: Joi.array().items(orderItemSchema).min(1).required().messages({
@@ -63,15 +58,11 @@ export const addItemsToOrderSchema = Joi.object({
   })
 });
 
-// ─── Remove Item ──────────────────────────────────────────────────────────────
-
 export const removeOrderItemSchema = Joi.object({
   orderId: objectId.required(),
   orderItemId: objectId.required(),
   cancelReason: Joi.string().max(300).optional().allow('', null)
 });
-
-// ─── Update Item ──────────────────────────────────────────────────────────────
 
 export const updateOrderItemSchema = Joi.object({
   orderId: objectId.required(),
@@ -79,8 +70,6 @@ export const updateOrderItemSchema = Joi.object({
   quantity: Joi.number().integer().min(1).optional(),
   instruction: Joi.string().trim().max(300).optional().allow('', null)
 }).or('quantity', 'instruction');
-
-// ─── Close Order ──────────────────────────────────────────────────────────────
 
 export const closeOrderSchema = Joi.object({
   orderId: objectId.required(),
@@ -90,14 +79,10 @@ export const closeOrderSchema = Joi.object({
     .messages({ 'any.only': 'paymentMethod must be: 1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE' })
 });
 
-// ─── Cancel Order ─────────────────────────────────────────────────────────────
-
 export const cancelOrderSchema = Joi.object({
   orderId: objectId.required(),
   cancellationReason: Joi.string().max(500).optional().allow('', null)
 });
-
-// ─── List Orders (query) ──────────────────────────────────────────────────────
 
 export const listOrdersQuerySchema = Joi.object({
   page: Joi.number().integer().min(1).optional().default(1),
@@ -110,8 +95,6 @@ export const listOrdersQuerySchema = Joi.object({
   fromDate: Joi.string().isoDate().optional(),
   toDate: Joi.string().isoDate().optional()
 });
-
-// ─── Order Detail (query) ─────────────────────────────────────────────────────
 
 export const getOrderQuerySchema = Joi.object({
   orderId: objectId.required()

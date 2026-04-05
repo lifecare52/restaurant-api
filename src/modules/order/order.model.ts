@@ -14,13 +14,12 @@ export type OrderModel = Model<Order>;
 export type OrderItemModel = Model<OrderItem>;
 export type OrderItemAddonModel = Model<OrderItemAddon>;
 
-// ─── Order ────────────────────────────────────────────────────────────────────
-
 const OrderSchema = new Schema<Order>(
   {
     brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
     outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
     waiterId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    customerId: { type: Schema.Types.ObjectId, ref: 'Customer', default: null },
     orderNumber: { type: String, required: true, index: true },
     tokenNo: { type: String, default: '' },
     orderType: {
@@ -54,27 +53,23 @@ const OrderSchema = new Schema<Order>(
     },
     confirmedAt: { type: Date, default: null },
     closedAt: { type: Date, default: null },
-    // Cancellation
     cancellationReason: { type: String, default: '' },
     cancelledBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
-    // Soft delete
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
 
-// Indexes: unique order number per outlet; common filter combos
 OrderSchema.index({ brandId: 1, outletId: 1, orderNumber: 1 }, { unique: true });
 OrderSchema.index({ brandId: 1, outletId: 1, status: 1 });
 OrderSchema.index({ brandId: 1, outletId: 1, tableId: 1 });
 OrderSchema.index({ brandId: 1, outletId: 1, waiterId: 1 });
+OrderSchema.index({ brandId: 1, outletId: 1, customerId: 1 });
 OrderSchema.index({ brandId: 1, outletId: 1, orderType: 1, status: 1 });
 OrderSchema.index({ brandId: 1, outletId: 1, createdAt: -1 });
 
 export const OrderEntity = model<Order, OrderModel>('Order', OrderSchema, 'orders');
-
-// ─── Order Item ───────────────────────────────────────────────────────────────
 
 const MeasurementSelectionSchema = new Schema(
   {
@@ -109,25 +104,21 @@ const OrderItemSchema = new Schema<OrderItem>(
       maxlength: 300
     },
     totalPrice: { type: Number, required: true, min: 0 },
-    // Item-level kitchen status
     itemStatus: {
       type: Number,
       enum: Object.values(ITEM_STATUS).filter(v => !isNaN(Number(v))),
       default: ITEM_STATUS.PENDING
     },
     kotSentAt: { type: Date, default: null },
-    // Cancellation
     cancelReason: { type: String, default: '' },
     cancelledAt: { type: Date, default: null },
     cancelledBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
-    // Soft delete
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
 
-// Filter by order and then filter active/cancelled items quickly
 OrderItemSchema.index({ orderId: 1, itemStatus: 1 });
 OrderItemSchema.index({ orderId: 1, isDelete: 1 });
 
@@ -136,8 +127,6 @@ export const OrderItemEntity = model<OrderItem, OrderItemModel>(
   OrderItemSchema,
   'order_items'
 );
-
-// ─── Order Item Addon ─────────────────────────────────────────────────────────
 
 const OrderItemAddonSchema = new Schema<OrderItemAddon>(
   {

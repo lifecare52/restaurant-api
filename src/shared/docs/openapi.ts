@@ -1396,6 +1396,7 @@ export const getOpenApiSpec = () => {
               description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE'
             },
             waiterId: { type: 'string', nullable: true },
+            customerId: { type: 'string', nullable: true },
             notes: { type: 'string', nullable: true, maxLength: 500 },
             createdAt: { type: 'string', format: 'date-time' }
           },
@@ -1453,6 +1454,7 @@ export const getOpenApiSpec = () => {
                 '1=DINE_IN (requires tableId), 2=TAKEAWAY, 3=DELIVERY (requires shippingAddress)'
             },
             tableId: { type: 'string', description: 'Required when orderType=1 (DINE_IN)' },
+            customerId: { type: 'string', nullable: true, description: 'Optional customer linked to the order' },
             items: {
               type: 'array',
               items: { $ref: '#/components/schemas/AddItemToOrderItemDTO' },
@@ -1524,6 +1526,135 @@ export const getOpenApiSpec = () => {
           },
           required: ['orderId']
         },
+        CustomerTag: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            name: { type: 'string' },
+            discountType: { type: 'string', enum: ['PERCENTAGE', 'FLAT', 'NONE'] },
+            discountValue: { type: 'number' },
+            minOrderAmount: { type: 'number' },
+            priority: { type: 'number' },
+            isActive: { type: 'boolean' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          },
+          required: [
+            '_id',
+            'brandId',
+            'outletId',
+            'name',
+            'discountType',
+            'discountValue',
+            'minOrderAmount',
+            'priority',
+            'isActive'
+          ]
+        },
+        CreateCustomerTagRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2, maxLength: 100 },
+            discountType: { type: 'string', enum: ['PERCENTAGE', 'FLAT', 'NONE'] },
+            discountValue: { type: 'number', minimum: 0 },
+            minOrderAmount: { type: 'number', minimum: 0, default: 0 },
+            priority: { type: 'integer', minimum: 0, default: 0 },
+            isActive: { type: 'boolean', default: true }
+          },
+          required: ['name', 'discountType']
+        },
+        UpdateCustomerTagRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2, maxLength: 100 },
+            discountType: { type: 'string', enum: ['PERCENTAGE', 'FLAT', 'NONE'] },
+            discountValue: { type: 'number', minimum: 0 },
+            minOrderAmount: { type: 'number', minimum: 0 },
+            priority: { type: 'integer', minimum: 0 },
+            isActive: { type: 'boolean' }
+          }
+        },
+        Customer: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            name: { type: 'string' },
+            mobile: { type: 'string' },
+            email: { type: 'string', format: 'email', nullable: true },
+            tags: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/CustomerTag' }
+            },
+            loyaltyPoints: { type: 'number' },
+            totalSpent: { type: 'number' },
+            totalOrders: { type: 'number' },
+            lastVisitAt: { type: 'string', format: 'date-time', nullable: true },
+            creditBalance: { type: 'number' },
+            isActive: { type: 'boolean' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          },
+          required: [
+            '_id',
+            'brandId',
+            'outletId',
+            'name',
+            'mobile',
+            'tags',
+            'loyaltyPoints',
+            'totalSpent',
+            'totalOrders',
+            'creditBalance',
+            'isActive'
+          ]
+        },
+        CreateCustomerRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2, maxLength: 120 },
+            mobile: { type: 'string', minLength: 6, maxLength: 20 },
+            email: { type: 'string', format: 'email', nullable: true },
+            tags: { type: 'array', items: { type: 'string' } },
+            loyaltyPoints: { type: 'number', minimum: 0, default: 0 },
+            totalSpent: { type: 'number', minimum: 0, default: 0 },
+            totalOrders: { type: 'integer', minimum: 0, default: 0 },
+            lastVisitAt: { type: 'string', format: 'date-time', nullable: true },
+            creditBalance: { type: 'number', default: 0 },
+            isActive: { type: 'boolean', default: true }
+          },
+          required: ['name', 'mobile']
+        },
+        UpdateCustomerRequest: {
+          type: 'object',
+          properties: {
+            name: { type: 'string', minLength: 2, maxLength: 120 },
+            mobile: { type: 'string', minLength: 6, maxLength: 20 },
+            email: { type: 'string', format: 'email', nullable: true },
+            tags: { type: 'array', items: { type: 'string' } },
+            loyaltyPoints: { type: 'number', minimum: 0 },
+            totalSpent: { type: 'number', minimum: 0 },
+            totalOrders: { type: 'integer', minimum: 0 },
+            lastVisitAt: { type: 'string', format: 'date-time', nullable: true },
+            creditBalance: { type: 'number' },
+            isActive: { type: 'boolean' }
+          }
+        },
+        AssignCustomerTagsRequest: {
+          type: 'object',
+          properties: {
+            tagIds: {
+              type: 'array',
+              items: { type: 'string' },
+              minItems: 1,
+              uniqueItems: true
+            }
+          },
+          required: ['tagIds']
+        },
         TokenDisplayItem: {
           type: 'object',
           properties: {
@@ -1566,6 +1697,7 @@ export const getOpenApiSpec = () => {
               description: '1=REGULAR, 2=VOID, 3=REPRINT'
             },
             waiterId: { type: 'string', nullable: true },
+            customerId: { type: 'string', nullable: true },
             tokenNo: { type: 'string', nullable: true },
             tableName: { type: 'string', nullable: true },
             notes: {
@@ -5276,6 +5408,420 @@ export const getOpenApiSpec = () => {
           }
         }
       },
+      '/api/v1/tags': {
+        get: {
+          tags: ['Customer Tags'],
+          summary: 'Get customer tags',
+          description: 'Returns customer tags filtered by brand-id and outlet-id with search, active filter, and pagination.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'search', in: 'query', schema: { type: 'string' } },
+            { name: 'searchText', in: 'query', schema: { type: 'string' } },
+            { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
+            { name: 'page', in: 'query', schema: { type: 'number', minimum: 1, default: 1 } },
+            {
+              name: 'limit',
+              in: 'query',
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
+            },
+            {
+              name: 'column',
+              in: 'query',
+              schema: {
+                type: 'string',
+                enum: ['name', 'discountType', 'discountValue', 'minOrderAmount', 'priority', 'isActive', 'createdAt', 'updatedAt'],
+                default: 'createdAt'
+              }
+            },
+            {
+              name: 'order',
+              in: 'query',
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'DESC' }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Customer tags retrieved',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'object',
+                            properties: {
+                              data: {
+                                type: 'array',
+                                items: { $ref: '#/components/schemas/CustomerTag' }
+                              },
+                              pagination: {
+                                type: 'object',
+                                properties: {
+                                  total: { type: 'number' },
+                                  page: { type: 'number' },
+                                  limit: { type: 'number' }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        post: {
+          tags: ['Customer Tags'],
+          summary: 'Create customer tag',
+          description: 'Creates a customer tag scoped to brand-id and outlet-id.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/CreateCustomerTagRequest' }
+              }
+            }
+          },
+          responses: {
+            201: {
+              description: 'Customer tag created',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/CustomerTag' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/tags/{id}': {
+        get: {
+          tags: ['Customer Tags'],
+          summary: 'Get customer tag by id',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: {
+              description: 'Customer tag retrieved',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/CustomerTag' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        put: {
+          tags: ['Customer Tags'],
+          summary: 'Update customer tag',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateCustomerTagRequest' }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Customer tag updated',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/CustomerTag' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        delete: {
+          tags: ['Customer Tags'],
+          summary: 'Soft delete customer tag',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: {
+              description: 'Customer tag deleted',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/CustomerTag' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/customers': {
+        get: {
+          tags: ['Customers'],
+          summary: 'Get customers',
+          description: 'Returns customers filtered by brand-id and outlet-id with search, tag filter, active filter, and pagination.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'search', in: 'query', schema: { type: 'string' } },
+            { name: 'searchText', in: 'query', schema: { type: 'string' } },
+            { name: 'tagId', in: 'query', schema: { type: 'string' } },
+            { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
+            { name: 'page', in: 'query', schema: { type: 'number', minimum: 1, default: 1 } },
+            {
+              name: 'limit',
+              in: 'query',
+              schema: { type: 'number', minimum: 1, maximum: 100, default: 20 }
+            },
+            {
+              name: 'column',
+              in: 'query',
+              schema: {
+                type: 'string',
+                enum: ['name', 'mobile', 'email', 'loyaltyPoints', 'totalSpent', 'totalOrders', 'lastVisitAt', 'creditBalance', 'isActive', 'createdAt', 'updatedAt'],
+                default: 'createdAt'
+              }
+            },
+            {
+              name: 'order',
+              in: 'query',
+              schema: { type: 'string', enum: ['ASC', 'DESC'], default: 'DESC' }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Customers retrieved',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'object',
+                            properties: {
+                              data: {
+                                type: 'array',
+                                items: { $ref: '#/components/schemas/Customer' }
+                              },
+                              pagination: {
+                                type: 'object',
+                                properties: {
+                                  total: { type: 'number' },
+                                  page: { type: 'number' },
+                                  limit: { type: 'number' }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        post: {
+          tags: ['Customers'],
+          summary: 'Create customer',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/CreateCustomerRequest' }
+              }
+            }
+          },
+          responses: {
+            201: {
+              description: 'Customer created',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/Customer' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/customers/{id}': {
+        get: {
+          tags: ['Customers'],
+          summary: 'Get customer by id',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: {
+              description: 'Customer retrieved',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      { type: 'object', properties: { data: { $ref: '#/components/schemas/Customer' } } }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        put: {
+          tags: ['Customers'],
+          summary: 'Update customer',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/UpdateCustomerRequest' }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Customer updated',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      { type: 'object', properties: { data: { $ref: '#/components/schemas/Customer' } } }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        delete: {
+          tags: ['Customers'],
+          summary: 'Soft delete customer',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: {
+              description: 'Customer deleted',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      { type: 'object', properties: { data: { $ref: '#/components/schemas/Customer' } } }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/customers/{id}/tags': {
+        post: {
+          tags: ['Customers'],
+          summary: 'Assign tags to customer',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/AssignCustomerTagsRequest' }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Tags assigned',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      { type: 'object', properties: { data: { $ref: '#/components/schemas/Customer' } } }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/customers/{id}/tags/{tagId}': {
+        delete: {
+          tags: ['Customers'],
+          summary: 'Remove tag from customer',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+            { name: 'tagId', in: 'path', required: true, schema: { type: 'string' } }
+          ],
+          responses: {
+            200: {
+              description: 'Tag removed',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      { type: 'object', properties: { data: { $ref: '#/components/schemas/Customer' } } }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       '/api/v1/kot': {
         get: {
           tags: ['KOTs'],
@@ -5512,3 +6058,5 @@ export const getOpenApiSpec = () => {
   };
   return spec;
 };
+
+

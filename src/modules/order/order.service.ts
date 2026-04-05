@@ -1,5 +1,7 @@
 import mongoose, { Types, type FilterQuery } from 'mongoose';
 
+import { customerService } from '@modules/customer/customer.service';
+import { discountService } from '@modules/discount/discount.service';
 import { KOTEntity } from '@modules/kot/kot.model';
 import { generateKOT } from '@modules/kot/kot.service';
 import { KOT_STATUS, KOT_TYPE, type KOT } from '@modules/kot/kot.types';
@@ -34,6 +36,7 @@ import {
 } from '@modules/order/order.types';
 import OutletEntity from '@modules/outlet/outlet.model';
 import TableEntity from '@modules/table/table.model';
+import { CUSTOMER_TAG_DISCOUNT_TYPE } from '@modules/tag/tag.types';
 import { TABLE_STATUS } from '@modules/table/table.types';
 
 import { orderEvents } from '@shared/events/order.events';
@@ -42,6 +45,48 @@ import type { TokenDisplayItem, TokenDisplayResponse } from '@shared/interfaces'
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const getTodayStr = () => new Date().toISOString().split('T')[0];
+
+const mapDiscountTypeToOrderValue = (discountType?: string | null): number | null => {
+  if (discountType === CUSTOMER_TAG_DISCOUNT_TYPE.FLAT) {
+    return 1;
+  }
+
+  if (discountType === CUSTOMER_TAG_DISCOUNT_TYPE.PERCENTAGE) {
+    return 2;
+  }
+
+  return null;
+};
+
+const recalculateOrderPricing = async (
+  brandId: string,
+  outletId: string,
+  customerId: Types.ObjectId | null | undefined,
+  subtotal: number
+) => {
+  if (!customerId) {
+    return {
+      discountAmount: 0,
+      discountType: null,
+      discountValue: null,
+      totalAmount: subtotal
+    };
+  }
+
+  const { discount, appliedTag } = await discountService.calculateBestDiscount(
+    String(customerId),
+    subtotal,
+    brandId,
+    outletId
+  );
+
+  return {
+    discountAmount: discount,
+    discountType: mapDiscountTypeToOrderValue(appliedTag?.discountType ?? null),
+    discountValue: appliedTag?.discountValue ?? null,
+    totalAmount: Math.max(0, subtotal - discount)
+  };
+};
 
 /** Atomically get next daily sequence number for a given type */
 const getNextSequence = async (
@@ -372,7 +417,13 @@ export const createOrder = async (
     measurementMap
   );
 
-  const totalAmount = subtotal;
+  const pricing = await recalculateOrderPricing(
+    brandId,
+    outletId,
+    dto.customerId ? new Types.ObjectId(dto.customerId) : null,
+    subtotal
+  );
+  const totalAmount = pricing.totalAmount;
 
   // Atomic IDs and sequences
   const orderId = new Types.ObjectId();
@@ -816,6 +867,7 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
   })
     .populate('tableId', 'name')
     .populate('waiterId', 'name role')
+    .populate('customerId', 'name mobile email tags loyaltyPoints totalSpent totalOrders lastVisitAt creditBalance isActive')
     .populate('cancelledBy', 'name')
     .lean();
 
@@ -1025,6 +1077,7 @@ export const listOrders = async (
     OrderEntity.find(filter)
       .populate('tableId', 'name')
       .populate('waiterId', 'name role')
+    .populate('customerId', 'name mobile email tags loyaltyPoints totalSpent totalOrders lastVisitAt creditBalance isActive')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -1159,3 +1212,5 @@ export const getKOTOrderDetails = async (
 
   return transformOrderToKOTFormat(order);
 };
+
+

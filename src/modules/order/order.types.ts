@@ -11,36 +11,30 @@ import type { Types } from 'mongoose';
 
 export { ORDER_TYPE, ORDER_STATUS, PAYMENT_STATUS, ITEM_STATUS, PAYMENT_METHOD };
 
-// ─── Core Entities ───────────────────────────────────────────────────────────
-
 export interface Order {
   _id?: Types.ObjectId;
   brandId: Types.ObjectId;
   outletId: Types.ObjectId;
-  /** The staff member who created / owns the order */
   waiterId?: Types.ObjectId | null;
+  customerId?: Types.ObjectId | null;
   orderNumber: string;
   tokenNo?: string;
   orderType: ORDER_TYPE;
   tableId?: Types.ObjectId | null;
   status: ORDER_STATUS;
-  // Financials
   subtotal: number;
   discountAmount: number;
-  discountType?: number | null; // FLAT=1, PERCENTAGE=2
-  discountValue?: number | null; // the raw input value (e.g. 50 or 10%)
+  discountType?: number | null;
+  discountValue?: number | null;
   totalAmount: number;
-  // Payment
   paymentStatus: PAYMENT_STATUS;
   paymentMethod?: PAYMENT_METHOD | null;
   shippingAddress?: string;
   notes?: string;
   confirmedAt?: Date | null;
   closedAt?: Date | null;
-  // Cancellation
   cancellationReason?: string;
   cancelledBy?: Types.ObjectId | null;
-  // Soft delete
   isActive: boolean;
   isDelete: boolean;
   createdAt?: Date;
@@ -72,11 +66,8 @@ export interface OrderItem {
   variationName?: string;
   instruction?: string;
   totalPrice: number;
-  /** Per-item kitchen lifecycle status */
   itemStatus: ITEM_STATUS;
-  /** When this item was sent to KOT the first time */
   kotSentAt?: Date | null;
-  /** Cancellation info (if itemStatus = CANCELLED) */
   cancelReason?: string;
   cancelledAt?: Date | null;
   cancelledBy?: Types.ObjectId | null;
@@ -104,8 +95,6 @@ export interface OrderItemAddon {
   updatedAt?: Date;
 }
 
-// ─── Internal Processing Helpers ─────────────────────────────────────────────
-
 export interface ProcessedOrderItem extends Omit<OrderItem, 'orderId'> {
   orderId?: Types.ObjectId;
 }
@@ -114,22 +103,16 @@ export interface ProcessedOrderItemAddon extends Omit<OrderItemAddon, 'orderId'>
   orderId?: Types.ObjectId;
 }
 
-// ─── Query Interfaces ────────────────────────────────────────────────────────
-
 export interface OrderListQuery extends PaginationQuery {
   status?: ORDER_STATUS;
   orderType?: ORDER_TYPE;
   tableId?: string;
   orderNumber?: string;
   waiterId?: string;
-  /** ISO date string — list orders created on or after this date */
   fromDate?: string;
-  /** ISO date string — list orders created on or before this date */
   toDate?: string;
   search?: string;
 }
-
-// ─── DTOs (API Contracts) ────────────────────────────────────────────────────
 
 export interface AddonDTO {
   addonId: string;
@@ -149,8 +132,10 @@ export interface AddItemToOrderDTO {
 export interface CreateOrderDTO {
   orderType: ORDER_TYPE;
   tableId?: string;
+  customerId?: string;
   items: AddItemToOrderDTO[];
   notes?: string;
+  shippingAddress?: string;
 }
 
 export interface AddItemsToOrderDTO {
