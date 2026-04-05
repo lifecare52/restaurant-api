@@ -27,7 +27,16 @@ export const recordPayment = async (
   outletId: string,
   userId: string,
   dto: CreatePaymentDTO
-): Promise<{ payment: Payment; order: Record<string, unknown> }> => {
+): Promise<{ payments: Payment[]; order: Record<string, unknown> }> => {
+  // Normalize payload
+  const paymentsInput = dto.payments?.length
+    ? dto.payments
+    : [{ amount: dto.amount!, paymentMethod: dto.paymentMethod!, reference: dto.reference }];
+
+  const totalPaymentAmount = parseFloat(
+    paymentsInput.reduce((sum, p) => sum + p.amount, 0).toFixed(2)
+  );
+
   // ── 1. Fetch and validate order ──────────────────────────────────────────
   const order = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
@@ -47,62 +56,71 @@ export const recordPayment = async (
   if (order.paymentStatus === PAYMENT_STATUS.PAID) {
     throw { status: 400, message: 'Order is already fully paid' };
   }
-  if (dto.amount <= 0) {
-    throw { status: 400, message: 'Payment amount must be greater than zero' };
+  if (totalPaymentAmount <= 0) {
+    throw { status: 400, message: 'Total payment amount must be greater than zero' };
   }
 
   const currentPaidAmount = order.paidAmount ?? 0;
   const balanceDue = order.totalAmount - currentPaidAmount;
 
-  if (dto.amount > balanceDue + 0.001) {
+  if (totalPaymentAmount > balanceDue + 0.001) {
     // +0.001 for float tolerance
     throw {
       status: 400,
-      message: `Payment amount (${dto.amount}) exceeds balance due (${balanceDue.toFixed(2)})`
+      message: `Total payment amount (${totalPaymentAmount}) exceeds balance due (${balanceDue.toFixed(2)})`
     };
   }
 
   // ── 2. Compute new paidAmount and paymentStatus ──────────────────────────
-  const newPaidAmount = parseFloat((currentPaidAmount + dto.amount).toFixed(2));
+  const newPaidAmount = parseFloat((currentPaidAmount + totalPaymentAmount).toFixed(2));
   const newPaymentStatus =
     newPaidAmount >= order.totalAmount - 0.001 ? PAYMENT_STATUS.PAID : PAYMENT_STATUS.PARTIAL;
 
-  // ── 3. Atomic transaction ────────────────────────────────────────────────
-  const paymentId = new Types.ObjectId();
+  const previousPaymentMethods = await PaymentEntity.distinct('paymentMethod', {
+    orderId: new Types.ObjectId(dto.orderId),
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false
+  });
 
+  const allMethods = new Set([
+    ...previousPaymentMethods,
+    ...paymentsInput.map(p => p.paymentMethod)
+  ]);
+  const isSplitPayment = allMethods.size > 1;
+
+  // ── 3. Atomic transaction ────────────────────────────────────────────────
   const session = await mongoose.startSession();
-  let savedPayment: Payment | null = null;
+  let savedPayments: Payment[] = [];
   let updatedOrder: Record<string, unknown> | null = null;
 
   try {
     session.startTransaction();
 
-    const [paymentDocs] = await PaymentEntity.insertMany(
-      [
-        {
-          _id: paymentId,
-          brandId: new Types.ObjectId(brandId),
-          outletId: new Types.ObjectId(outletId),
-          orderId: new Types.ObjectId(dto.orderId),
-          amount: dto.amount,
-          paymentMethod: dto.paymentMethod,
-          reference: dto.reference?.trim() || null,
-          recordedBy: new Types.ObjectId(userId),
-          isDelete: false
-        }
-      ],
-      { session }
-    );
-    savedPayment = paymentDocs as unknown as Payment;
+    const paymentDocsToInsert = paymentsInput.map(p => ({
+      _id: new Types.ObjectId(),
+      brandId: new Types.ObjectId(brandId),
+      outletId: new Types.ObjectId(outletId),
+      orderId: new Types.ObjectId(dto.orderId),
+      amount: p.amount,
+      paymentMethod: p.paymentMethod,
+      reference: p.reference?.trim() || null,
+      recordedBy: new Types.ObjectId(userId),
+      isDelete: false
+    }));
+
+    const paymentDocs = await PaymentEntity.insertMany(paymentDocsToInsert, { session });
+    savedPayments = paymentDocs as unknown as Payment[];
 
     updatedOrder = (await OrderEntity.findOneAndUpdate(
       { _id: new Types.ObjectId(dto.orderId) },
       {
-        $inc: { paidAmount: dto.amount },
+        $inc: { paidAmount: totalPaymentAmount },
         $set: {
           paymentStatus: newPaymentStatus,
+          isSplitPayment,
           // Record first / primary paymentMethod on the order for quick reporting
-          paymentMethod: order.paymentMethod ?? dto.paymentMethod
+          paymentMethod: order.paymentMethod ?? paymentsInput[0].paymentMethod
         }
       },
       { new: true, session }
@@ -124,9 +142,10 @@ export const recordPayment = async (
     action: ORDER_AUDIT_ACTION.PAYMENT_RECORDED,
     performedBy: userId,
     metadata: {
-      paymentId: String(paymentId),
-      amount: dto.amount,
-      paymentMethod: dto.paymentMethod,
+      paymentIds: savedPayments.map(p => String(p._id)),
+      totalAmountPaidNow: totalPaymentAmount,
+      isSplitPayment: order.isSplitPayment || isSplitPayment,
+      paymentMethods: paymentsInput.map(p => p.paymentMethod),
       newPaidAmount,
       newPaymentStatus
     }
@@ -140,14 +159,15 @@ export const recordPayment = async (
   }
 
   return {
-    payment: savedPayment!,
+    payments: savedPayments,
     order: {
       _id: updatedOrder!['_id'],
       totalAmount: updatedOrder!['totalAmount'],
       paidAmount: newPaidAmount,
       balanceDue: parseFloat((order.totalAmount - newPaidAmount).toFixed(2)),
       paymentStatus: newPaymentStatus,
-      paymentMethod: updatedOrder!['paymentMethod']
+      paymentMethod: updatedOrder!['paymentMethod'],
+      isSplitPayment: updatedOrder!['isSplitPayment']
     }
   };
 };
@@ -189,6 +209,7 @@ export const getPaymentsByOrder = async (
     paidAmount,
     balanceDue,
     paymentStatus: order.paymentStatus,
+    isSplitPayment: order.isSplitPayment ?? false,
     payments: payments as Payment[]
   };
 };

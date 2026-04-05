@@ -25,11 +25,20 @@ export interface Payment {
 
 // ─── DTOs ────────────────────────────────────────────────────────────────────
 
-export interface CreatePaymentDTO {
-  orderId: string;
+export interface PaymentInputDTO {
   amount: number;
   paymentMethod: PAYMENT_METHOD;
   reference?: string;
+}
+
+export interface CreatePaymentDTO {
+  orderId: string;
+  // Legacy single payment
+  amount?: number;
+  paymentMethod?: PAYMENT_METHOD;
+  reference?: string;
+  // Multiple payments
+  payments?: PaymentInputDTO[];
 }
 
 export interface PaymentListQuery extends PaginationQuery {
@@ -47,5 +56,6 @@ export interface OrderPaymentSummary {
   paidAmount: number;
   balanceDue: number;
   paymentStatus: PAYMENT_STATUS;
+  isSplitPayment: boolean;
   payments: Payment[];
 }

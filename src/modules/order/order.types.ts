@@ -35,6 +35,8 @@ export interface Order {
   paymentMethod?: PAYMENT_METHOD | null;
   /** Running total of all payment transactions recorded against this order */
   paidAmount?: number;
+  /** Indicates whether the order was paid via multiple payment methods (split payment) */
+  isSplitPayment?: boolean;
   shippingAddress?: string;
   notes?: string;
   confirmedAt?: Date | null;

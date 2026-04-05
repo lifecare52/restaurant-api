@@ -47,6 +47,7 @@ const OrderSchema = new Schema<Order>(
     paymentMethod: { type: Number, default: null },
     /** Running total of all payments recorded against this order */
     paidAmount: { type: Number, default: 0, min: 0 },
+    isSplitPayment: { type: Boolean, default: false },
     shippingAddress: { type: String, default: '' },
     notes: {
       type: String,

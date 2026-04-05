@@ -371,13 +371,13 @@ export const getOpenApiSpec = () => {
         },
         RecordPaymentRequest: {
           type: 'object',
-          description: 'Payload to record a payment transaction (supports partial payments)',
+          description: 'Payload to record payment transaction(s) (supports split payments)',
           properties: {
             orderId: { type: 'string', description: 'Valid MongoDB ObjectId of the order' },
             amount: {
               type: 'number',
               minimum: 0.01,
-              description: 'Amount to pay; must not exceed balance due'
+              description: 'Amount to pay (for legacy single payment)'
             },
             paymentMethod: {
               type: 'integer',
@@ -389,16 +389,32 @@ export const getOpenApiSpec = () => {
               maxLength: 100,
               nullable: true,
               description: 'Optional transaction reference'
+            },
+            payments: {
+              type: 'array',
+              description: 'Array of payments for split-payment scenarios',
+              items: {
+                type: 'object',
+                properties: {
+                  amount: { type: 'number', minimum: 0.01 },
+                  paymentMethod: { type: 'integer', enum: [1, 2, 3, 4, 5] },
+                  reference: { type: 'string', nullable: true, maxLength: 100 }
+                },
+                required: ['amount', 'paymentMethod']
+              }
             }
           },
-          required: ['orderId', 'amount', 'paymentMethod']
+          required: ['orderId']
         },
         RecordPaymentResponse: {
           type: 'object',
           description:
-            'Response after recording a payment — contains saved payment + updated order snapshot',
+            'Response after recording payments — contains saved payments + updated order snapshot',
           properties: {
-            payment: { $ref: '#/components/schemas/Payment' },
+            payments: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Payment' }
+            },
             order: {
               type: 'object',
               properties: {
@@ -416,12 +432,22 @@ export const getOpenApiSpec = () => {
                   enum: [1, 2, 3, 4, 5],
                   nullable: true,
                   description: 'Primary payment method recorded on the order'
+                },
+                isSplitPayment: {
+                  type: 'boolean',
+                  description: 'Whether the order was paid via split payments'
                 }
               },
-              required: ['_id', 'totalAmount', 'paidAmount', 'balanceDue', 'paymentStatus']
+              required: [
+                '_id',
+                'totalAmount',
+                'paidAmount',
+                'balanceDue',
+                'paymentStatus'
+              ]
             }
           },
-          required: ['payment', 'order']
+          required: ['payments', 'order']
         },
         OrderPaymentSummary: {
           type: 'object',
@@ -436,6 +462,10 @@ export const getOpenApiSpec = () => {
               enum: [1, 2, 3, 4],
               description: '1=UNPAID, 2=PARTIAL, 3=PAID, 4=REFUNDED'
             },
+            isSplitPayment: {
+              type: 'boolean',
+              description: 'Whether the order was paid via multiple distinct payment methods'
+            },
             payments: {
               type: 'array',
               items: { $ref: '#/components/schemas/Payment' }
@@ -447,6 +477,7 @@ export const getOpenApiSpec = () => {
             'paidAmount',
             'balanceDue',
             'paymentStatus',
+            'isSplitPayment',
             'payments'
           ]
         },
@@ -5658,11 +5689,26 @@ export const getOpenApiSpec = () => {
             content: {
               'application/json': {
                 schema: { $ref: '#/components/schemas/RecordPaymentRequest' },
-                example: {
-                  orderId: '6627f1a2b3c4d5e6f7a8b9c0',
-                  amount: 250.5,
-                  paymentMethod: 3,
-                  reference: 'UPI-TXN-987654321'
+                examples: {
+                  legacySinglePayment: {
+                    summary: 'Single Payment (Legacy)',
+                    value: {
+                      orderId: '6627f1a2b3c4d5e6f7a8b9c0',
+                      amount: 250.5,
+                      paymentMethod: 3,
+                      reference: 'UPI-TXN-987654321'
+                    }
+                  },
+                  splitPayments: {
+                    summary: 'Split Payments Array',
+                    value: {
+                      orderId: '6627f1a2b3c4d5e6f7a8b9c0',
+                      payments: [
+                        { amount: 100, paymentMethod: 1 },
+                        { amount: 150.5, paymentMethod: 3, reference: 'UPI-TXN-1234' }
+                      ]
+                    }
+                  }
                 }
               }
             }
@@ -5684,31 +5730,6 @@ export const getOpenApiSpec = () => {
                     ]
                   }
                 }
-              }
-            },
-            400: {
-              description:
-                'Validation error, order already paid/closed/cancelled, or payment exceeds balance due',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
-              }
-            },
-            401: {
-              description: 'Unauthorized — missing or invalid bearer token',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
-              }
-            },
-            403: {
-              description: 'Forbidden — user does not have access to the brand or outlet',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
-              }
-            },
-            404: {
-              description: 'Order not found',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
               }
             }
           }
