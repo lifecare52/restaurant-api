@@ -9,6 +9,7 @@ import {
   removeItemFromOrder,
   updateOrderItem
 } from '@modules/order/order.service';
+import { getPaymentsByOrder } from '@modules/payment/payment.service';
 
 import type { Request, Response, NextFunction } from 'express';
 
@@ -103,6 +104,14 @@ export const getOrderController = async (req: Request, res: Response, next: Next
     if (!item) {
       res.locals.response = { status: false, code: 404, message: 'Order not found' };
     } else {
+      const paymentsSummary = await getPaymentsByOrder(brandId, outletId, orderId);
+      // Clean payments to remove tenant fields
+      const cleanedPayments = paymentsSummary.payments.map((p: any) => {
+        const paymentObj = p.toObject ? p.toObject() : p;
+        const { brandId: _b, outletId: _o, __v: _v, ...rest } = paymentObj;
+        return rest;
+      });
+      item.payments = cleanedPayments;
       res.locals.response = { status: true, code: 200, data: item };
     }
     next();

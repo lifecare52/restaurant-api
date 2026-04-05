@@ -1573,9 +1573,13 @@ export const getOpenApiSpec = () => {
             {
               type: 'object',
               properties: {
-                items: {
+                kots: {
                   type: 'array',
-                  items: { $ref: '#/components/schemas/OrderItem' }
+                  items: { $ref: '#/components/schemas/KOTFriendlyBatch' }
+                },
+                payments: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Payment' }
                 },
                 cancellationReason: { type: 'string', nullable: true },
                 closedAt: { type: 'string', format: 'date-time', nullable: true },
@@ -1805,6 +1809,30 @@ export const getOpenApiSpec = () => {
             variationName: { type: 'string', nullable: true },
             quantitySold: { type: 'number' },
             totalRevenue: { type: 'number' }
+          }
+        },
+        KOTFriendlyBatch: {
+          type: 'object',
+          properties: {
+            kotNumber: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time', nullable: true },
+            items: {
+              type: 'array',
+              items: {
+                allOf: [
+                  { $ref: '#/components/schemas/OrderItem' },
+                  {
+                    type: 'object',
+                    properties: {
+                      addons: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/OrderItemAddon' }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
           }
         }
       }

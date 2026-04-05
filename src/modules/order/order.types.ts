@@ -8,6 +8,7 @@ import {
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 import type { Types } from 'mongoose';
+import type { Payment } from '@modules/payment/payment.types';
 
 export { ORDER_TYPE, ORDER_STATUS, PAYMENT_STATUS, ITEM_STATUS, PAYMENT_METHOD };
 
@@ -195,4 +196,5 @@ export interface KOTFriendlyBatch {
 
 export type KOTFriendlyResponse = Cleaned<Order> & {
   kots: KOTFriendlyBatch[];
+  payments: Cleaned<Payment>[];
 };
