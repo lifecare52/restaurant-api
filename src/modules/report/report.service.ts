@@ -32,9 +32,9 @@ export const getSalesReport = async (
           orderType: '$orderType'
         },
         totalOrders: { $sum: 1 },
-        totalAmount: { $sum: '$totalAmount' },
-        tax: { $sum: '$taxAmount' },
-        discount: { $sum: '$discountAmount' }
+        totalAmount: { $sum: { $ifNull: ['$totalAmount', 0] } },
+        tax: { $sum: { $ifNull: ['$taxAmount', 0] } },
+        discount: { $sum: { $ifNull: ['$discountAmount', 0] } }
       }
     },
     {

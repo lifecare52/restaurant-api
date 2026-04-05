@@ -12,6 +12,19 @@ import type { Payment } from '@modules/payment/payment.types';
 
 export { ORDER_TYPE, ORDER_STATUS, PAYMENT_STATUS, ITEM_STATUS, PAYMENT_METHOD };
 
+export interface AppliedTaxSnapshot {
+  taxId?: Types.ObjectId | null;
+  name: string;
+  rate: number;
+  type: 'PERCENTAGE' | 'FLAT_AMOUNT';
+  isInclusive: boolean;
+  calculationMethod: 'STANDARD' | 'CUMULATIVE';
+  taxableAmount: number;
+  taxAmount: number;
+}
+
+export interface OrderTaxBreakup extends AppliedTaxSnapshot {}
+
 // ─── Core Entities ───────────────────────────────────────────────────────────
 
 export interface Order {
@@ -26,7 +39,12 @@ export interface Order {
   tableId?: Types.ObjectId | null;
   status: ORDER_STATUS;
   // Financials
+  grossAmount?: number;
   subtotal: number;
+  taxableAmount?: number;
+  taxAmount?: number;
+  roundOffAmount?: number;
+  taxBreakup?: OrderTaxBreakup[];
   discountAmount: number;
   discountType?: number | null; // FLAT=1, PERCENTAGE=2
   discountValue?: number | null; // the raw input value (e.g. 50 or 10%)
@@ -72,6 +90,15 @@ export interface OrderItem {
   itemName: string;
   basePrice: number;
   quantity: number;
+  taxGroupId?: Types.ObjectId | null;
+  baseLineAmount?: number;
+  addonTotal?: number;
+  discountAmount?: number;
+  taxableAmount?: number;
+  taxAmount?: number;
+  grossLineAmount?: number;
+  netLineAmount?: number;
+  appliedTaxes?: AppliedTaxSnapshot[];
   measurement?: MeasurementSelectionDTO;
   variationId?: Types.ObjectId | null;
   variationName?: string;
@@ -157,6 +184,8 @@ export interface CreateOrderDTO {
   items: AddItemToOrderDTO[];
   notes?: string;
 }
+
+export interface PreviewOrderDTO extends CreateOrderDTO {}
 
 export interface AddItemsToOrderDTO {
   orderId: string;

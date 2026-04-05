@@ -4,6 +4,8 @@ import {
   type Order,
   type OrderItem,
   type OrderItemAddon,
+  type AppliedTaxSnapshot,
+  type OrderTaxBreakup,
   ORDER_TYPE,
   ORDER_STATUS,
   PAYMENT_STATUS,
@@ -13,6 +15,50 @@ import {
 export type OrderModel = Model<Order>;
 export type OrderItemModel = Model<OrderItem>;
 export type OrderItemAddonModel = Model<OrderItemAddon>;
+
+const AppliedTaxSnapshotSchema = new Schema<AppliedTaxSnapshot>(
+  {
+    taxId: { type: Schema.Types.ObjectId, default: null },
+    name: { type: String, required: true, trim: true },
+    rate: { type: Number, required: true, min: 0 },
+    type: {
+      type: String,
+      enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
+      required: true
+    },
+    isInclusive: { type: Boolean, required: true },
+    calculationMethod: {
+      type: String,
+      enum: ['STANDARD', 'CUMULATIVE'],
+      required: true
+    },
+    taxableAmount: { type: Number, required: true, min: 0 },
+    taxAmount: { type: Number, required: true, min: 0 }
+  },
+  { _id: false }
+);
+
+const OrderTaxBreakupSchema = new Schema<OrderTaxBreakup>(
+  {
+    taxId: { type: Schema.Types.ObjectId, default: null },
+    name: { type: String, required: true, trim: true },
+    rate: { type: Number, required: true, min: 0 },
+    type: {
+      type: String,
+      enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
+      required: true
+    },
+    isInclusive: { type: Boolean, required: true },
+    calculationMethod: {
+      type: String,
+      enum: ['STANDARD', 'CUMULATIVE'],
+      required: true
+    },
+    taxableAmount: { type: Number, required: true, min: 0 },
+    taxAmount: { type: Number, required: true, min: 0 }
+  },
+  { _id: false }
+);
 
 // ─── Order ────────────────────────────────────────────────────────────────────
 
@@ -34,7 +80,12 @@ const OrderSchema = new Schema<Order>(
       enum: Object.values(ORDER_STATUS).filter(v => !isNaN(Number(v))),
       default: ORDER_STATUS.OPEN
     },
+    grossAmount: { type: Number, required: true, min: 0, default: 0 },
     subtotal: { type: Number, required: true, min: 0 },
+    taxableAmount: { type: Number, required: true, min: 0, default: 0 },
+    taxAmount: { type: Number, required: true, min: 0, default: 0 },
+    roundOffAmount: { type: Number, required: true, default: 0 },
+    taxBreakup: { type: [OrderTaxBreakupSchema], default: [] },
     discountAmount: { type: Number, required: true, min: 0, default: 0 },
     discountType: { type: Number, default: null },
     discountValue: { type: Number, default: null },
@@ -102,6 +153,15 @@ const OrderItemSchema = new Schema<OrderItem>(
     itemName: { type: String, required: true },
     basePrice: { type: Number, required: true, min: 0 },
     quantity: { type: Number, required: true, min: 1 },
+    taxGroupId: { type: Schema.Types.ObjectId, ref: 'TaxGroup', default: null },
+    baseLineAmount: { type: Number, required: true, min: 0, default: 0 },
+    addonTotal: { type: Number, required: true, min: 0, default: 0 },
+    discountAmount: { type: Number, required: true, min: 0, default: 0 },
+    taxableAmount: { type: Number, required: true, min: 0, default: 0 },
+    taxAmount: { type: Number, required: true, min: 0, default: 0 },
+    grossLineAmount: { type: Number, required: true, min: 0, default: 0 },
+    netLineAmount: { type: Number, required: true, min: 0, default: 0 },
+    appliedTaxes: { type: [AppliedTaxSnapshotSchema], default: [] },
     measurement: { type: MeasurementSelectionSchema, default: undefined },
     variationId: { type: Schema.Types.ObjectId, ref: 'MenuItemVariant', default: null },
     variationName: { type: String, default: '' },

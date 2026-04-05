@@ -1,5 +1,6 @@
 import {
   createOrder,
+  previewOrderPricing,
   getKOTOrderDetails,
   closeOrder,
   listOrders,
@@ -32,6 +33,22 @@ export const createOrderController = async (req: Request, res: Response, next: N
       code: 201,
       message: 'Order created successfully',
       data: item
+    };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const previewOrderController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const preview = await previewOrderPricing(brandId, outletId, req.body);
+    res.locals.response = {
+      status: true,
+      code: 200,
+      message: 'Order preview calculated successfully',
+      data: preview
     };
     next();
   } catch (err) {
