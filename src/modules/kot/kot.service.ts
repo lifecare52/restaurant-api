@@ -320,6 +320,30 @@ export const updateKOTStatus = async (
     );
   }
 
+  // When KOT is SERVED, mark all its items and corresponding OrderItems as SERVED
+  if (status === KOT_STATUS.SERVED) {
+    const kotItems = await KOTItemEntity.find({
+      kotId: new Types.ObjectId(kotId),
+      isDelete: false
+    }).lean();
+
+    const orderItemIds = kotItems.map(item => item.orderItemId);
+
+    await Promise.all([
+      KOTItemEntity.updateMany(
+        { kotId: new Types.ObjectId(kotId), isDelete: false },
+        { $set: { itemStatus: ITEM_STATUS.SERVED, servedAt: new Date() } }
+      ),
+      OrderItemEntity.updateMany(
+        { _id: { $in: orderItemIds }, isDelete: false },
+        { $set: { itemStatus: ITEM_STATUS.SERVED } }
+      )
+    ]);
+
+    // Check if entire order can be closed (all items served + payment settled)
+    await checkAndAutoCloseOrder(brandId, outletId, String(updated.orderId));
+  }
+
   logOrderAction({
     brandId,
     outletId,

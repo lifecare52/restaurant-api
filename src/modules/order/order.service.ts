@@ -894,9 +894,6 @@ export const removeItemFromOrder = async (
   if (orderItem.itemStatus === ITEM_STATUS.CANCELLED) {
     throw { status: 400, message: 'Item is already cancelled' };
   }
-  if (orderItem.itemStatus === ITEM_STATUS.SERVED) {
-    throw { status: 400, message: 'Cannot cancel an already served item' };
-  }
 
   const now = new Date();
 
