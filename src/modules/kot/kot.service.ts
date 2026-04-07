@@ -1,7 +1,17 @@
 import { Types } from 'mongoose';
 
 import { KOTEntity, KOTItemEntity } from '@modules/kot/kot.model';
-import { KOT_STATUS, KOT_TYPE, ITEM_STATUS } from '@modules/kot/kot.types';
+import {
+  KOT_STATUS,
+  KOT_TYPE,
+  ITEM_STATUS,
+  KOT,
+  PopulatedKOTItem,
+  KOTItemResponse,
+  KOTResponse,
+  KOTStatusUpdateResponse,
+  KOTItemStatusUpdateResponse
+} from '@modules/kot/kot.types';
 import DailySequenceEntity from '@modules/order/daily-sequence.model';
 import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
 import { logOrderAction } from '@modules/order/order-audit.service';
@@ -140,9 +150,52 @@ export const generateKOT = async (
   return createdKOT.toObject();
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Helper Functions ─────────────────────────────────────────────────────────
 
-export const listKOTsByOrder = async (brandId: string, outletId: string, orderId: string) => {
+/** Flatten and clean individual KOT item for API consumption */
+const formatKOTItemResponse = (item: PopulatedKOTItem): KOTItemResponse => {
+  const orderItem = item.orderItemId;
+  return {
+    _id: item._id,
+    orderItemId: orderItem?._id as Types.ObjectId,
+    itemName: orderItem?.itemName || 'Unknown Item',
+    variationName: orderItem?.variationName || '',
+    quantity: item.quantity,
+    instruction: item.instruction || orderItem?.instruction || '',
+    itemStatus: item.itemStatus,
+    preparedAt: item.preparedAt,
+    servedAt: item.servedAt,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt
+  };
+};
+
+/** Clean and format full KOT response for API consumption */
+const formatKOTResponse = (kot: KOT, items: PopulatedKOTItem[]): KOTResponse => {
+  const formattedItems = items.map(formatKOTItemResponse);
+
+  return {
+    _id: kot._id,
+    orderId: kot.orderId,
+    kotNumber: kot.kotNumber,
+    kotType: kot.kotType,
+    waiterId: kot.waiterId,
+    tokenNo: kot.tokenNo,
+    tableName: kot.tableName,
+    notes: kot.notes,
+    status: kot.status,
+    isPrinted: kot.isPrinted,
+    createdAt: kot.createdAt,
+    updatedAt: kot.updatedAt,
+    items: formattedItems
+  };
+};
+
+export const listKOTsByOrder = async (
+  brandId: string,
+  outletId: string,
+  orderId: string
+): Promise<KOTResponse[]> => {
   const kots = await KOTEntity.find({
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
@@ -156,49 +209,16 @@ export const listKOTsByOrder = async (brandId: string, outletId: string, orderId
   if (!kots.length) return [];
 
   const kotIds = kots.map(k => k._id);
-  const kotItems = await KOTItemEntity.find({
+  const allKotItems = (await KOTItemEntity.find({
     kotId: { $in: kotIds },
     isDelete: false
   })
     .populate('orderItemId', 'itemName instruction quantity variationName')
-    .lean();
+    .lean()) as unknown as PopulatedKOTItem[];
 
   return kots.map(kot => {
-    const itemsForKot = kotItems.filter(item => String(item.kotId) === String(kot._id));
-    const printLines: string[] = [];
-
-    for (const item of itemsForKot) {
-      const orderItem = item.orderItemId as any;
-      const nameParts: string[] = [];
-      if (orderItem && orderItem.itemName) nameParts.push(orderItem.itemName);
-      if (orderItem && orderItem.variationName) nameParts.push(orderItem.variationName);
-      const baseName = nameParts.join(' - ');
-      const line = baseName ? `${baseName} x${item.quantity}` : `x${item.quantity}`;
-      printLines.push(line);
-
-      const rawInstruction =
-        (item.instruction as string | null | undefined) ??
-        (orderItem ? ((orderItem.instruction as string | null | undefined) ?? null) : null);
-      if (typeof rawInstruction === 'string') {
-        const trimmed = rawInstruction.trim();
-        if (trimmed.length > 0) {
-          printLines.push(`  ${trimmed}`);
-        }
-      }
-    }
-
-    const rawNotes = (kot as any).notes as string | null | undefined;
-    if (typeof rawNotes === 'string') {
-      const trimmedNotes = rawNotes.trim();
-      if (trimmedNotes.length > 0) {
-        if (printLines.length > 0) {
-          printLines.push('');
-        }
-        printLines.push(`NOTE: ${trimmedNotes}`);
-      }
-    }
-
-    return { ...kot, items: itemsForKot, printLines };
+    const itemsForKot = allKotItems.filter(item => String(item.kotId) === String(kot._id));
+    return formatKOTResponse(kot as unknown as KOT, itemsForKot);
   });
 };
 
@@ -208,7 +228,11 @@ export const listKOTsByOrder = async (brandId: string, outletId: string, orderId
  * Kitchen Display System — returns all non-terminal KOTs for an outlet.
  * Optionally filter by status. Sorted FIFO (oldest first).
  */
-export const listAllKOTs = async (brandId: string, outletId: string, statusFilter?: KOT_STATUS) => {
+export const listAllKOTs = async (
+  brandId: string,
+  outletId: string,
+  statusFilter?: KOT_STATUS
+): Promise<KOTResponse[]> => {
   const filter: Record<string, unknown> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
@@ -230,46 +254,13 @@ export const listAllKOTs = async (brandId: string, outletId: string, statusFilte
   if (!kots.length) return [];
 
   const kotIds = kots.map(k => k._id);
-  const kotItems = await KOTItemEntity.find({ kotId: { $in: kotIds }, isDelete: false })
+  const allKotItems = (await KOTItemEntity.find({ kotId: { $in: kotIds }, isDelete: false })
     .populate('orderItemId', 'itemName instruction quantity variationName')
-    .lean();
+    .lean()) as unknown as PopulatedKOTItem[];
 
   return kots.map(kot => {
-    const itemsForKot = kotItems.filter(item => String(item.kotId) === String(kot._id));
-    const printLines: string[] = [];
-
-    for (const item of itemsForKot) {
-      const orderItem = item.orderItemId as any;
-      const nameParts: string[] = [];
-      if (orderItem && orderItem.itemName) nameParts.push(orderItem.itemName);
-      if (orderItem && orderItem.variationName) nameParts.push(orderItem.variationName);
-      const baseName = nameParts.join(' - ');
-      const line = baseName ? `${baseName} x${item.quantity}` : `x${item.quantity}`;
-      printLines.push(line);
-
-      const rawInstruction =
-        (item.instruction as string | null | undefined) ??
-        (orderItem ? ((orderItem.instruction as string | null | undefined) ?? null) : null);
-      if (typeof rawInstruction === 'string') {
-        const trimmed = rawInstruction.trim();
-        if (trimmed.length > 0) {
-          printLines.push(`  ${trimmed}`);
-        }
-      }
-    }
-
-    const rawNotes = (kot as any).notes as string | null | undefined;
-    if (typeof rawNotes === 'string') {
-      const trimmedNotes = rawNotes.trim();
-      if (trimmedNotes.length > 0) {
-        if (printLines.length > 0) {
-          printLines.push('');
-        }
-        printLines.push(`NOTE: ${trimmedNotes}`);
-      }
-    }
-
-    return { ...kot, items: itemsForKot, printLines };
+    const itemsForKot = allKotItems.filter(item => String(item.kotId) === String(kot._id));
+    return formatKOTResponse(kot as unknown as KOT, itemsForKot);
   });
 };
 
@@ -280,7 +271,7 @@ export const updateKOTStatus = async (
   outletId: string,
   kotId: string,
   status: KOT_STATUS
-) => {
+): Promise<KOTStatusUpdateResponse> => {
   const kot = await KOTEntity.findOne({
     _id: new Types.ObjectId(kotId),
     brandId: new Types.ObjectId(brandId),
@@ -360,7 +351,7 @@ export const updateKOTStatus = async (
     status
   });
 
-  return updated;
+  return { status: updated.status };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -374,7 +365,7 @@ export const updateKOTItemStatus = async (
   outletId: string,
   kotItemId: string,
   status: ITEM_STATUS
-) => {
+): Promise<KOTItemStatusUpdateResponse> => {
   const kotItem = await KOTItemEntity.findOne({
     _id: new Types.ObjectId(kotItemId),
     isDelete: false
@@ -428,5 +419,5 @@ export const updateKOTItemStatus = async (
     status
   });
 
-  return KOTItemEntity.findById(kotItemId).lean();
+  return { status };
 };
