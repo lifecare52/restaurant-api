@@ -49,7 +49,7 @@ export class TagService {
 
     const existing = await tagRepository.findByName(brandId, outletId, name, excludeId);
     if (existing) {
-      throw { status: 409, message: 'Tag name already exists in this outlet' };
+      throw { status: 409, message: 'Tag name already exists in this brand' };
     }
   }
 
@@ -65,7 +65,7 @@ export class TagService {
 
     const existing = await tagRepository.findByPriority(brandId, outletId, priority, excludeId);
     if (existing) {
-      throw { status: 409, message: 'Tag priority already exists in this outlet' };
+      throw { status: 409, message: 'Tag priority already exists in this brand' };
     }
   }
 

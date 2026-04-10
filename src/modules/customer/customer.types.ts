@@ -4,6 +4,13 @@ import type { Types } from 'mongoose';
 
 import type { CustomerTag } from '@modules/tag/tag.types';
 
+export interface CustomerOutletStats {
+  outletId: Types.ObjectId;
+  totalOrders: number;
+  totalSpent: number;
+  lastVisitAt?: Date | null;
+}
+
 export interface Customer {
   _id?: Types.ObjectId;
   name: string;
@@ -16,6 +23,8 @@ export interface Customer {
   lastVisitAt?: Date | null;
   creditBalance: number;
   isActive: boolean;
+  isDelete: boolean;
+  outletStats: CustomerOutletStats[];
   brandId: Types.ObjectId;
   outletId: Types.ObjectId;
   createdAt?: Date;
@@ -39,7 +48,7 @@ export interface AssignCustomerTagsDTO {
 }
 
 export interface CustomerListQuery extends PaginationQuery {
-  search?: string;
+  searchText?: string;
   tagId?: string;
   isActive?: boolean;
 }

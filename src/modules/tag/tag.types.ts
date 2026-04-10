@@ -19,6 +19,7 @@ export interface CustomerTag {
   minOrderAmount: number;
   priority: number;
   isActive: boolean;
+  isDelete: boolean;
   brandId: Types.ObjectId;
   outletId: Types.ObjectId;
   createdAt?: Date;

@@ -1530,25 +1530,20 @@ export const getOpenApiSpec = () => {
           type: 'object',
           properties: {
             _id: { type: 'string' },
-            brandId: { type: 'string' },
-            outletId: { type: 'string' },
             name: { type: 'string' },
             discountType: { type: 'string', enum: ['PERCENTAGE', 'FLAT', 'NONE'] },
             discountValue: { type: 'number' },
             minOrderAmount: { type: 'number' },
             priority: { type: 'number' },
             isActive: { type: 'boolean' },
-            createdAt: { type: 'string', format: 'date-time' },
-            updatedAt: { type: 'string', format: 'date-time' }
+            brandId: { type: 'string' }
           },
           required: [
             '_id',
             'brandId',
-            'outletId',
             'name',
             'discountType',
             'discountValue',
-            'minOrderAmount',
             'priority',
             'isActive'
           ]
@@ -1576,6 +1571,15 @@ export const getOpenApiSpec = () => {
             isActive: { type: 'boolean' }
           }
         },
+        CustomerOutletStats: {
+          type: 'object',
+          properties: {
+            outletId: { type: 'string' },
+            totalOrders: { type: 'number' },
+            totalSpent: { type: 'number' },
+            lastVisitAt: { type: 'string', format: 'date-time' }
+          }
+        },
         Customer: {
           type: 'object',
           properties: {
@@ -1595,6 +1599,10 @@ export const getOpenApiSpec = () => {
             lastVisitAt: { type: 'string', format: 'date-time', nullable: true },
             creditBalance: { type: 'number' },
             isActive: { type: 'boolean' },
+            outletStats: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/CustomerOutletStats' }
+            },
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' }
           },
@@ -5595,10 +5603,9 @@ export const getOpenApiSpec = () => {
         get: {
           tags: ['Customers'],
           summary: 'Get customers',
-          description: 'Returns customers filtered by brand-id and outlet-id with search, tag filter, active filter, and pagination.',
+          description: 'Returns customers filtered by brand-id with searchText, tag filter, active filter, and pagination.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           parameters: [
-            { name: 'search', in: 'query', schema: { type: 'string' } },
             { name: 'searchText', in: 'query', schema: { type: 'string' } },
             { name: 'tagId', in: 'query', schema: { type: 'string' } },
             { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
@@ -6053,7 +6060,7 @@ export const getOpenApiSpec = () => {
             }
           }
         }
-      }
+      },
     }
   };
   return spec;

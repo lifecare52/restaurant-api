@@ -25,7 +25,7 @@ export class CustomerService {
   private async ensureMobileAvailable(brandId: string, mobile: string, excludeId?: string) {
     const existing = await customerRepository.findByMobile(brandId, mobile, excludeId);
     if (existing) {
-      throw { status: 409, message: 'Customer mobile already exists for this brand' };
+      throw { status: 409, message: 'Customer mobile already exists in this brand' };
     }
   }
 
@@ -137,7 +137,7 @@ export class CustomerService {
 
   async validateCustomerForOrder(brandId: string, outletId: string, customerId: string) {
     const customer = await customerRepository.findRawById(brandId, outletId, customerId);
-    if (!customer || !customer.isActive) {
+    if (!customer || !customer.isActive || customer.isDelete) {
       throw { status: 404, message: 'Customer not found' };
     }
 

@@ -10,7 +10,7 @@ export type CustomerTagModel = Model<CustomerTag>;
 const CustomerTagSchema = new Schema<CustomerTag>(
   {
     brandId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Brand' },
-    outletId: { type: Schema.Types.ObjectId, required: true, index: true, ref: 'Outlet' },
+    outletId: { type: Schema.Types.ObjectId, index: true, ref: 'Outlet' },
     name: { type: String, required: true, trim: true, minlength: 2, maxlength: 100 },
     discountType: {
       type: String,
@@ -21,28 +21,28 @@ const CustomerTagSchema = new Schema<CustomerTag>(
     discountValue: { type: Number, default: 0, min: 0 },
     minOrderAmount: { type: Number, default: 0, min: 0 },
     priority: { type: Number, default: 1, min: 1 },
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    isDelete: { type: Boolean, default: false }
   },
   { timestamps: true }
 );
 
-CustomerTagSchema.index({ brandId: 1, outletId: 1 });
 CustomerTagSchema.index(
-  { brandId: 1, outletId: 1, name: 1 },
+  { brandId: 1, name: 1 },
   {
     unique: true,
-    partialFilterExpression: { isActive: true },
+    partialFilterExpression: { isDelete: false },
     collation: { locale: 'en', strength: 2 }
   }
 );
 CustomerTagSchema.index(
-  { brandId: 1, outletId: 1, priority: 1 },
+  { brandId: 1, priority: 1 },
   {
     unique: true,
-    partialFilterExpression: { isActive: true }
+    partialFilterExpression: { isDelete: false }
   }
 );
-CustomerTagSchema.index({ brandId: 1, outletId: 1, name: 'text' });
+CustomerTagSchema.index({ brandId: 1, name: 'text' });
 
 export const CustomerTagEntity = model<CustomerTag, CustomerTagModel>(
   'CustomerTag',

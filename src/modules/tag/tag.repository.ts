@@ -11,10 +11,9 @@ import type {
 const toObjectId = (value: string) => new Types.ObjectId(value);
 
 export class TagRepository {
-  private buildTenantFilter(brandId: string, outletId: string): FilterQuery<CustomerTag> {
+  private buildTenantFilter(brandId: string): FilterQuery<CustomerTag> {
     return {
-      brandId: toObjectId(brandId),
-      outletId: toObjectId(outletId)
+      brandId: toObjectId(brandId)
     };
   }
 
@@ -28,59 +27,66 @@ export class TagRepository {
 
   async findById(brandId: string, outletId: string, id: string) {
     return CustomerTagEntity.findOne({
-      ...this.buildTenantFilter(brandId, outletId),
-      _id: toObjectId(id)
+      ...this.buildTenantFilter(brandId),
+      _id: toObjectId(id),
+      isDelete: false
     })
       .collation({ locale: 'en', strength: 2 })
+      .select('-isDelete')
       .lean();
   }
 
   async findByName(brandId: string, outletId: string, name: string, excludeId?: string) {
     const query: FilterQuery<CustomerTag> = {
-      ...this.buildTenantFilter(brandId, outletId),
+      ...this.buildTenantFilter(brandId),
       name: name.trim(),
-      isActive: true
+      isDelete: false
     };
 
     if (excludeId) {
       query._id = { $ne: toObjectId(excludeId) } as any;
     }
 
-    return CustomerTagEntity.findOne(query).collation({ locale: 'en', strength: 2 }).lean();
+    return CustomerTagEntity.findOne(query)
+      .collation({ locale: 'en', strength: 2 })
+      .select('-isDelete')
+      .lean();
   }
 
   async findByPriority(brandId: string, outletId: string, priority: number, excludeId?: string) {
     const query: FilterQuery<CustomerTag> = {
-      ...this.buildTenantFilter(brandId, outletId),
+      ...this.buildTenantFilter(brandId),
       priority,
-      isActive: true
+      isDelete: false
     };
 
     if (excludeId) {
       query._id = { $ne: toObjectId(excludeId) } as any;
     }
 
-    return CustomerTagEntity.findOne(query).lean();
+    return CustomerTagEntity.findOne(query).select('-isDelete').lean();
   }
 
   async updateById(brandId: string, outletId: string, id: string, payload: UpdateCustomerTagDTO) {
     return CustomerTagEntity.findOneAndUpdate(
       {
-        ...this.buildTenantFilter(brandId, outletId),
-        _id: toObjectId(id)
+        ...this.buildTenantFilter(brandId),
+        _id: toObjectId(id),
+        isDelete: false
       },
       { $set: payload },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true, projection: { isDelete: 0 } }
     ).lean();
   }
 
   async softDeleteById(brandId: string, outletId: string, id: string) {
     return CustomerTagEntity.findOneAndUpdate(
       {
-        ...this.buildTenantFilter(brandId, outletId),
-        _id: toObjectId(id)
+        ...this.buildTenantFilter(brandId),
+        _id: toObjectId(id),
+        isDelete: false
       },
-      { $set: { isActive: false } },
+      { $set: { isDelete: true } },
       { new: true }
     ).lean();
   }
@@ -89,12 +95,14 @@ export class TagRepository {
     const page = Math.max(1, Number(query.page) || 1);
     const limit = Math.max(1, Math.min(100, Number(query.limit) || 20));
     const skip = (page - 1) * limit;
-    const filter: FilterQuery<CustomerTag> = this.buildTenantFilter(brandId, outletId);
+    const filter: FilterQuery<CustomerTag> = this.buildTenantFilter(brandId);
 
     const searchValue = query.searchText ?? query.search;
     if (searchValue) {
       filter.name = { $regex: new RegExp(searchValue.trim(), 'i') };
     }
+
+    filter.isDelete = false;
 
     if (query.isActive !== undefined) {
       filter.isActive = query.isActive;
@@ -109,6 +117,7 @@ export class TagRepository {
         .sort({ [sortColumn]: sortOrder, _id: 1 })
         .skip(skip)
         .limit(limit)
+        .select('-isDelete')
         .lean(),
       CustomerTagEntity.countDocuments(filter)
     ]);
@@ -129,11 +138,13 @@ export class TagRepository {
     }
 
     return CustomerTagEntity.find({
-      ...this.buildTenantFilter(brandId, outletId),
+      ...this.buildTenantFilter(brandId),
       _id: { $in: tagIds.map(id => toObjectId(id)) },
-      isActive: true
+      isActive: true,
+      isDelete: false
     })
       .sort({ priority: -1, name: 1 })
+      .select('-isDelete')
       .lean();
   }
 
@@ -143,11 +154,13 @@ export class TagRepository {
     }
 
     return CustomerTagEntity.find({
-      ...this.buildTenantFilter(brandId, outletId),
+      ...this.buildTenantFilter(brandId),
       _id: { $in: tagIds },
-      isActive: true
+      isActive: true,
+      isDelete: false
     })
       .sort({ priority: -1, name: 1 })
+      .select('-isDelete')
       .lean();
   }
 }
