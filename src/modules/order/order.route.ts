@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import {
   createOrderController,
+  previewOrderController,
   getOrderController,
   closeOrderController,
   cancelOrderController,
@@ -13,6 +14,7 @@ import {
 } from '@modules/order/order.controller';
 import {
   createOrderSchema,
+  previewOrderSchema,
   addItemsToOrderSchema,
   removeOrderItemSchema,
   updateOrderItemSchema,
@@ -40,6 +42,13 @@ const tenantMiddleware = [
   requireBrandAccess,
   requireOutletAccess
 ];
+
+router.post(
+  '/preview',
+  ...tenantMiddleware,
+  validateRequest(previewOrderSchema, 'body'),
+  previewOrderController
+);
 
 // POST /orders — Create a new order
 router.post(

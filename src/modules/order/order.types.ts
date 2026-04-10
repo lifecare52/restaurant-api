@@ -8,8 +8,22 @@ import {
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 import type { Types } from 'mongoose';
+import type { Payment } from '@modules/payment/payment.types';
 
 export { ORDER_TYPE, ORDER_STATUS, PAYMENT_STATUS, ITEM_STATUS, PAYMENT_METHOD };
+
+export interface AppliedTaxSnapshot {
+  taxId?: Types.ObjectId | null;
+  name: string;
+  rate: number;
+  type: 'PERCENTAGE' | 'FLAT_AMOUNT';
+  isInclusive: boolean;
+  calculationMethod: 'STANDARD' | 'CUMULATIVE';
+  taxableAmount: number;
+  taxAmount: number;
+}
+
+export interface OrderTaxBreakup extends AppliedTaxSnapshot {}
 
 // ─── Core Entities ───────────────────────────────────────────────────────────
 
@@ -25,7 +39,12 @@ export interface Order {
   tableId?: Types.ObjectId | null;
   status: ORDER_STATUS;
   // Financials
+  grossAmount?: number;
   subtotal: number;
+  taxableAmount?: number;
+  taxAmount?: number;
+  roundOffAmount?: number;
+  taxBreakup?: OrderTaxBreakup[];
   discountAmount: number;
   discountType?: number | null; // FLAT=1, PERCENTAGE=2
   discountValue?: number | null; // the raw input value (e.g. 50 or 10%)
@@ -33,6 +52,10 @@ export interface Order {
   // Payment
   paymentStatus: PAYMENT_STATUS;
   paymentMethod?: PAYMENT_METHOD | null;
+  /** Running total of all payment transactions recorded against this order */
+  paidAmount?: number;
+  /** Indicates whether the order was paid via multiple payment methods (split payment) */
+  isSplitPayment?: boolean;
   shippingAddress?: string;
   notes?: string;
   confirmedAt?: Date | null;
@@ -67,6 +90,15 @@ export interface OrderItem {
   itemName: string;
   basePrice: number;
   quantity: number;
+  taxGroupId?: Types.ObjectId | null;
+  baseLineAmount?: number;
+  addonTotal?: number;
+  discountAmount?: number;
+  taxableAmount?: number;
+  taxAmount?: number;
+  grossLineAmount?: number;
+  netLineAmount?: number;
+  appliedTaxes?: AppliedTaxSnapshot[];
   measurement?: MeasurementSelectionDTO;
   variationId?: Types.ObjectId | null;
   variationName?: string;
@@ -153,6 +185,8 @@ export interface CreateOrderDTO {
   notes?: string;
 }
 
+export interface PreviewOrderDTO extends CreateOrderDTO {}
+
 export interface AddItemsToOrderDTO {
   orderId: string;
   items: AddItemToOrderDTO[];
@@ -191,4 +225,5 @@ export interface KOTFriendlyBatch {
 
 export type KOTFriendlyResponse = Cleaned<Order> & {
   kots: KOTFriendlyBatch[];
+  payments: Cleaned<Payment>[];
 };

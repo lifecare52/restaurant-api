@@ -54,6 +54,19 @@ export const createOrderSchema = Joi.object({
   })
 });
 
+export const previewOrderSchema = Joi.object({
+  orderType: Joi.number()
+    .valid(...Object.values(ORDER_TYPE).filter(v => !isNaN(Number(v))))
+    .required(),
+  tableId: objectId.optional().allow(null, ''),
+  items: Joi.array().items(orderItemSchema).min(1).required().messages({
+    'array.min': 'At least one item is required',
+    'any.required': 'items array is required'
+  }),
+  notes: Joi.string().trim().max(500).optional().allow('', null),
+  shippingAddress: Joi.string().optional().allow('', null)
+});
+
 // ─── Add Items ────────────────────────────────────────────────────────────────
 
 export const addItemsToOrderSchema = Joi.object({
