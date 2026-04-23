@@ -18,7 +18,9 @@ import {
   ORDER_STATUS,
   ORDER_TYPE,
   ITEM_STATUS,
+  PAYMENT_STATUS,
   type CreateOrderDTO,
+  type PreviewOrderDTO,
   type AddItemToOrderDTO,
   type AddItemsToOrderDTO,
   type RemoveOrderItemDTO,
@@ -36,6 +38,8 @@ import {
 } from '@modules/order/order.types';
 import OutletEntity from '@modules/outlet/outlet.model';
 import TableEntity from '@modules/table/table.model';
+import { calculateLineTax, summarizeOrderTaxes } from '@modules/tax/tax-calculation.service';
+import { resolveEffectiveTaxesForMenuItems } from '@modules/tax/tax-resolution.service';
 import { CUSTOMER_TAG_DISCOUNT_TYPE } from '@modules/tag/tag.types';
 import { TABLE_STATUS } from '@modules/table/table.types';
 
@@ -225,6 +229,7 @@ const processItems = (
 
     let basePrice = 0;
     let itemTotal = 0;
+    let addonTotal = 0;
     let finalQuantity = item.quantity || 1;
     let measurementSnapshot: MeasurementSelectionDTO | undefined = undefined;
 
@@ -319,6 +324,7 @@ const processItems = (
       finalQuantity = item.quantity;
     }
 
+    const baseLineAmount = itemTotal;
     const currentItemId = new Types.ObjectId();
 
     if (item.addons && item.addons.length > 0) {
@@ -336,8 +342,10 @@ const processItems = (
           };
 
         const addonPrice = addonItemDoc.price || 0;
+        const totalAddonPrice = addonPrice * addonDto.quantity * finalQuantity;
         // Addon price is multiplied by item quantity (even for measurement items, usually 1)
-        itemTotal += addonPrice * addonDto.quantity * finalQuantity;
+        addonTotal += totalAddonPrice;
+        itemTotal += totalAddonPrice;
 
         processedAddons.push({
           _id: new Types.ObjectId(),
@@ -366,6 +374,15 @@ const processItems = (
       itemName: menuItem.name,
       basePrice,
       quantity: finalQuantity,
+      taxGroupId: null,
+      baseLineAmount,
+      addonTotal,
+      discountAmount: 0,
+      taxableAmount: itemTotal,
+      taxAmount: 0,
+      grossLineAmount: itemTotal,
+      netLineAmount: itemTotal,
+      appliedTaxes: [],
       measurement: measurementSnapshot,
       variationId: item.variationId ? new Types.ObjectId(item.variationId) : null,
       variationName,
@@ -382,6 +399,259 @@ const processItems = (
 };
 
 // ─── Service Functions ────────────────────────────────────────────────────────
+
+const buildTaxAwareOrderPreview = async (
+  brandId: string,
+  outletId: string,
+  orderType: ORDER_TYPE,
+  requestedItems: AddItemToOrderDTO[],
+  processedItems: ProcessedOrderItem[],
+  menuItemMap: Map<string, any>
+) => {
+  const resolvedTaxesMap = await resolveEffectiveTaxesForMenuItems(
+    brandId,
+    outletId,
+    requestedItems.map(item => {
+      const menuItem = menuItemMap.get(item.menuItemId);
+      if (!menuItem) {
+        throw { status: 404, message: `MenuItem ${item.menuItemId} not found` };
+      }
+
+      return {
+        _id: menuItem._id,
+        categoryId: menuItem.categoryId,
+        taxGroupId: menuItem.taxGroupId ?? null
+      };
+    })
+  );
+
+  const previewItems = processedItems.map(processedItem => {
+    const resolvedTaxes = resolvedTaxesMap.get(String(processedItem.menuItemId)) ?? {
+      taxGroupId: null,
+      taxes: []
+    };
+
+    const calculatedLine = calculateLineTax({
+      orderType,
+      quantity: processedItem.quantity,
+      baseAmount: processedItem.baseLineAmount ?? processedItem.totalPrice,
+      addonAmount: processedItem.addonTotal ?? 0,
+      discountAmount: processedItem.discountAmount ?? 0,
+      taxes: resolvedTaxes.taxes
+    });
+
+    return {
+      menuItemId: String(processedItem.menuItemId),
+      itemName: processedItem.itemName,
+      quantity: processedItem.quantity,
+      taxGroupId: resolvedTaxes.taxGroupId ? String(resolvedTaxes.taxGroupId) : null,
+      baseLineAmount: calculatedLine.baseLineAmount,
+      addonTotal: calculatedLine.addonTotal,
+      discountAmount: calculatedLine.discountAmount,
+      taxableAmount: calculatedLine.taxableAmount,
+      taxAmount: calculatedLine.taxAmount,
+      grossLineAmount: calculatedLine.grossLineAmount,
+      netLineAmount: calculatedLine.netLineAmount,
+      appliedTaxes: calculatedLine.appliedTaxes
+    };
+  });
+
+  const summary = summarizeOrderTaxes({
+    lines: previewItems.map(item => ({
+      quantity: item.quantity,
+      baseLineAmount: item.baseLineAmount,
+      addonTotal: item.addonTotal,
+      grossLineAmount: item.grossLineAmount,
+      discountAmount: item.discountAmount,
+      taxableAmount: item.taxableAmount,
+      taxAmount: item.taxAmount,
+      netLineAmount: item.netLineAmount,
+      appliedTaxes: item.appliedTaxes
+    }))
+  });
+
+  return {
+    ...summary,
+    items: previewItems
+  };
+};
+
+const mapPreviewItemToStoredOrderItem = (
+  orderId: Types.ObjectId,
+  processedItem: ProcessedOrderItem,
+  previewItem: Awaited<ReturnType<typeof buildTaxAwareOrderPreview>>['items'][number],
+  now: Date
+) => ({
+  ...processedItem,
+  orderId,
+  taxGroupId: previewItem?.taxGroupId ? new Types.ObjectId(previewItem.taxGroupId) : null,
+  baseLineAmount: previewItem?.baseLineAmount ?? processedItem.baseLineAmount ?? processedItem.totalPrice,
+  addonTotal: previewItem?.addonTotal ?? processedItem.addonTotal ?? 0,
+  discountAmount: previewItem?.discountAmount ?? 0,
+  taxableAmount: previewItem?.taxableAmount ?? processedItem.totalPrice,
+  taxAmount: previewItem?.taxAmount ?? 0,
+  grossLineAmount: previewItem?.grossLineAmount ?? processedItem.totalPrice,
+  netLineAmount: previewItem?.netLineAmount ?? processedItem.totalPrice,
+  appliedTaxes:
+    previewItem?.appliedTaxes?.map(tax => ({
+      ...tax,
+      taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
+    })) ?? [],
+  kotSentAt: now
+});
+
+const recalculateStoredLinePricing = (orderItem: any, quantity: number, orderType: ORDER_TYPE) => {
+  const safeOldQuantity = Math.max(orderItem.quantity || 1, 1);
+  const basePerUnit =
+    orderItem.baseLineAmount !== undefined
+      ? (orderItem.baseLineAmount || 0) / safeOldQuantity
+      : orderItem.basePrice || 0;
+  const addonPerUnit = (orderItem.addonTotal || 0) / safeOldQuantity;
+
+  const taxes = (orderItem.appliedTaxes || []).map((tax: any) => ({
+    taxId: tax.taxId ? String(tax.taxId) : null,
+    name: tax.name,
+    rate: tax.rate,
+    type: tax.type,
+    isInclusive: tax.isInclusive,
+    calculationMethod: tax.calculationMethod,
+    applicableOrderTypes: undefined
+  }));
+
+  const calculatedLine = calculateLineTax({
+    orderType,
+    quantity,
+    baseAmount: basePerUnit,
+    addonAmount: addonPerUnit * quantity,
+    discountAmount: 0,
+    taxes
+  });
+
+  return {
+    quantity,
+    totalPrice: calculatedLine.grossLineAmount,
+    baseLineAmount: calculatedLine.baseLineAmount,
+    addonTotal: calculatedLine.addonTotal,
+    discountAmount: calculatedLine.discountAmount,
+    taxableAmount: calculatedLine.taxableAmount,
+    taxAmount: calculatedLine.taxAmount,
+    grossLineAmount: calculatedLine.grossLineAmount,
+    netLineAmount: calculatedLine.netLineAmount,
+    appliedTaxes: calculatedLine.appliedTaxes.map(tax => ({
+      ...tax,
+      taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
+    }))
+  };
+};
+
+const recalculatePersistedOrderTotals = async (
+  orderId: Types.ObjectId,
+  session?: mongoose.ClientSession
+) => {
+  const itemQuery = OrderItemEntity.find({
+    orderId,
+    isDelete: false,
+    itemStatus: { $ne: ITEM_STATUS.CANCELLED }
+  }).lean();
+
+  if (session) {
+    itemQuery.session(session);
+  }
+
+  const items = await itemQuery;
+
+  const summary = summarizeOrderTaxes({
+    lines: items.map(item => ({
+      quantity: item.quantity,
+      baseLineAmount: item.baseLineAmount ?? item.totalPrice ?? 0,
+      addonTotal: item.addonTotal ?? 0,
+      grossLineAmount: item.grossLineAmount ?? item.totalPrice ?? 0,
+      discountAmount: item.discountAmount ?? 0,
+      taxableAmount: item.taxableAmount ?? item.totalPrice ?? 0,
+      taxAmount: item.taxAmount ?? 0,
+      netLineAmount: item.netLineAmount ?? item.totalPrice ?? 0,
+      appliedTaxes: item.appliedTaxes ?? []
+    }))
+  });
+
+  const orderUpdateQuery = OrderEntity.updateOne(
+    { _id: orderId },
+    {
+      $set: {
+        grossAmount: summary.grossAmount,
+        subtotal: summary.subtotal,
+        taxableAmount: summary.taxableAmount,
+        taxAmount: summary.taxAmount,
+        roundOffAmount: summary.roundOffAmount,
+        taxBreakup: summary.taxBreakup,
+        discountAmount: 0,
+        totalAmount: summary.totalAmount
+      }
+    }
+  );
+
+  if (session) {
+    orderUpdateQuery.session(session);
+  }
+
+  await orderUpdateQuery;
+  return summary;
+};
+
+export const previewOrderPricing = async (
+  brandId: string,
+  outletId: string,
+  dto: PreviewOrderDTO
+) => {
+  if (!dto.items || dto.items.length === 0) {
+    throw { status: 400, message: 'At least one item is required' };
+  }
+
+  const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(
+    dto.items
+  );
+
+  const { processedItems, subtotal } = processItems(
+    dto.items,
+    brandId,
+    outletId,
+    menuItemMap,
+    variantMap,
+    variants,
+    addonMap,
+    measurementMap
+  );
+
+  const pricing = await recalculateOrderPricing(
+    brandId,
+    outletId,
+    dto.customerId ? new Types.ObjectId(dto.customerId) : null,
+    subtotal
+  );
+
+  if (pricing.discountAmount > 0 && subtotal > 0) {
+    for (const item of processedItems) {
+      const itemRatio = item.totalPrice / subtotal;
+      item.discountAmount = pricing.discountAmount * itemRatio;
+    }
+  }
+
+  const pricingPreview = await buildTaxAwareOrderPreview(
+    brandId,
+    outletId,
+    dto.orderType,
+    dto.items,
+    processedItems,
+    menuItemMap
+  );
+
+  return {
+    ...pricingPreview,
+    discountAmount: pricing.discountAmount,
+    discountType: pricing.discountType,
+    discountValue: pricing.discountValue
+  };
+};
 
 export const createOrder = async (
   brandId: string,
@@ -423,7 +693,23 @@ export const createOrder = async (
     dto.customerId ? new Types.ObjectId(dto.customerId) : null,
     subtotal
   );
-  const totalAmount = pricing.totalAmount;
+
+  if (pricing.discountAmount > 0 && subtotal > 0) {
+    for (const item of processedItems) {
+      const itemRatio = item.totalPrice / subtotal;
+      item.discountAmount = pricing.discountAmount * itemRatio;
+    }
+  }
+
+  const pricingPreview = await buildTaxAwareOrderPreview(
+    brandId,
+    outletId,
+    dto.orderType,
+    dto.items,
+    processedItems,
+    menuItemMap
+  );
+  const totalAmount = pricingPreview.totalAmount;
 
   // Atomic IDs and sequences
   const orderId = new Types.ObjectId();
@@ -454,13 +740,24 @@ export const createOrder = async (
       brandId: new Types.ObjectId(brandId),
       outletId: new Types.ObjectId(outletId),
       waiterId: new Types.ObjectId(userId),
+      customerId: dto.customerId ? new Types.ObjectId(dto.customerId) : null,
       orderNumber,
       tokenNo,
       orderType: dto.orderType,
       tableId: dto.tableId ? new Types.ObjectId(dto.tableId) : null,
       status: ORDER_STATUS.OPEN,
-      subtotal,
-      discountAmount: 0,
+      grossAmount: pricingPreview.grossAmount,
+      subtotal: pricingPreview.subtotal,
+      taxableAmount: pricingPreview.taxableAmount,
+      taxAmount: pricingPreview.taxAmount,
+      roundOffAmount: pricingPreview.roundOffAmount,
+      taxBreakup: pricingPreview.taxBreakup.map(tax => ({
+        ...tax,
+        taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
+      })),
+      discountAmount: pricing.discountAmount,
+      discountType: pricing.discountType,
+      discountValue: pricing.discountValue,
       totalAmount,
       notes: dto.notes && dto.notes.trim().length > 0 ? dto.notes.trim() : undefined,
       isActive: true,
@@ -470,9 +767,25 @@ export const createOrder = async (
     await OrderEntity.create([orderDoc], { session });
 
     const now = new Date();
-    const finalItems = processedItems.map(pi => ({
+    const finalItems = processedItems.map((pi, index) => ({
       ...pi,
       orderId,
+      taxGroupId: pricingPreview.items[index]?.taxGroupId
+        ? new Types.ObjectId(pricingPreview.items[index].taxGroupId)
+        : null,
+      baseLineAmount:
+        pricingPreview.items[index]?.baseLineAmount ?? pi.baseLineAmount ?? pi.totalPrice,
+      addonTotal: pricingPreview.items[index]?.addonTotal ?? pi.addonTotal ?? 0,
+      discountAmount: pricingPreview.items[index]?.discountAmount ?? 0,
+      taxableAmount: pricingPreview.items[index]?.taxableAmount ?? pi.totalPrice,
+      taxAmount: pricingPreview.items[index]?.taxAmount ?? 0,
+      grossLineAmount: pricingPreview.items[index]?.grossLineAmount ?? pi.totalPrice,
+      netLineAmount: pricingPreview.items[index]?.netLineAmount ?? pi.totalPrice,
+      appliedTaxes:
+        pricingPreview.items[index]?.appliedTaxes?.map(tax => ({
+          ...tax,
+          taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
+        })) ?? [],
       kotSentAt: now
     }));
     await OrderItemEntity.insertMany(finalItems, { session });
@@ -554,8 +867,7 @@ export const addItemsToOrder = async (
   );
   const {
     processedItems,
-    processedAddons,
-    subtotal: newSubtotal
+    processedAddons
   } = processItems(
     dto.items,
     brandId,
@@ -566,6 +878,14 @@ export const addItemsToOrder = async (
     addonMap,
     measurementMap
   );
+  const pricingPreview = await buildTaxAwareOrderPreview(
+    brandId,
+    outletId,
+    order.orderType,
+    dto.items,
+    processedItems,
+    menuItemMap
+  );
 
   const now = new Date();
 
@@ -573,11 +893,9 @@ export const addItemsToOrder = async (
   try {
     session.startTransaction();
 
-    const finalItems = processedItems.map(pi => ({
-      ...pi,
-      orderId: order._id,
-      kotSentAt: now
-    }));
+    const finalItems = processedItems.map((pi, index) =>
+      mapPreviewItemToStoredOrderItem(order._id, pi, pricingPreview.items[index], now)
+    );
     await OrderItemEntity.insertMany(finalItems, { session });
 
     if (processedAddons.length > 0) {
@@ -588,16 +906,7 @@ export const addItemsToOrder = async (
     }
 
     // Atomic total update — no read-modify-write race condition
-    await OrderEntity.updateOne(
-      { _id: order._id },
-      {
-        $inc: {
-          subtotal: newSubtotal,
-          totalAmount: newSubtotal
-        }
-      },
-      { session }
-    );
+    await recalculatePersistedOrderTotals(order._id, session);
 
     await session.commitTransaction();
   } catch (err) {
@@ -668,9 +977,6 @@ export const removeItemFromOrder = async (
   if (orderItem.itemStatus === ITEM_STATUS.CANCELLED) {
     throw { status: 400, message: 'Item is already cancelled' };
   }
-  if (orderItem.itemStatus === ITEM_STATUS.SERVED) {
-    throw { status: 400, message: 'Cannot cancel an already served item' };
-  }
 
   const now = new Date();
 
@@ -692,19 +998,7 @@ export const removeItemFromOrder = async (
       { session }
     );
 
-    // Recalculate order totals (subtract this item's price)
-    const removedSubtotal = orderItem.totalPrice;
-
-    await OrderEntity.updateOne(
-      { _id: order._id },
-      {
-        $inc: {
-          subtotal: -removedSubtotal,
-          totalAmount: -removedSubtotal
-        }
-      },
-      { session }
-    );
+    await recalculatePersistedOrderTotals(order._id, session);
 
     await session.commitTransaction();
   } catch (err) {
@@ -778,19 +1072,22 @@ export const updateOrderItem = async (
   const updateFields: Record<string, unknown> = {};
   if (dto.instruction !== undefined) updateFields.instruction = dto.instruction;
 
-  let priceDelta = 0;
   let quantityDelta = 0;
 
   if (dto.quantity !== undefined && dto.quantity !== orderItem.quantity) {
     if (dto.quantity < 1) throw { status: 400, message: 'Quantity must be at least 1' };
     quantityDelta = dto.quantity - orderItem.quantity;
-
-    const oldTotal = orderItem.totalPrice;
-    const pricePerUnit = orderItem.basePrice; // addons are per-item; simplified
-    const newTotal = pricePerUnit * dto.quantity;
-    priceDelta = newTotal - oldTotal;
-    updateFields.quantity = dto.quantity;
-    updateFields.totalPrice = newTotal;
+    const repricedLine = recalculateStoredLinePricing(orderItem, dto.quantity, order.orderType);
+    updateFields.quantity = repricedLine.quantity;
+    updateFields.totalPrice = repricedLine.totalPrice;
+    updateFields.baseLineAmount = repricedLine.baseLineAmount;
+    updateFields.addonTotal = repricedLine.addonTotal;
+    updateFields.discountAmount = repricedLine.discountAmount;
+    updateFields.taxableAmount = repricedLine.taxableAmount;
+    updateFields.taxAmount = repricedLine.taxAmount;
+    updateFields.grossLineAmount = repricedLine.grossLineAmount;
+    updateFields.netLineAmount = repricedLine.netLineAmount;
+    updateFields.appliedTaxes = repricedLine.appliedTaxes;
   }
 
   const session = await mongoose.startSession();
@@ -798,14 +1095,7 @@ export const updateOrderItem = async (
     session.startTransaction();
 
     await OrderItemEntity.updateOne({ _id: orderItem._id }, { $set: updateFields }, { session });
-
-    if (priceDelta !== 0) {
-      await OrderEntity.updateOne(
-        { _id: order._id },
-        { $inc: { subtotal: priceDelta, totalAmount: priceDelta } },
-        { session }
-      );
-    }
+    await recalculatePersistedOrderTotals(order._id, session);
 
     await session.commitTransaction();
   } catch (err) {
@@ -900,6 +1190,78 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
 
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Validates if an order meets conditions to be automatically closed:
+ * 1. Payment is fully completed
+ * 2. All active items are fully processed (SERVED)
+ */
+export const checkAndAutoCloseOrder = async (
+  brandId: string,
+  outletId: string,
+  orderId: string,
+  performedBy?: string
+) => {
+  const order = await OrderEntity.findOne({
+    _id: new Types.ObjectId(orderId),
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false
+  }).lean();
+
+  if (!order || ![ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS].includes(order.status)) {
+    return false;
+  }
+
+  // Condition 1: Payment must be fully completed
+  const currentPaidAmount = order.paidAmount ?? 0;
+  // +0.001 for float tolerance
+  if (currentPaidAmount < order.totalAmount - 0.001) {
+    return false;
+  }
+
+  // Condition 2: All items must be fully processed
+  const pendingItemsCount = await OrderItemEntity.countDocuments({
+    orderId: order._id,
+    itemStatus: { $nin: [ITEM_STATUS.SERVED, ITEM_STATUS.CANCELLED] },
+    isDelete: false
+  });
+
+  if (pendingItemsCount > 0) {
+    return false;
+  }
+
+  // Both conditions met, auto-close the order
+  await OrderEntity.updateOne(
+    { _id: order._id },
+    {
+      $set: {
+        status: ORDER_STATUS.COMPLETED,
+        closedAt: new Date()
+      }
+    }
+  );
+
+  // Update table status to CLEANING
+  if (order.tableId) {
+    await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.CLEANING });
+  }
+
+  const userIdStr = performedBy ? String(performedBy) : null;
+  logOrderAction({
+    brandId,
+    outletId,
+    orderId: String(order._id),
+    action: ORDER_AUDIT_ACTION.ORDER_CLOSED,
+    performedBy: userIdStr,
+    metadata: { reason: 'auto_closed' }
+  });
+  orderEvents.emit('order.closed', { orderId: String(order._id), brandId, outletId });
+
+  return true;
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export const closeOrder = async (
   brandId: string,
   outletId: string,
@@ -953,7 +1315,7 @@ export const closeOrder = async (
       isDelete: false
     });
     if (openOrdersCount === 0) {
-      await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.AVAILABLE });
+      await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.CLEANING });
     }
   }
 
@@ -1077,7 +1439,7 @@ export const listOrders = async (
     OrderEntity.find(filter)
       .populate('tableId', 'name')
       .populate('waiterId', 'name role')
-    .populate('customerId', 'name mobile email tags loyaltyPoints totalSpent totalOrders lastVisitAt creditBalance isActive')
+      .populate('customerId', 'name mobile email tags loyaltyPoints totalSpent totalOrders lastVisitAt creditBalance isActive')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)

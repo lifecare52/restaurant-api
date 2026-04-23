@@ -1,5 +1,6 @@
 import {
   createOrder,
+  previewOrderPricing,
   getKOTOrderDetails,
   closeOrder,
   listOrders,
@@ -9,6 +10,7 @@ import {
   removeItemFromOrder,
   updateOrderItem
 } from '@modules/order/order.service';
+import { getPaymentsByOrder } from '@modules/payment/payment.service';
 
 import type { Request, Response, NextFunction } from 'express';
 
@@ -31,6 +33,22 @@ export const createOrderController = async (req: Request, res: Response, next: N
       code: 201,
       message: 'Order created successfully',
       data: item
+    };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const previewOrderController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const preview = await previewOrderPricing(brandId, outletId, req.body);
+    res.locals.response = {
+      status: true,
+      code: 200,
+      message: 'Order preview calculated successfully',
+      data: preview
     };
     next();
   } catch (err) {
@@ -103,6 +121,14 @@ export const getOrderController = async (req: Request, res: Response, next: Next
     if (!item) {
       res.locals.response = { status: false, code: 404, message: 'Order not found' };
     } else {
+      const paymentsSummary = await getPaymentsByOrder(brandId, outletId, orderId);
+      // Clean payments to remove tenant fields
+      const cleanedPayments = paymentsSummary.payments.map((p: any) => {
+        const paymentObj = p.toObject ? p.toObject() : p;
+        const { brandId: _b, outletId: _o, __v: _v, ...rest } = paymentObj;
+        return rest;
+      });
+      item.payments = cleanedPayments;
       res.locals.response = { status: true, code: 200, data: item };
     }
     next();

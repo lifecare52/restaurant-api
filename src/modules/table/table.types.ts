@@ -3,9 +3,11 @@ import type { PaginationQuery } from '@shared/interfaces/pagination';
 import type { Types } from 'mongoose';
 
 export enum TABLE_STATUS {
-  AVAILABLE = 'AVAILABLE',
-  OCCUPIED = 'OCCUPIED',
-  RESERVED = 'RESERVED'
+  AVAILABLE = 1,
+  OCCUPIED = 2,
+  BILL_PRINTED = 3,
+  CLEANING = 4,
+  RESERVED = 5
 }
 
 export interface TableCreateDTO {

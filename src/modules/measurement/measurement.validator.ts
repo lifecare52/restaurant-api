@@ -18,7 +18,7 @@ export const updateMeasurementSchema = Joi.object({
   measurementType: Joi.string().valid('WEIGHT', 'VOLUME', 'QUANTITY', 'CUSTOM').optional(),
   unit: Joi.string().trim().allow('').optional(),
   baseUnit: Joi.string().trim().allow('').optional(),
-  conversionFactor: Joi.number().min(0.0001).optional(),
+  conversionFactor: Joi.number().min(0.0001).allow(null).optional(),
   isDecimalAllowed: Joi.boolean().optional(),
   isActive: Joi.boolean().optional()
 });

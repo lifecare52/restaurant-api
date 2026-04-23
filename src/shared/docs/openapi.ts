@@ -270,7 +270,11 @@ export const getOpenApiSpec = () => {
             zoneId: { type: 'string' },
             name: { type: 'string' },
             capacity: { type: 'number' },
-            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            status: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=AVAILABLE, 2=OCCUPIED, 3=BILL_PRINTED, 4=CLEANING, 5=RESERVED'
+            },
             isActive: { type: 'boolean' },
             isDelete: { type: 'boolean' },
             createdAt: { type: 'string' },
@@ -293,7 +297,11 @@ export const getOpenApiSpec = () => {
             name: { type: 'string', minLength: 2 },
             capacity: { type: 'number', minimum: 1 },
             zoneId: { type: 'string' },
-            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            status: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=AVAILABLE, 2=OCCUPIED, 3=BILL_PRINTED, 4=CLEANING, 5=RESERVED'
+            },
             isActive: { type: 'boolean', default: true }
           },
           required: ['name']
@@ -304,16 +312,174 @@ export const getOpenApiSpec = () => {
             name: { type: 'string', minLength: 2 },
             capacity: { type: 'number', minimum: 1 },
             zoneId: { type: 'string', nullable: true },
-            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] },
+            status: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=AVAILABLE, 2=OCCUPIED, 3=BILL_PRINTED, 4=CLEANING, 5=RESERVED'
+            },
             isActive: { type: 'boolean' }
           }
         },
         UpdateTableStatusRequest: {
           type: 'object',
           properties: {
-            status: { type: 'string', enum: ['AVAILABLE', 'OCCUPIED', 'RESERVED'] }
+            status: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=AVAILABLE, 2=OCCUPIED, 3=BILL_PRINTED, 4=CLEANING, 5=RESERVED'
+            }
           },
           required: ['status']
+        },
+        Payment: {
+          type: 'object',
+          description: 'A single payment transaction recorded against an order',
+          properties: {
+            _id: { type: 'string', description: 'Payment document ID' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            orderId: { type: 'string', description: 'Order this payment belongs to' },
+            amount: {
+              type: 'number',
+              minimum: 0.01,
+              description: 'Amount paid in this transaction'
+            },
+            paymentMethod: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE'
+            },
+            reference: {
+              type: 'string',
+              nullable: true,
+              maxLength: 100,
+              description: 'Optional transaction reference (e.g. UPI txn ID, card last 4)'
+            },
+            recordedBy: { type: 'string', description: 'Staff user ID who recorded the payment' },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          },
+          required: [
+            '_id',
+            'brandId',
+            'outletId',
+            'orderId',
+            'amount',
+            'paymentMethod',
+            'recordedBy'
+          ]
+        },
+        RecordPaymentRequest: {
+          type: 'object',
+          description: 'Payload to record payment transaction(s) (supports split payments)',
+          properties: {
+            orderId: { type: 'string', description: 'Valid MongoDB ObjectId of the order' },
+            amount: {
+              type: 'number',
+              minimum: 0.01,
+              description: 'Amount to pay (for legacy single payment)'
+            },
+            paymentMethod: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE'
+            },
+            reference: {
+              type: 'string',
+              maxLength: 100,
+              nullable: true,
+              description: 'Optional transaction reference'
+            },
+            payments: {
+              type: 'array',
+              description: 'Array of payments for split-payment scenarios',
+              items: {
+                type: 'object',
+                properties: {
+                  amount: { type: 'number', minimum: 0.01 },
+                  paymentMethod: { type: 'integer', enum: [1, 2, 3, 4, 5] },
+                  reference: { type: 'string', nullable: true, maxLength: 100 }
+                },
+                required: ['amount', 'paymentMethod']
+              }
+            }
+          },
+          required: ['orderId']
+        },
+        RecordPaymentResponse: {
+          type: 'object',
+          description:
+            'Response after recording payments — contains saved payments + updated order snapshot',
+          properties: {
+            payments: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Payment' }
+            },
+            order: {
+              type: 'object',
+              properties: {
+                _id: { type: 'string' },
+                totalAmount: { type: 'number' },
+                paidAmount: { type: 'number' },
+                balanceDue: { type: 'number' },
+                paymentStatus: {
+                  type: 'integer',
+                  enum: [1, 2, 3, 4],
+                  description: '1=UNPAID, 2=PARTIAL, 3=PAID, 4=REFUNDED'
+                },
+                paymentMethod: {
+                  type: 'integer',
+                  enum: [1, 2, 3, 4, 5],
+                  nullable: true,
+                  description: 'Primary payment method recorded on the order'
+                },
+                isSplitPayment: {
+                  type: 'boolean',
+                  description: 'Whether the order was paid via split payments'
+                }
+              },
+              required: [
+                '_id',
+                'totalAmount',
+                'paidAmount',
+                'balanceDue',
+                'paymentStatus'
+              ]
+            }
+          },
+          required: ['payments', 'order']
+        },
+        OrderPaymentSummary: {
+          type: 'object',
+          description: 'All payment records for an order plus running totals',
+          properties: {
+            orderId: { type: 'string' },
+            totalAmount: { type: 'number', description: 'Full bill amount' },
+            paidAmount: { type: 'number', description: 'Cumulative amount paid so far' },
+            balanceDue: { type: 'number', description: 'Remaining amount to collect' },
+            paymentStatus: {
+              type: 'integer',
+              enum: [1, 2, 3, 4],
+              description: '1=UNPAID, 2=PARTIAL, 3=PAID, 4=REFUNDED'
+            },
+            isSplitPayment: {
+              type: 'boolean',
+              description: 'Whether the order was paid via multiple distinct payment methods'
+            },
+            payments: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/Payment' }
+            }
+          },
+          required: [
+            'orderId',
+            'totalAmount',
+            'paidAmount',
+            'balanceDue',
+            'paymentStatus',
+            'isSplitPayment',
+            'payments'
+          ]
         },
         ApiError: {
           type: 'object',
@@ -1408,9 +1574,13 @@ export const getOpenApiSpec = () => {
             {
               type: 'object',
               properties: {
-                items: {
+                kots: {
                   type: 'array',
-                  items: { $ref: '#/components/schemas/OrderItem' }
+                  items: { $ref: '#/components/schemas/KOTFriendlyBatch' }
+                },
+                payments: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/Payment' }
                 },
                 cancellationReason: { type: 'string', nullable: true },
                 closedAt: { type: 'string', format: 'date-time', nullable: true },
@@ -1779,6 +1949,30 @@ export const getOpenApiSpec = () => {
             variationName: { type: 'string', nullable: true },
             quantitySold: { type: 'number' },
             totalRevenue: { type: 'number' }
+          }
+        },
+        KOTFriendlyBatch: {
+          type: 'object',
+          properties: {
+            kotNumber: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time', nullable: true },
+            items: {
+              type: 'array',
+              items: {
+                allOf: [
+                  { $ref: '#/components/schemas/OrderItem' },
+                  {
+                    type: 'object',
+                    properties: {
+                      addons: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/OrderItemAddon' }
+                      }
+                    }
+                  }
+                ]
+              }
+            }
           }
         }
       }
@@ -6056,6 +6250,229 @@ export const getOpenApiSpec = () => {
                     ]
                   }
                 }
+              }
+            }
+          }
+        }
+      },
+
+      // ─── Payment ───────────────────────────────────────────────────────────────
+
+      '/api/v1/payment/record': {
+        post: {
+          tags: ['Payments'],
+          summary: 'Record a payment transaction',
+          description:
+            'Records a single payment transaction against an order. Supports partial payments — call multiple times until the full amount is settled. Atomically updates paidAmount and paymentStatus on the order. Requires brand-id and outlet-id headers.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/RecordPaymentRequest' },
+                examples: {
+                  legacySinglePayment: {
+                    summary: 'Single Payment (Legacy)',
+                    value: {
+                      orderId: '6627f1a2b3c4d5e6f7a8b9c0',
+                      amount: 250.5,
+                      paymentMethod: 3,
+                      reference: 'UPI-TXN-987654321'
+                    }
+                  },
+                  splitPayments: {
+                    summary: 'Split Payments Array',
+                    value: {
+                      orderId: '6627f1a2b3c4d5e6f7a8b9c0',
+                      payments: [
+                        { amount: 100, paymentMethod: 1 },
+                        { amount: 150.5, paymentMethod: 3, reference: 'UPI-TXN-1234' }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            201: {
+              description: 'Payment recorded successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/RecordPaymentResponse' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+
+      '/api/v1/payment/order-payments': {
+        get: {
+          tags: ['Payments'],
+          summary: 'Get all payments for an order',
+          description:
+            'Returns all individual payment transactions recorded against a specific order, along with running totals (totalAmount, paidAmount, balanceDue) and overall paymentStatus. Requires brand-id and outlet-id headers.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            {
+              name: 'orderId',
+              in: 'query',
+              required: true,
+              description: 'MongoDB ObjectId of the order',
+              schema: { type: 'string' }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Order payment summary returned successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/OrderPaymentSummary' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Validation error — orderId is missing or invalid',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            401: {
+              description: 'Unauthorized — missing or invalid bearer token',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            403: {
+              description: 'Forbidden — user does not have access to the brand or outlet',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            404: {
+              description: 'Order not found',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+
+      '/api/v1/payment/list': {
+        get: {
+          tags: ['Payments'],
+          summary: 'List all payment transactions (paginated)',
+          description:
+            'Returns a paginated list of payment transactions for the outlet. Supports optional filters by orderId, paymentMethod, and date range (fromDate / toDate). Results include the staff member who recorded the payment (name + role). Requires brand-id and outlet-id headers.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            {
+              name: 'orderId',
+              in: 'query',
+              required: false,
+              description: 'Filter by order ID (MongoDB ObjectId)',
+              schema: { type: 'string' }
+            },
+            {
+              name: 'paymentMethod',
+              in: 'query',
+              required: false,
+              description: 'Filter by payment method: 1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE',
+              schema: { type: 'integer', enum: [1, 2, 3, 4, 5] }
+            },
+            {
+              name: 'fromDate',
+              in: 'query',
+              required: false,
+              description: 'Start of date range (ISO 8601 date-time)',
+              schema: { type: 'string', format: 'date-time' }
+            },
+            {
+              name: 'toDate',
+              in: 'query',
+              required: false,
+              description: 'End of date range (ISO 8601 date-time)',
+              schema: { type: 'string', format: 'date-time' }
+            },
+            {
+              name: 'page',
+              in: 'query',
+              required: false,
+              description: 'Page number (default: 1)',
+              schema: { type: 'integer', minimum: 1, default: 1 }
+            },
+            {
+              name: 'limit',
+              in: 'query',
+              required: false,
+              description: 'Records per page, max 100 (default: 20)',
+              schema: { type: 'integer', minimum: 1, maximum: 100, default: 20 }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Paginated payment list returned successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/Payment' }
+                          },
+                          total: {
+                            type: 'number',
+                            description: 'Total number of matching records'
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Validation error in query parameters',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            401: {
+              description: 'Unauthorized — missing or invalid bearer token',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            },
+            403: {
+              description: 'Forbidden — user does not have access to the brand or outlet',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
               }
             }
           }

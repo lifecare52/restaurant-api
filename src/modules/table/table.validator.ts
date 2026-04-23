@@ -8,8 +8,9 @@ export const createTableSchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
   capacity: Joi.number().integer().min(1).optional(),
   zoneId: objectId.optional(),
-  status: Joi.string()
-    .valid(...Object.values(TABLE_STATUS))
+  status: Joi.number()
+    .integer()
+    .valid(...Object.values(TABLE_STATUS).filter(v => !isNaN(Number(v))))
     .optional(),
   isActive: Joi.boolean().default(true)
 });
@@ -18,15 +19,17 @@ export const updateTableSchema = Joi.object({
   name: Joi.string().trim().min(2).optional(),
   capacity: Joi.number().integer().min(1).optional(),
   zoneId: objectId.optional(),
-  status: Joi.string()
-    .valid(...Object.values(TABLE_STATUS))
+  status: Joi.number()
+    .integer()
+    .valid(...Object.values(TABLE_STATUS).filter(v => !isNaN(Number(v))))
     .optional(),
   isActive: Joi.boolean().optional()
 }).min(1);
 
 export const updateTableStatusSchema = Joi.object({
-  status: Joi.string()
-    .valid(...Object.values(TABLE_STATUS))
+  status: Joi.number()
+    .integer()
+    .valid(...Object.values(TABLE_STATUS).filter(v => !isNaN(Number(v))))
     .required()
 });
 
@@ -38,8 +41,9 @@ export const tableListQuerySchema = Joi.object({
   order: Joi.string().valid('ASC', 'DESC').allow('').optional(),
   isActive: Joi.boolean().optional(),
   zoneId: objectId.optional(),
-  status: Joi.string()
-    .valid(...Object.values(TABLE_STATUS))
+  status: Joi.number()
+    .integer()
+    .valid(...Object.values(TABLE_STATUS).filter(v => !isNaN(Number(v))))
     .optional()
 });
 

@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 import { ORDER_STATUS } from '@shared/enum/order.enum';
 import type { Order, OrderItem } from '@modules/order/order.types';
 import TableEntity from '@modules/table/table.model';
-import type {
+import {
   TableCreateDTO,
   TableUpdateDTO,
   TableListQuery,
@@ -21,7 +21,7 @@ export const createTable = async (brandId: string, outletId: string, dto: TableC
       zoneId: dto.zoneId ? new Types.ObjectId(dto.zoneId) : undefined,
       name: dto.name,
       capacity: dto.capacity ?? 4,
-      status: dto.status ?? 'AVAILABLE',
+      status: dto.status ?? TABLE_STATUS.AVAILABLE,
       isActive: dto.isActive ?? true,
       isDelete: false
     });

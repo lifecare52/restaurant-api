@@ -60,7 +60,7 @@ router.post(
   '/',
   auth,
   requireBrandAccess,
-  requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
+  // requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(createUserSchema),
   createOutletUserController
 );
@@ -69,7 +69,7 @@ router.get(
   '/',
   auth,
   requireBrandAccess,
-  requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
+  // requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(userListQuerySchema, 'query'),
   listOutletUsersController
 );
@@ -78,7 +78,7 @@ router.get(
   '/detail',
   auth,
   requireBrandAccess,
-  requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
+  // requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(userIdQuerySchema, 'query'),
   getOutletUserController
 );
@@ -87,7 +87,7 @@ router.patch(
   '/',
   auth,
   requireBrandAccess,
-  requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
+  // requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(userIdQuerySchema, 'query'),
   validateRequest(updateUserSchema),
   updateOutletUserController
@@ -97,7 +97,7 @@ router.delete(
   '/',
   auth,
   requireBrandAccess,
-  requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
+  // requirePermissions([PERMISSIONS.USER_MANAGEMENT]),
   validateRequest(userIdQuerySchema, 'query'),
   deleteOutletUserController
 );
