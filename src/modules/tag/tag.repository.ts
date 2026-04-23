@@ -148,14 +148,28 @@ export class TagRepository {
       .lean();
   }
 
-  async findActiveByCustomerTagIds(brandId: string, outletId: string, tagIds: Types.ObjectId[]) {
-    if (!tagIds.length) {
+  async findActiveByCustomerTagIds(brandId: string, outletId: string, tagIds: any[]) {
+    if (!tagIds || !tagIds.length) {
       return [];
     }
 
+    // Handle any format: String, ObjectId, or Populated Object with _id/id
+    const ids = tagIds
+      .map(tag => {
+        if (!tag) return null;
+        if (typeof tag === 'string') return toObjectId(tag);
+        if (tag instanceof Types.ObjectId) return tag;
+        if (tag._id) return typeof tag._id === 'string' ? toObjectId(tag._id) : tag._id;
+        if (tag.id) return typeof tag.id === 'string' ? toObjectId(tag.id) : tag.id;
+        return null;
+      })
+      .filter(id => id !== null);
+
+    if (!ids.length) return [];
+
     return CustomerTagEntity.find({
-      ...this.buildTenantFilter(brandId),
-      _id: { $in: tagIds },
+      brandId: toObjectId(brandId),
+      _id: { $in: ids },
       isActive: true,
       isDelete: false
     })

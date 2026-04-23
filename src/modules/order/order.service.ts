@@ -574,17 +574,31 @@ const recalculatePersistedOrderTotals = async (
     }))
   });
 
+  const order = await OrderEntity.findById(orderId).session(session || null).lean();
+  if (!order) return;
+
+  const totalGross = summary.grossAmount;
+
+  const pricing = await recalculateOrderPricing(
+    String(order.brandId),
+    String(order.outletId),
+    order.customerId,
+    totalGross
+  );
+
   const orderUpdateQuery = OrderEntity.updateOne(
     { _id: orderId },
     {
       $set: {
-        grossAmount: summary.grossAmount,
-        subtotal: summary.subtotal,
+        grossAmount: totalGross,
+        subtotal: Math.max(0, totalGross - pricing.discountAmount),
         taxableAmount: summary.taxableAmount,
         taxAmount: summary.taxAmount,
         roundOffAmount: summary.roundOffAmount,
         taxBreakup: summary.taxBreakup,
-        discountAmount: 0,
+        discountAmount: pricing.discountAmount,
+        discountType: pricing.discountType,
+        discountValue: pricing.discountValue,
         totalAmount: summary.totalAmount
       }
     }

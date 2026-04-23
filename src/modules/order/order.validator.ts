@@ -56,6 +56,7 @@ export const previewOrderSchema = Joi.object({
     .valid(...Object.values(ORDER_TYPE).filter(v => !isNaN(Number(v))))
     .required(),
   tableId: objectId.optional().allow(null, ''),
+  customerId: objectId.optional().allow(null, ''),
   items: Joi.array().items(orderItemSchema).min(1).required().messages({
     'array.min': 'At least one item is required',
     'any.required': 'items array is required'

@@ -21,10 +21,11 @@ export class DiscountService {
       throw { status: 404, message: 'Customer not found' };
     }
 
+    const tagIds = Array.isArray(customer.tags) ? customer.tags : [];
     const activeTags = await tagRepository.findActiveByCustomerTagIds(
       brandId,
       outletId,
-      (customer.tags as Types.ObjectId[]) ?? []
+      tagIds
     );
 
     return this.calculateDiscountFromTags(activeTags, orderAmount);
