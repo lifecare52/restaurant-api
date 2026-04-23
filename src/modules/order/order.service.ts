@@ -302,6 +302,7 @@ const processItems = (
 
       finalQuantity = 1;
       itemTotal = priceForOneUnit;
+      basePrice = priceForOneUnit; // Set effective unit price for tax calculation
 
       const unitName = item.measurement.unit;
       const baseUnitName = measurementDoc?.baseUnit || config.baseUnit || unitName;
@@ -436,7 +437,7 @@ const buildTaxAwareOrderPreview = async (
     const calculatedLine = calculateLineTax({
       orderType,
       quantity: processedItem.quantity,
-      baseAmount: processedItem.baseLineAmount ?? processedItem.totalPrice,
+      baseAmount: processedItem.basePrice,
       addonAmount: processedItem.addonTotal ?? 0,
       discountAmount: processedItem.discountAmount ?? 0,
       taxes: resolvedTaxes.taxes

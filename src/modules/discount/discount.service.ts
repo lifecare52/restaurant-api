@@ -44,9 +44,10 @@ export class DiscountService {
       return { discount: 0, appliedTag: null };
     }
 
-    const applicableTag =
-      tags
-        .filter(tag => tag.isActive && orderAmount >= (tag.minOrderAmount ?? 0))
+    const applicableTags = tags
+      .filter(tag => tag.isActive && orderAmount >= (tag.minOrderAmount ?? 0));
+
+    const applicableTag = applicableTags
         .sort((a, b) => {
           if (b.priority !== a.priority) {
             return b.priority - a.priority;
