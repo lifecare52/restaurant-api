@@ -11,22 +11,30 @@ export interface DiscountCalculationResult {
 
 export class DiscountService {
   async calculateBestDiscount(
-    customerId: string,
+    customerId: string | null,
     orderAmount: number,
     brandId: string,
-    outletId: string
+    outletId: string,
+    manualTagId?: string | null
   ): Promise<DiscountCalculationResult> {
-    const customer = await customerRepository.findRawById(brandId, outletId, customerId);
-    if (!customer || !customer.isActive) {
-      throw { status: 404, message: 'Customer not found' };
+    let tagIds: any[] = [];
+
+    if (customerId) {
+      const customer = await customerRepository.findRawById(brandId, outletId, customerId);
+      if (customer && customer.isActive) {
+        tagIds = Array.isArray(customer.tags) ? [...customer.tags] : [];
+      }
     }
 
-    const tagIds = Array.isArray(customer.tags) ? customer.tags : [];
-    const activeTags = await tagRepository.findActiveByCustomerTagIds(
-      brandId,
-      outletId,
-      tagIds
-    );
+    if (manualTagId) {
+      tagIds.push(manualTagId);
+    }
+
+    if (!tagIds.length) {
+      return { discount: 0, appliedTag: null };
+    }
+
+    const activeTags = await tagRepository.findActiveByCustomerTagIds(brandId, outletId, tagIds);
 
     return this.calculateDiscountFromTags(activeTags, orderAmount);
   }

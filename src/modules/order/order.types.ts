@@ -58,6 +58,7 @@ export interface Order {
   closedAt?: Date | null;
   cancellationReason?: string;
   cancelledBy?: Types.ObjectId | null;
+  manualTagId?: Types.ObjectId | null;
   isActive: boolean;
   isDelete: boolean;
   createdAt?: Date;
@@ -166,6 +167,7 @@ export interface CreateOrderDTO {
   tableId?: string;
   customerId?: string;
   items: AddItemToOrderDTO[];
+  manualTagId?: string;
   notes?: string;
   shippingAddress?: string;
 }

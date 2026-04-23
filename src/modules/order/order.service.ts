@@ -66,9 +66,10 @@ const recalculateOrderPricing = async (
   brandId: string,
   outletId: string,
   customerId: Types.ObjectId | null | undefined,
-  subtotal: number
+  subtotal: number,
+  manualTagId?: Types.ObjectId | null
 ) => {
-  if (!customerId) {
+  if (!customerId && !manualTagId) {
     return {
       discountAmount: 0,
       discountType: null,
@@ -78,10 +79,11 @@ const recalculateOrderPricing = async (
   }
 
   const { discount, appliedTag } = await discountService.calculateBestDiscount(
-    String(customerId),
+    customerId ? String(customerId) : null,
     subtotal,
     brandId,
-    outletId
+    outletId,
+    manualTagId ? String(manualTagId) : null
   );
 
   return {
@@ -583,7 +585,8 @@ const recalculatePersistedOrderTotals = async (
     String(order.brandId),
     String(order.outletId),
     order.customerId,
-    totalGross
+    totalGross,
+    order.manualTagId
   );
 
   const orderUpdateQuery = OrderEntity.updateOne(
@@ -640,7 +643,8 @@ export const previewOrderPricing = async (
     brandId,
     outletId,
     dto.customerId ? new Types.ObjectId(dto.customerId) : null,
-    subtotal
+    subtotal,
+    dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null
   );
 
   if (pricing.discountAmount > 0 && subtotal > 0) {
@@ -705,7 +709,8 @@ export const createOrder = async (
     brandId,
     outletId,
     dto.customerId ? new Types.ObjectId(dto.customerId) : null,
-    subtotal
+    subtotal,
+    dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null
   );
 
   if (pricing.discountAmount > 0 && subtotal > 0) {
@@ -755,6 +760,7 @@ export const createOrder = async (
       outletId: new Types.ObjectId(outletId),
       waiterId: new Types.ObjectId(userId),
       customerId: dto.customerId ? new Types.ObjectId(dto.customerId) : null,
+      manualTagId: dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null,
       orderNumber,
       tokenNo,
       orderType: dto.orderType,

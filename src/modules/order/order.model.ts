@@ -109,6 +109,7 @@ const OrderSchema = new Schema<Order>(
     closedAt: { type: Date, default: null },
     cancellationReason: { type: String, default: '' },
     cancelledBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    manualTagId: { type: Schema.Types.ObjectId, ref: 'CustomerTag', default: null },
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false }
   },

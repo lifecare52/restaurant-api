@@ -1625,6 +1625,7 @@ export const getOpenApiSpec = () => {
             },
             tableId: { type: 'string', description: 'Required when orderType=1 (DINE_IN)' },
             customerId: { type: 'string', nullable: true, description: 'Optional customer linked to the order' },
+            manualTagId: { type: 'string', nullable: true, description: 'Optional ad-hoc discount tag ID applied to the order' },
             items: {
               type: 'array',
               items: { $ref: '#/components/schemas/AddItemToOrderItemDTO' },
@@ -5236,6 +5237,50 @@ export const getOpenApiSpec = () => {
               description: 'OK',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/order/preview': {
+        post: {
+          tags: ['Orders'],
+          summary: 'Preview order pricing',
+          description: 'Calculates totals, taxes, and discounts for an order without creating it.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CreateOrderRequest' } }
+            }
+          },
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'object',
+                            properties: {
+                              subtotal: { type: 'number' },
+                              taxAmount: { type: 'number' },
+                              discountAmount: { type: 'number' },
+                              totalAmount: { type: 'number' },
+                              discountType: { type: 'number', nullable: true },
+                              discountValue: { type: 'number', nullable: true }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
               }
             }
           }

@@ -36,6 +36,7 @@ export const createOrderSchema = Joi.object({
     otherwise: Joi.optional().allow(null, '')
   }),
   customerId: objectId.optional().allow(null, ''),
+  manualTagId: objectId.optional().allow(null, ''),
   items: Joi.array().items(orderItemSchema).min(1).required().messages({
     'array.min': 'At least one item is required',
     'any.required': 'items array is required'
@@ -57,6 +58,7 @@ export const previewOrderSchema = Joi.object({
     .required(),
   tableId: objectId.optional().allow(null, ''),
   customerId: objectId.optional().allow(null, ''),
+  manualTagId: objectId.optional().allow(null, ''),
   items: Joi.array().items(orderItemSchema).min(1).required().messages({
     'array.min': 'At least one item is required',
     'any.required': 'items array is required'
