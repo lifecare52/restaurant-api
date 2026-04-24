@@ -161,6 +161,7 @@ export const calculateLineTax = (input: TaxableLineInput): TaxableLineResult => 
   const inclusiveTaxes = applicableTaxes.filter(tax => tax.isInclusive);
   const exclusiveTaxes = applicableTaxes.filter(tax => !tax.isInclusive);
 
+
   const inclusiveResult =
     inclusiveTaxes.length > 0
       ? extractInclusiveBase(discountedGrossAmount, inclusiveTaxes)
@@ -172,6 +173,7 @@ export const calculateLineTax = (input: TaxableLineInput): TaxableLineResult => 
     appliedTaxes.reduce((sum, tax) => sum + tax.taxAmount, 0)
   );
   const netLineAmount = roundCurrency(discountedGrossAmount + exclusiveResult.taxAmount);
+
 
   return {
     quantity: input.quantity,
@@ -214,18 +216,33 @@ export const summarizeOrderTaxes = ({
   }
 
   const grossAmount = roundCurrency(lines.reduce((sum, line) => sum + line.grossLineAmount, 0));
-  const subtotal = roundCurrency(
-    lines.reduce((sum, line) => sum + (line.grossLineAmount - line.discountAmount), 0)
-  );
+  const totalDiscount = roundCurrency(lines.reduce((sum, line) => sum + line.discountAmount, 0));
+  const subtotal = roundCurrency(grossAmount - totalDiscount);
   const taxableAmount = roundCurrency(lines.reduce((sum, line) => sum + line.taxableAmount, 0));
-  const taxAmount = roundCurrency(lines.reduce((sum, line) => sum + line.taxAmount, 0));
+  const totalTaxAmount = roundCurrency(lines.reduce((sum, line) => sum + line.taxAmount, 0));
   const totalAmount = roundCurrency(lines.reduce((sum, line) => sum + line.netLineAmount, 0));
+
+  const inclusiveTaxAmount = roundCurrency(
+    Array.from(taxBreakupMap.values())
+      .filter(t => t.isInclusive)
+      .reduce((sum, t) => sum + t.taxAmount, 0)
+  );
+  const exclusiveTaxAmount = roundCurrency(
+    Array.from(taxBreakupMap.values())
+      .filter(t => !t.isInclusive)
+      .reduce((sum, t) => sum + t.taxAmount, 0)
+  );
+
 
   return {
     grossAmount,
     subtotal,
+    totalDiscount,
     taxableAmount,
-    taxAmount,
+    taxAmount: exclusiveTaxAmount, // For UI: Subtotal + Tax = Total
+    inclusiveTaxAmount,
+    exclusiveTaxAmount,
+    totalTaxAmount,
     roundOffAmount: 0,
     totalAmount,
     taxBreakup: Array.from(taxBreakupMap.values())

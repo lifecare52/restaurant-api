@@ -46,8 +46,12 @@ export interface OrderTaxSummaryInput {
 export interface OrderTaxSummaryResult {
   grossAmount: number;
   subtotal: number;
+  totalDiscount: number;
   taxableAmount: number;
-  taxAmount: number;
+  taxAmount: number; // This will represent the "Added" (Exclusive) tax for UI consistency
+  inclusiveTaxAmount: number;
+  exclusiveTaxAmount: number;
+  totalTaxAmount: number;
   roundOffAmount: number;
   totalAmount: number;
   taxBreakup: OrderTaxBreakup[];

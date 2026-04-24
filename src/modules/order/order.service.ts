@@ -38,7 +38,7 @@ import {
 } from '@modules/order/order.types';
 import OutletEntity from '@modules/outlet/outlet.model';
 import TableEntity from '@modules/table/table.model';
-import { calculateLineTax, summarizeOrderTaxes } from '@modules/tax/tax-calculation.service';
+import { allocateDiscountAcrossLines, calculateLineTax, summarizeOrderTaxes } from '@modules/tax/tax-calculation.service';
 import { resolveEffectiveTaxesForMenuItems } from '@modules/tax/tax-resolution.service';
 import { CUSTOMER_TAG_DISCOUNT_TYPE } from '@modules/tag/tag.types';
 import { TABLE_STATUS } from '@modules/table/table.types';
@@ -85,6 +85,7 @@ const recalculateOrderPricing = async (
     outletId,
     manualTagId ? String(manualTagId) : null
   );
+
 
   return {
     discountAmount: discount,
@@ -443,6 +444,7 @@ const buildTaxAwareOrderPreview = async (
       taxes: resolvedTaxes.taxes
     });
 
+
     return {
       menuItemId: String(processedItem.menuItemId),
       itemName: processedItem.itemName,
@@ -621,6 +623,8 @@ export const previewOrderPricing = async (
   outletId: string,
   dto: PreviewOrderDTO
 ) => {
+  console.log('[PreviewOrder] Starting preview calculation', { brandId, outletId, orderType: dto.orderType, itemCount: dto.items?.length });
+
   if (!dto.items || dto.items.length === 0) {
     throw { status: 400, message: 'At least one item is required' };
   }
@@ -649,11 +653,17 @@ export const previewOrderPricing = async (
   );
 
   if (pricing.discountAmount > 0 && subtotal > 0) {
-    for (const item of processedItems) {
-      const itemRatio = item.totalPrice / subtotal;
-      item.discountAmount = pricing.discountAmount * itemRatio;
-    }
+    const lineAmounts = processedItems.map(item => item.totalPrice);
+    const allocatedDiscounts = allocateDiscountAcrossLines({
+      lineAmounts,
+      totalDiscount: pricing.discountAmount
+    });
+
+    processedItems.forEach((item, index) => {
+      item.discountAmount = allocatedDiscounts[index];
+    });
   }
+
 
   const pricingPreview = await buildTaxAwareOrderPreview(
     brandId,
@@ -715,10 +725,15 @@ export const createOrder = async (
   );
 
   if (pricing.discountAmount > 0 && subtotal > 0) {
-    for (const item of processedItems) {
-      const itemRatio = item.totalPrice / subtotal;
-      item.discountAmount = pricing.discountAmount * itemRatio;
-    }
+    const lineAmounts = processedItems.map(item => item.totalPrice);
+    const allocatedDiscounts = allocateDiscountAcrossLines({
+      lineAmounts,
+      totalDiscount: pricing.discountAmount
+    });
+
+    processedItems.forEach((item, index) => {
+      item.discountAmount = allocatedDiscounts[index];
+    });
   }
 
   const pricingPreview = await buildTaxAwareOrderPreview(
