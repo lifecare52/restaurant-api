@@ -9,7 +9,8 @@ import {
   ORDER_TYPE,
   ORDER_STATUS,
   PAYMENT_STATUS,
-  ITEM_STATUS
+  ITEM_STATUS,
+  SETTLEMENT_STATUS
 } from '@modules/order/order.types';
 
 export type OrderModel = Model<Order>;
@@ -97,6 +98,14 @@ const OrderSchema = new Schema<Order>(
     paymentMethod: { type: Number, default: null },
     /** Running total of all payments recorded against this order */
     paidAmount: { type: Number, default: 0, min: 0 },
+    settlementStatus: {
+      type: Number,
+      enum: Object.values(SETTLEMENT_STATUS).filter(v => !isNaN(Number(v))),
+      default: SETTLEMENT_STATUS.UNSETTLED
+    },
+    settlementAdjustmentAmount: { type: Number, default: 0 },
+    refundedAmount: { type: Number, default: 0, min: 0 },
+    isRefunded: { type: Boolean, default: false },
     isSplitPayment: { type: Boolean, default: false },
     shippingAddress: { type: String, default: '' },
     notes: {

@@ -22,6 +22,7 @@ export interface Customer {
   totalOrders: number;
   lastVisitAt?: Date | null;
   creditBalance: number;
+  dueBalance: number;
   isActive: boolean;
   isDelete: boolean;
   outletStats: CustomerOutletStats[];
@@ -38,6 +39,7 @@ export interface CreateCustomerDTO {
   tags?: string[];
   loyaltyPoints?: number;
   creditBalance?: number;
+  dueBalance?: number;
   isActive?: boolean;
 }
 

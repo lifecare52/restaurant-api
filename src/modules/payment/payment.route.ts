@@ -3,12 +3,16 @@ import { Router } from 'express';
 import {
   recordPaymentController,
   getPaymentsByOrderController,
-  listPaymentsController
+  listPaymentsController,
+  settlePaymentController,
+  processRefundController
 } from '@modules/payment/payment.controller';
 import {
   recordPaymentSchema,
   getPaymentsByOrderQuerySchema,
-  listPaymentsQuerySchema
+  listPaymentsQuerySchema,
+  settlePaymentSchema,
+  refundPaymentSchema
 } from '@modules/payment/payment.validator';
 
 import { commonHeaderSchema } from '@shared/utils/common.validation';
@@ -32,6 +36,22 @@ router.post(
   ...tenantMiddleware,
   validateRequest(recordPaymentSchema, 'body'),
   recordPaymentController
+);
+
+// POST /payment/settle — Settle an order payment with potential adjustments
+router.post(
+  '/settle',
+  ...tenantMiddleware,
+  validateRequest(settlePaymentSchema, 'body'),
+  settlePaymentController
+);
+
+// POST /payment/refund — Process a refund for an order
+router.post(
+  '/refund',
+  ...tenantMiddleware,
+  validateRequest(refundPaymentSchema, 'body'),
+  processRefundController
 );
 
 // GET /payment/order-payments?orderId= — All payments + running totals for one order

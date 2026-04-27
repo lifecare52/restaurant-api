@@ -147,6 +147,14 @@ export class CustomerService {
   async updateCustomerStats(brandId: string, outletId: string, customerId: string, totalAmount: number) {
     await customerRepository.updateStats(brandId, outletId, customerId, totalAmount);
   }
+
+  async adjustCreditBalance(brandId: string, customerId: string, amount: number, session?: any) {
+    return customerRepository.adjustCreditBalance(brandId, customerId, amount, session);
+  }
+
+  async adjustDueBalance(brandId: string, customerId: string, amount: number, session?: any) {
+    return customerRepository.adjustDueBalance(brandId, customerId, amount, session);
+  }
 }
 
 export const customerService = new CustomerService();

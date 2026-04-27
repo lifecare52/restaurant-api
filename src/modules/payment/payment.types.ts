@@ -1,8 +1,8 @@
-import { PAYMENT_METHOD, PAYMENT_STATUS } from '@shared/enum/order.enum';
+import { PAYMENT_METHOD, PAYMENT_STATUS, SETTLEMENT_SOURCE, SETTLEMENT_STATUS } from '@shared/enum/order.enum';
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 import type { Types } from 'mongoose';
 
-export { PAYMENT_METHOD, PAYMENT_STATUS };
+export { PAYMENT_METHOD, PAYMENT_STATUS, SETTLEMENT_SOURCE, SETTLEMENT_STATUS };
 
 // ─── Core Entity ─────────────────────────────────────────────────────────────
 
@@ -18,6 +18,9 @@ export interface Payment {
   reference?: string | null;
   /** Staff member who recorded this payment */
   recordedBy: Types.ObjectId;
+  settlementSource: SETTLEMENT_SOURCE;
+  isRefund: boolean;
+  refundReason?: string | null;
   isDelete: boolean;
   createdAt?: Date;
   updatedAt?: Date;
@@ -37,8 +40,20 @@ export interface CreatePaymentDTO {
   amount?: number;
   paymentMethod?: PAYMENT_METHOD;
   reference?: string;
-  // Multiple payments
   payments?: PaymentInputDTO[];
+}
+
+export interface SettlePaymentDTO {
+  orderId: string;
+  payments: PaymentInputDTO[];
+  useCustomerCredit?: boolean;
+}
+
+export interface RefundPaymentDTO {
+  orderId: string;
+  refundAmount: number;
+  refundMethod?: PAYMENT_METHOD;
+  reason?: string;
 }
 
 export interface PaymentListQuery extends PaginationQuery {

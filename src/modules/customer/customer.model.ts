@@ -17,6 +17,7 @@ const CustomerSchema = new Schema<Customer>(
     totalOrders: { type: Number, default: 0, min: 0 },
     lastVisitAt: { type: Date, default: null },
     creditBalance: { type: Number, default: 0, min: 0 },
+    dueBalance: { type: Number, default: 0, min: 0 },
     isActive: { type: Boolean, default: true },
     isDelete: { type: Boolean, default: false },
     outletStats: [

@@ -356,6 +356,13 @@ export const getOpenApiSpec = () => {
               description: 'Optional transaction reference (e.g. UPI txn ID, card last 4)'
             },
             recordedBy: { type: 'string', description: 'Staff user ID who recorded the payment' },
+            settlementSource: {
+              type: 'integer',
+              enum: [1, 2, 3, 4, 5],
+              description: '1=DIRECT_TENDER, 2=CUSTOMER_CREDIT, 3=SETTLEMENT_REVERSAL, 4=REFUND_REVERSAL, 5=WRITE_OFF'
+            },
+            isRefund: { type: 'boolean', default: false },
+            refundReason: { type: 'string', nullable: true },
             createdAt: { type: 'string', format: 'date-time' },
             updatedAt: { type: 'string', format: 'date-time' }
           },
@@ -436,15 +443,14 @@ export const getOpenApiSpec = () => {
                 isSplitPayment: {
                   type: 'boolean',
                   description: 'Whether the order was paid via split payments'
+                },
+                settlementStatus: {
+                  type: 'integer',
+                  enum: [1, 2, 3],
+                  description: '1=UNSETTLED, 2=SETTLED, 3=SHORT_SETTLED'
                 }
               },
-              required: [
-                '_id',
-                'totalAmount',
-                'paidAmount',
-                'balanceDue',
-                'paymentStatus'
-              ]
+              required: ['_id', 'totalAmount', 'paidAmount', 'balanceDue', 'paymentStatus']
             }
           },
           required: ['payments', 'order']
@@ -466,6 +472,11 @@ export const getOpenApiSpec = () => {
               type: 'boolean',
               description: 'Whether the order was paid via multiple distinct payment methods'
             },
+            settlementStatus: {
+              type: 'integer',
+              enum: [1, 2, 3],
+              description: '1=UNSETTLED, 2=SETTLED, 3=SHORT_SETTLED'
+            },
             payments: {
               type: 'array',
               items: { $ref: '#/components/schemas/Payment' }
@@ -480,6 +491,52 @@ export const getOpenApiSpec = () => {
             'isSplitPayment',
             'payments'
           ]
+        },
+        SettlePaymentRequest: {
+          type: 'object',
+          properties: {
+            orderId: { type: 'string' },
+            payments: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  amount: { type: 'number', minimum: 0.01 },
+                  paymentMethod: { type: 'integer', enum: [1, 2, 3, 4, 5] },
+                  reference: { type: 'string', nullable: true }
+                },
+                required: ['amount', 'paymentMethod']
+              }
+            },
+            useCustomerCredit: { type: 'boolean', default: false }
+          },
+          required: ['orderId']
+        },
+        RefundPaymentRequest: {
+          type: 'object',
+          properties: {
+            orderId: { type: 'string' },
+            refundAmount: { type: 'number', minimum: 0.01 },
+            refundMethod: { type: 'integer', enum: [1, 2, 3, 4, 5], nullable: true },
+            reason: { type: 'string' }
+          },
+          required: ['orderId', 'refundAmount']
+        },
+        SettlementAdjustmentLedger: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            orderId: { type: 'string' },
+            customerId: { type: 'string', nullable: true },
+            adjustmentType: { type: 'integer', enum: [1, 2, 3] },
+            amount: { type: 'number' },
+            reason: { type: 'string' },
+            performedBy: { type: 'string' },
+            createdAt: { type: 'string', format: 'date-time' }
+          },
+          required: ['brandId', 'outletId', 'orderId', 'adjustmentType', 'amount', 'performedBy']
         },
         ApiError: {
           type: 'object',
@@ -761,6 +818,14 @@ export const getOpenApiSpec = () => {
                 gstNo: { type: 'string' },
                 gstScheme: { type: 'string', enum: ['REGULAR', 'COMPOSITION', 'NONE'] },
                 currency: { type: 'string' }
+              }
+            },
+            paymentSettings: {
+              type: 'object',
+              properties: {
+                writeOffThreshold: { type: 'number' },
+                managerOverrideThreshold: { type: 'number' },
+                refundApprovalThreshold: { type: 'number' }
               }
             },
             createdAt: { type: 'string' },
@@ -1561,6 +1626,14 @@ export const getOpenApiSpec = () => {
               enum: [1, 2, 3, 4, 5],
               description: '1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE'
             },
+            settlementStatus: {
+              type: 'integer',
+              enum: [1, 2, 3],
+              description: '1=UNSETTLED, 2=SETTLED, 3=SHORT_SETTLED'
+            },
+            settlementAdjustmentAmount: { type: 'number', default: 0 },
+            isRefunded: { type: 'boolean', default: false },
+            refundedAmount: { type: 'number', default: 0 },
             waiterId: { type: 'string', nullable: true },
             customerId: { type: 'string', nullable: true },
             notes: { type: 'string', nullable: true, maxLength: 500 },
@@ -1769,6 +1842,7 @@ export const getOpenApiSpec = () => {
             totalOrders: { type: 'number' },
             lastVisitAt: { type: 'string', format: 'date-time', nullable: true },
             creditBalance: { type: 'number' },
+            dueBalance: { type: 'number' },
             isActive: { type: 'boolean' },
             outletStats: {
               type: 'array',
@@ -1788,6 +1862,7 @@ export const getOpenApiSpec = () => {
             'totalSpent',
             'totalOrders',
             'creditBalance',
+            'dueBalance',
             'isActive'
           ]
         },
@@ -6353,6 +6428,70 @@ export const getOpenApiSpec = () => {
                           data: { $ref: '#/components/schemas/RecordPaymentResponse' }
                         }
                       }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/payment/settle': {
+        post: {
+          tags: ['Payments'],
+          summary: 'Settle order payment with adjustments',
+          description:
+            'Processes final settlement for an order. Handles overpayments, shortfalls (write-offs or due balance), and manager overrides. Supports customer credit usage.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/SettlePaymentRequest' }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Order settled successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      { type: 'object', properties: { data: { $ref: '#/components/schemas/OrderDetail' } } }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/payment/refund': {
+        post: {
+          tags: ['Payments'],
+          summary: 'Process payment refund',
+          description:
+            'Refunds a payment transaction. Can refund to original tender or customer credit. May require manager override for high-value refunds.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/RefundPaymentRequest' }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Refund processed successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      { type: 'object', properties: { data: { $ref: '#/components/schemas/OrderDetail' } } }
                     ]
                   }
                 }

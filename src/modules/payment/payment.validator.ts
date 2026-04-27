@@ -43,7 +43,40 @@ export const recordPaymentSchema = Joi.object({
   return value;
 });
 
-// ─── Get Payments By Order (query) ───────────────────────────────────────────
+// ─── Settle Payment ───────────────────────────────────────────────────────────
+
+export const settlePaymentSchema = Joi.object({
+  orderId: objectId.required(),
+  payments: Joi.array()
+    .items(
+      Joi.object({
+        amount: Joi.number().positive().precision(2).required().messages({
+          'number.positive': 'Payment amount must be greater than zero',
+          'any.required': 'amount is required in split payment'
+        }),
+        paymentMethod: Joi.number()
+          .valid(...Object.values(PAYMENT_METHOD).filter(v => !isNaN(Number(v))))
+          .required(),
+        reference: Joi.string().trim().max(100).optional().allow('', null)
+      })
+    )
+    .required(),
+  useCustomerCredit: Joi.boolean().optional().default(false)
+});
+
+// ─── Refund Payment ───────────────────────────────────────────────────────────
+
+export const refundPaymentSchema = Joi.object({
+  orderId: objectId.required(),
+  refundAmount: Joi.number().positive().precision(2).required().messages({
+    'number.positive': 'Refund amount must be greater than zero'
+  }),
+  refundMethod: Joi.number()
+    .valid(...Object.values(PAYMENT_METHOD).filter(v => !isNaN(Number(v))))
+    .optional().allow(null),
+  reason: Joi.string().trim().max(500).optional().allow('', null)
+});
+
 
 export const getPaymentsByOrderQuerySchema = Joi.object({
   orderId: objectId.required()

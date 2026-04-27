@@ -19,6 +19,7 @@ import {
   ORDER_TYPE,
   ITEM_STATUS,
   PAYMENT_STATUS,
+  SETTLEMENT_STATUS,
   type CreateOrderDTO,
   type PreviewOrderDTO,
   type AddItemToOrderDTO,
@@ -553,37 +554,43 @@ const recalculatePersistedOrderTotals = async (
   orderId: Types.ObjectId,
   session?: mongoose.ClientSession
 ) => {
+  // 1. Fetch order to get tenant context and global settings
+  const order = await OrderEntity.findById(orderId).session(session || null).lean();
+  if (!order) return;
+
+  // 2. Fetch all active items
   const itemQuery = OrderItemEntity.find({
     orderId,
     isDelete: false,
     itemStatus: { $ne: ITEM_STATUS.CANCELLED }
-  }).lean();
+  });
+  if (session) itemQuery.session(session);
+  const items = await itemQuery.lean();
 
-  if (session) {
-    itemQuery.session(session);
+  if (items.length === 0) {
+    await OrderEntity.updateOne(
+      { _id: orderId },
+      {
+        $set: {
+          grossAmount: 0,
+          subtotal: 0,
+          taxableAmount: 0,
+          taxAmount: 0,
+          roundOffAmount: 0,
+          discountAmount: 0,
+          totalAmount: 0,
+          taxBreakup: []
+        }
+      },
+      { session }
+    );
+    return;
   }
 
-  const items = await itemQuery;
+  // 3. Calculate total gross before global discount
+  const totalGross = items.reduce((sum, item) => sum + (item.grossLineAmount || item.totalPrice || 0), 0);
 
-  const summary = summarizeOrderTaxes({
-    lines: items.map(item => ({
-      quantity: item.quantity,
-      baseLineAmount: item.baseLineAmount ?? item.totalPrice ?? 0,
-      addonTotal: item.addonTotal ?? 0,
-      grossLineAmount: item.grossLineAmount ?? item.totalPrice ?? 0,
-      discountAmount: item.discountAmount ?? 0,
-      taxableAmount: item.taxableAmount ?? item.totalPrice ?? 0,
-      taxAmount: item.taxAmount ?? 0,
-      netLineAmount: item.netLineAmount ?? item.totalPrice ?? 0,
-      appliedTaxes: item.appliedTaxes ?? []
-    }))
-  });
-
-  const order = await OrderEntity.findById(orderId).session(session || null).lean();
-  if (!order) return;
-
-  const totalGross = summary.grossAmount;
-
+  // 4. Calculate global pricing (discount)
   const pricing = await recalculateOrderPricing(
     String(order.brandId),
     String(order.outletId),
@@ -592,7 +599,64 @@ const recalculatePersistedOrderTotals = async (
     order.manualTagId
   );
 
-  const orderUpdateQuery = OrderEntity.updateOne(
+  // 5. Allocate global discount across all items
+  const lineGrossAmounts = items.map(item => item.grossLineAmount || item.totalPrice || 0);
+  const allocatedDiscounts = allocateDiscountAcrossLines({
+    lineAmounts: lineGrossAmounts,
+    totalDiscount: pricing.discountAmount
+  });
+
+  // 6. Recalculate each item's financial state and update DB
+  const recalculatedLines: any[] = [];
+  
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
+    const newDiscount = allocatedDiscounts[i];
+
+    // Map existing taxes to engine-friendly input (stripping inapplicable fields)
+    const taxes = (item.appliedTaxes || []).map((t: any) => ({
+      taxId: t.taxId ? String(t.taxId) : null,
+      name: t.name,
+      rate: t.rate,
+      type: t.type,
+      isInclusive: t.isInclusive,
+      calculationMethod: t.calculationMethod
+    }));
+
+    const linePricing = calculateLineTax({
+      orderType: order.orderType,
+      quantity: item.quantity,
+      baseAmount: (item.baseLineAmount || 0) / (item.quantity || 1),
+      addonAmount: item.addonTotal || 0,
+      discountAmount: newDiscount,
+      taxes
+    });
+
+    // Atomic update for each item
+    await OrderItemEntity.updateOne(
+      { _id: item._id },
+      {
+        $set: {
+          discountAmount: linePricing.discountAmount,
+          taxableAmount: linePricing.taxableAmount,
+          taxAmount: linePricing.taxAmount,
+          netLineAmount: linePricing.netLineAmount,
+          appliedTaxes: linePricing.appliedTaxes.map(tax => ({
+            ...tax,
+            taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
+          }))
+        }
+      },
+      { session }
+    );
+
+    recalculatedLines.push(linePricing);
+  }
+
+  // 7. Final Order-level Summary
+  const summary = summarizeOrderTaxes({ lines: recalculatedLines });
+
+  await OrderEntity.updateOne(
     { _id: orderId },
     {
       $set: {
@@ -601,20 +665,19 @@ const recalculatePersistedOrderTotals = async (
         taxableAmount: summary.taxableAmount,
         taxAmount: summary.taxAmount,
         roundOffAmount: summary.roundOffAmount,
-        taxBreakup: summary.taxBreakup,
+        taxBreakup: summary.taxBreakup.map(tax => ({
+          ...tax,
+          taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
+        })),
         discountAmount: pricing.discountAmount,
         discountType: pricing.discountType,
         discountValue: pricing.discountValue,
         totalAmount: summary.totalAmount
       }
-    }
+    },
+    { session }
   );
 
-  if (session) {
-    orderUpdateQuery.session(session);
-  }
-
-  await orderUpdateQuery;
   return summary;
 };
 
@@ -1248,10 +1311,8 @@ export const checkAndAutoCloseOrder = async (
     return false;
   }
 
-  // Condition 1: Payment must be fully completed
-  const currentPaidAmount = order.paidAmount ?? 0;
-  // +0.001 for float tolerance
-  if (currentPaidAmount < order.totalAmount - 0.001) {
+  // Condition 1: Payment must be fully completed or settled
+  if (order.settlementStatus === SETTLEMENT_STATUS.UNSETTLED) {
     return false;
   }
 

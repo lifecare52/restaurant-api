@@ -1,5 +1,5 @@
-import { recordPayment, getPaymentsByOrder, listPayments } from '@modules/payment/payment.service';
-import type { CreatePaymentDTO, PaymentListQuery } from '@modules/payment/payment.types';
+import { recordPayment, getPaymentsByOrder, listPayments, settleOrderPayment, processRefund } from '@modules/payment/payment.service';
+import type { CreatePaymentDTO, PaymentListQuery, SettlePaymentDTO, RefundPaymentDTO } from '@modules/payment/payment.types';
 
 import type { Request, Response, NextFunction } from 'express';
 
@@ -30,6 +30,58 @@ export const recordPaymentController = async (
       status: true,
       code: 201,
       message: 'Payment recorded successfully',
+      data: result
+    };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * POST /payment/settle
+ * Settles an order with potential overpayment/shortfall adjustments.
+ */
+export const settlePaymentController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const userId = getUserId(req);
+    const dto = req.body as SettlePaymentDTO;
+    const result = await settleOrderPayment(brandId, outletId, userId, dto);
+    res.locals.response = {
+      status: true,
+      code: 201,
+      message: 'Payment settled successfully',
+      data: result
+    };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * POST /payment/refund
+ * Processes a refund and reverses accounting adjustments.
+ */
+export const processRefundController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const userId = getUserId(req);
+    const dto = req.body as RefundPaymentDTO;
+    const result = await processRefund(brandId, outletId, userId, dto);
+    res.locals.response = {
+      status: true,
+      code: 201,
+      message: 'Refund processed successfully',
       data: result
     };
     next();

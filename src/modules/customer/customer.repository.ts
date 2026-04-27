@@ -237,6 +237,36 @@ export class CustomerRepository {
       { new: true, projection: { isDelete: 0 } }
     ).lean();
   }
+
+  async adjustCreditBalance(brandId: string, id: string, amount: number, session?: any) {
+    const query = CustomerEntity.findOneAndUpdate(
+      {
+        ...this.buildTenantFilter(brandId),
+        _id: toObjectId(id),
+        isDelete: false
+      },
+      {
+        $inc: { creditBalance: amount }
+      },
+      { new: true, session, projection: { isDelete: 0 } }
+    );
+    return query.lean();
+  }
+
+  async adjustDueBalance(brandId: string, id: string, amount: number, session?: any) {
+    const query = CustomerEntity.findOneAndUpdate(
+      {
+        ...this.buildTenantFilter(brandId),
+        _id: toObjectId(id),
+        isDelete: false
+      },
+      {
+        $inc: { dueBalance: amount }
+      },
+      { new: true, session, projection: { isDelete: 0 } }
+    );
+    return query.lean();
+  }
 }
 
 export const customerRepository = new CustomerRepository();

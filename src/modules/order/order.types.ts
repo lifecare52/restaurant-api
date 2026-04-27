@@ -3,14 +3,16 @@ import {
   ORDER_STATUS,
   PAYMENT_STATUS,
   ITEM_STATUS,
-  PAYMENT_METHOD
+  PAYMENT_METHOD,
+  SETTLEMENT_STATUS,
+  SETTLEMENT_SOURCE
 } from '@shared/enum/order.enum';
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 import type { Types } from 'mongoose';
 import type { Payment } from '@modules/payment/payment.types';
 
-export { ORDER_TYPE, ORDER_STATUS, PAYMENT_STATUS, ITEM_STATUS, PAYMENT_METHOD };
+export { ORDER_TYPE, ORDER_STATUS, PAYMENT_STATUS, ITEM_STATUS, PAYMENT_METHOD, SETTLEMENT_STATUS, SETTLEMENT_SOURCE };
 
 export interface AppliedTaxSnapshot {
   taxId?: Types.ObjectId | null;
@@ -50,6 +52,11 @@ export interface Order {
   paymentMethod?: PAYMENT_METHOD | null;
   /** Running total of all payment transactions recorded against this order */
   paidAmount?: number;
+  /** Settlement details */
+  settlementStatus: SETTLEMENT_STATUS;
+  settlementAdjustmentAmount?: number;
+  refundedAmount?: number;
+  isRefunded?: boolean;
   /** Indicates whether the order was paid via multiple payment methods (split payment) */
   isSplitPayment?: boolean;
   shippingAddress?: string;
