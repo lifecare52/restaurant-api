@@ -579,6 +579,69 @@ export const getOpenApiSpec = () => {
           },
           required: ['outletTypes', 'cuisineTypes']
         },
+        DashboardSummaryResponse: {
+          type: 'object',
+          properties: {
+            salesSummary: { $ref: '#/components/schemas/SalesSummary' },
+            weeklySummary: {
+              type: 'object',
+              properties: {
+                current: { $ref: '#/components/schemas/SalesSummary' },
+                previous: { $ref: '#/components/schemas/SalesSummary' },
+                growth: { type: 'number' },
+                trend: { type: 'integer', enum: [1, 2, 3], description: '1=UP, 2=DOWN, 3=STABLE' }
+              }
+            },
+            monthlySummary: {
+              type: 'object',
+              properties: {
+                current: { $ref: '#/components/schemas/SalesSummary' },
+                previous: { $ref: '#/components/schemas/SalesSummary' },
+                growth: { type: 'number' },
+                trend: { type: 'integer', enum: [1, 2, 3], description: '1=UP, 2=DOWN, 3=STABLE' }
+              }
+            },
+            activeOrdersCount: { type: 'number' },
+            activeTablesSummary: {
+              type: 'object',
+              properties: {
+                occupiedCount: { type: 'number' },
+                totalActiveCount: { type: 'number' }
+              }
+            },
+            overpaymentSummary: {
+              type: 'object',
+              properties: {
+                totalAmount: { type: 'number' },
+                count: { type: 'number' }
+              }
+            },
+            underpaymentSummary: {
+              type: 'object',
+              properties: {
+                totalAmount: { type: 'number' },
+                count: { type: 'number' }
+              }
+            },
+            outstandingCustomerDue: { type: 'number' },
+            lowStockCount: {
+              type: 'object',
+              properties: {
+                value: { type: 'number' },
+                isStub: { type: 'boolean' }
+              }
+            }
+          }
+        },
+        SalesSummary: {
+          type: 'object',
+          properties: {
+            grossSales: { type: 'number' },
+            discountAmount: { type: 'number' },
+            taxAmount: { type: 'number' },
+            netSales: { type: 'number' }
+          }
+        },
         LoginRequest: {
           type: 'object',
           properties: {
@@ -6662,6 +6725,61 @@ export const getOpenApiSpec = () => {
           }
         }
       },
+      '/api/v1/dashboard/summary': {
+        get: {
+          tags: ['Dashboard'],
+          summary: 'Get dashboard summary metrics',
+          description:
+            'Returns a unified summary of POS metrics including net sales (settled orders only), WTD/MTD comparisons, active orders/tables, and outstanding customer due balance.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            {
+              name: 'startDate',
+              in: 'query',
+              description: 'Start date (YYYY-MM-DD)',
+              schema: { type: 'string' }
+            },
+            {
+              name: 'endDate',
+              in: 'query',
+              description: 'End date (YYYY-MM-DD)',
+              schema: { type: 'string' }
+            },
+            {
+              name: 'startDateTime',
+              in: 'query',
+              description: 'Start date-time (ISO 8601)',
+              schema: { type: 'string', format: 'date-time' }
+            },
+            {
+              name: 'endDateTime',
+              in: 'query',
+              description: 'End date-time (ISO 8601)',
+              schema: { type: 'string', format: 'date-time' }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Dashboard summary returned successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/DashboardSummaryResponse' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   };
   return spec;

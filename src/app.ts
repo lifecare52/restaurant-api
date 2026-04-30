@@ -16,6 +16,7 @@ import tableRoutes from '@modules/table/table.route';
 import { TaxRoutes } from '@modules/tax/tax.route';
 import userRoutes from '@modules/user/user.route';
 import zoneRoutes from '@modules/zone/zone.route';
+import dashboardRoutes from '@modules/dashboard/dashboard.route';
 
 import { getOpenApiSpec } from '@shared/docs/openapi';
 
@@ -44,6 +45,7 @@ export const createApp = (): express.Express => {
   app.use('/api/v1/payment', paymentRoutes);
   app.use('/api/v1/tags', tagRoutes);
   app.use('/api/v1/customers', customerRoutes);
+  app.use('/api/v1/dashboard', dashboardRoutes);
   app.use(responseMiddleware);
   app.use(notFoundHandler);
   app.use(errorHandler);
