@@ -10,7 +10,8 @@ import {
   listOrdersController,
   addItemsToOrderController,
   removeItemFromOrderController,
-  updateOrderItemController
+  updateOrderItemController,
+  generateKotController
 } from '@modules/order/order.controller';
 import {
   createOrderSchema,
@@ -21,7 +22,8 @@ import {
   closeOrderSchema,
   cancelOrderSchema,
   listOrdersQuerySchema,
-  getOrderQuerySchema
+  getOrderQuerySchema,
+  generateKotSchema
 } from '@modules/order/order.validator';
 
 import { commonHeaderSchema } from '@shared/utils/common.validation';
@@ -64,6 +66,14 @@ router.post(
   ...tenantMiddleware,
   validateRequest(addItemsToOrderSchema, 'body'),
   addItemsToOrderController
+);
+
+// POST /orders/generate-kot — Smart KOT generation (Create or Append)
+router.post(
+  '/generate-kot',
+  ...tenantMiddleware,
+  validateRequest(generateKotSchema, 'body'),
+  generateKotController
 );
 
 // POST /orders/remove-item — Cancel a specific item from an order (generates void KOT)

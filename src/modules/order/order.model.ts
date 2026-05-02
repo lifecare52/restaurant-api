@@ -183,6 +183,7 @@ const OrderItemSchema = new Schema<OrderItem>(
       default: ITEM_STATUS.PENDING
     },
     kotSentAt: { type: Date, default: null },
+    batchId: { type: Schema.Types.ObjectId, default: null },
     cancelReason: { type: String, default: '' },
     cancelledAt: { type: Date, default: null },
     cancelledBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },

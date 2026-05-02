@@ -2,6 +2,7 @@ import Joi from 'joi';
 
 import { CUISINE_TYPES, OUTLET_TYPES } from '@shared/constants';
 import { GstScheme } from '@shared/enum';
+import { KOT_GENERATION_MODE } from '@shared/enum/order.enum';
 
 export const createOutletSchema = Joi.object({
   basicInfo: Joi.object({
@@ -39,7 +40,13 @@ export const createOutletSchema = Joi.object({
         otherwise: Joi.optional()
       })
       .default(GstScheme.NONE),
-    currency: Joi.string().trim().allow('').optional()
+    currency: Joi.string().trim().allow('').optional(),
+    kotSettings: Joi.object({
+      isKotEnabled: Joi.boolean().default(true),
+      generationMode: Joi.number()
+        .valid(...Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number'))
+        .default(KOT_GENERATION_MODE.AUTO)
+    }).optional()
   }).optional()
 });
 
@@ -62,7 +69,13 @@ export const updateOutletSchema = Joi.object({
     gstEnabled: Joi.boolean(),
     gstNo: Joi.string().trim().allow(''),
     gstScheme: Joi.string().valid(...Object.values(GstScheme)),
-    currency: Joi.string().trim()
+    currency: Joi.string().trim(),
+    kotSettings: Joi.object({
+      isKotEnabled: Joi.boolean(),
+      generationMode: Joi.number().valid(
+        ...Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number')
+      )
+    }).optional()
   }).when('.gstEnabled', {
     is: true,
     then: Joi.object({

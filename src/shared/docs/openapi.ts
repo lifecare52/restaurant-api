@@ -734,6 +734,11 @@ export const getOpenApiSpec = () => {
             updatedAt: { type: 'string' }
           }
         },
+        KOTGenerationMode: {
+          type: 'number',
+          enum: [1, 2],
+          description: '1=AUTO, 2=MANUAL'
+        },
         CreateBrandRequest: {
           type: 'object',
           properties: {
@@ -802,7 +807,14 @@ export const getOpenApiSpec = () => {
                   enum: ['REGULAR', 'COMPOSITION', 'NONE'],
                   default: 'NONE'
                 },
-                currency: { type: 'string' }
+                currency: { type: 'string' },
+                kotSettings: {
+                  type: 'object',
+                  properties: {
+                    isKotEnabled: { type: 'boolean', default: true },
+                    generationMode: { $ref: '#/components/schemas/KOTGenerationMode' }
+                  }
+                }
               }
             }
           },
@@ -843,7 +855,14 @@ export const getOpenApiSpec = () => {
                 gstEnabled: { type: 'boolean' },
                 gstNo: { type: 'string' },
                 gstScheme: { type: 'string', enum: ['REGULAR', 'COMPOSITION', 'NONE'] },
-                currency: { type: 'string' }
+                currency: { type: 'string' },
+                kotSettings: {
+                  type: 'object',
+                  properties: {
+                    isKotEnabled: { type: 'boolean', default: true },
+                    generationMode: { $ref: '#/components/schemas/KOTGenerationMode' }
+                  }
+                }
               }
             }
           }
@@ -880,7 +899,14 @@ export const getOpenApiSpec = () => {
                 gstEnabled: { type: 'boolean' },
                 gstNo: { type: 'string' },
                 gstScheme: { type: 'string', enum: ['REGULAR', 'COMPOSITION', 'NONE'] },
-                currency: { type: 'string' }
+                currency: { type: 'string' },
+                kotSettings: {
+                  type: 'object',
+                  properties: {
+                    isKotEnabled: { type: 'boolean', default: true },
+                    generationMode: { $ref: '#/components/schemas/KOTGenerationMode' }
+                  }
+                }
               }
             },
             paymentSettings: {
@@ -1791,6 +1817,26 @@ export const getOpenApiSpec = () => {
             }
           },
           required: ['orderId', 'items']
+        },
+        GenerateKotRequest: {
+          type: 'object',
+          properties: {
+            orderId: { type: 'string', description: 'Required for appending items to an existing order' },
+            orderType: {
+              type: 'number',
+              enum: [1, 2, 3],
+              description: 'Required if orderId is not provided (1=DINE_IN, 2=TAKEAWAY, 3=DELIVERY)'
+            },
+            tableId: { type: 'string', description: 'Required if orderType=1' },
+            customerId: { type: 'string', nullable: true },
+            items: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/AddItemToOrderItemDTO' },
+              minItems: 1
+            },
+            notes: { type: 'string', nullable: true }
+          },
+          required: ['items']
         },
         RemoveOrderItemRequest: {
           type: 'object',
@@ -5600,6 +5646,47 @@ export const getOpenApiSpec = () => {
             },
             404: {
               description: 'Order not found or not active',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
+              }
+            }
+          }
+        }
+      },
+      '/api/v1/order/generate-kot': {
+        post: {
+          tags: ['Orders'],
+          summary: 'Smart KOT generation (Create or Append)',
+          description:
+            'Generates a KOT for new or existing orders. If orderId is provided, appends items. If not, creates a new order and then generates KOT. Used for manual KOT generation workflows.',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/GenerateKotRequest' }
+              }
+            }
+          },
+          responses: {
+            201: {
+              description: 'KOT generated successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: { data: { $ref: '#/components/schemas/OrderDetail' } }
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            400: {
+              description: 'Validation error',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } }
               }

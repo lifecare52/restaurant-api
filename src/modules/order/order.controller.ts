@@ -8,9 +8,11 @@ import {
   getTokenDisplay,
   addItemsToOrder,
   removeItemFromOrder,
-  updateOrderItem
+  updateOrderItem,
+  generateKotForOrder
 } from '@modules/order/order.service';
 import { getPaymentsByOrder } from '@modules/payment/payment.service';
+import OutletEntity from '@modules/outlet/outlet.model';
 
 import type { Request, Response, NextFunction } from 'express';
 
@@ -76,6 +78,23 @@ export const addItemsToOrderController = async (
   }
 };
 
+export const generateKotController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const userId = getUserId(req);
+    const result = await generateKotForOrder(brandId, outletId, userId, req.body);
+    res.locals.response = {
+      status: true,
+      code: 201,
+      message: 'KOT generated successfully',
+      data: result
+    };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const removeItemFromOrderController = async (
   req: Request,
   res: Response,
@@ -117,7 +136,11 @@ export const getOrderController = async (req: Request, res: Response, next: Next
   try {
     const { brandId, outletId } = getTenant(req);
     const { orderId } = req.query as { orderId: string };
-    const item = await getKOTOrderDetails(brandId, outletId, orderId);
+    
+    const outlet = await OutletEntity.findById(outletId).lean();
+    const isKotEnabled = outlet?.settings?.kotSettings?.isKotEnabled ?? true;
+    
+    const item = await getKOTOrderDetails(brandId, outletId, orderId, isKotEnabled);
     if (!item) {
       res.locals.response = { status: false, code: 404, message: 'Order not found' };
     } else {

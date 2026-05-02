@@ -20,6 +20,7 @@ import {
   ITEM_STATUS,
   PAYMENT_STATUS,
   SETTLEMENT_STATUS,
+  KOT_GENERATION_MODE,
   type CreateOrderDTO,
   type PreviewOrderDTO,
   type AddItemToOrderDTO,
@@ -28,19 +29,23 @@ import {
   type UpdateOrderItemDTO,
   type CloseOrderDTO,
   type CancelOrderDTO,
+  type GenerateKotDTO,
   type Order,
   type OrderListQuery,
+  type OrderItem,
   type OrderItemAddon,
   type ProcessedOrderItem,
   type ProcessedOrderItemAddon,
   type MeasurementSelectionDTO,
-  type KOTFriendlyResponse,
-  type KOTFriendlyBatch
+  type OrderGroupResponse,
+  type OrderGroupBatch,
+  ORDER_GROUP_TYPE
 } from '@modules/order/order.types';
-import OutletEntity from '@modules/outlet/outlet.model';
+import OutletEntity, { type Outlet } from '@modules/outlet/outlet.model';
 import TableEntity from '@modules/table/table.model';
 import { allocateDiscountAcrossLines, calculateLineTax, summarizeOrderTaxes } from '@modules/tax/tax-calculation.service';
 import { resolveEffectiveTaxesForMenuItems } from '@modules/tax/tax-resolution.service';
+import { checkAndAutoCloseOrder } from '@modules/order/order-lifecycle.service';
 import { CUSTOMER_TAG_DISCOUNT_TYPE } from '@modules/tag/tag.types';
 import { TABLE_STATUS } from '@modules/table/table.types';
 
@@ -486,7 +491,7 @@ const mapPreviewItemToStoredOrderItem = (
   orderId: Types.ObjectId,
   processedItem: ProcessedOrderItem,
   previewItem: Awaited<ReturnType<typeof buildTaxAwareOrderPreview>>['items'][number],
-  now: Date
+  now?: Date | null
 ) => ({
   ...processedItem,
   orderId,
@@ -503,7 +508,7 @@ const mapPreviewItemToStoredOrderItem = (
       ...tax,
       taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
     })) ?? [],
-  kotSentAt: now
+  kotSentAt: now || null
 });
 
 const recalculateStoredLinePricing = (orderItem: any, quantity: number, orderType: ORDER_TYPE) => {
@@ -608,7 +613,7 @@ const recalculatePersistedOrderTotals = async (
 
   // 6. Recalculate each item's financial state and update DB
   const recalculatedLines: any[] = [];
-  
+
   for (let i = 0; i < items.length; i++) {
     const item = items[i];
     const newDiscount = allocatedDiscounts[i];
@@ -762,6 +767,12 @@ export const createOrder = async (
     throw { status: 400, message: 'At least one item is required' };
   }
 
+  // Fetch outlet settings
+  const outlet = (await OutletEntity.findById(outletId).lean()) as Outlet | null;
+  const kotSettings = outlet?.settings?.kotSettings;
+  const isKotEnabled = kotSettings?.isKotEnabled ?? true;
+  const generationMode = kotSettings?.generationMode ?? KOT_GENERATION_MODE.AUTO;
+
   // Batch-fetch menu data (no N+1)
   const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(
     dto.items
@@ -866,6 +877,7 @@ export const createOrder = async (
     await OrderEntity.create([orderDoc], { session });
 
     const now = new Date();
+    const batchId = new Types.ObjectId();
     const finalItems = processedItems.map((pi, index) => ({
       ...pi,
       orderId,
@@ -885,7 +897,8 @@ export const createOrder = async (
           ...tax,
           taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
         })) ?? [],
-      kotSentAt: now
+      kotSentAt: (isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) ? now : null,
+      batchId
     }));
     await OrderItemEntity.insertMany(finalItems, { session });
 
@@ -913,20 +926,22 @@ export const createOrder = async (
   // ─────────────────────────────────────────────────────────────────────────
 
   // Generate KOT (outside transaction — KOT failure should not roll back order)
-  const kotItemsData = processedItems.map(fi => ({
-    orderItemId: String(fi._id),
-    quantity: fi.quantity
-  }));
-  await generateKOT(
-    brandId,
-    outletId,
-    String(orderId),
-    kotItemsData,
-    tokenNo,
-    tableName,
-    userId,
-    KOT_TYPE.REGULAR
-  );
+  if (isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) {
+    const kotItemsData = processedItems.map(fi => ({
+      orderItemId: String(fi._id),
+      quantity: fi.quantity
+    }));
+    await generateKOT(
+      brandId,
+      outletId,
+      String(orderId),
+      kotItemsData,
+      tokenNo,
+      tableName,
+      userId,
+      KOT_TYPE.REGULAR
+    );
+  }
 
   // Audit + events (fire and forget)
   logOrderAction({
@@ -961,6 +976,12 @@ export const addItemsToOrder = async (
   if (!dto.items || dto.items.length === 0)
     throw { status: 400, message: 'At least one item required' };
 
+  // Fetch outlet settings
+  const outlet = (await OutletEntity.findById(outletId).lean()) as Outlet | null;
+  const kotSettings = outlet?.settings?.kotSettings;
+  const isKotEnabled = kotSettings?.isKotEnabled ?? true;
+  const generationMode = kotSettings?.generationMode ?? KOT_GENERATION_MODE.AUTO;
+
   const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(
     dto.items
   );
@@ -987,14 +1008,21 @@ export const addItemsToOrder = async (
   );
 
   const now = new Date();
+  const batchId = new Types.ObjectId();
 
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
 
-    const finalItems = processedItems.map((pi, index) =>
-      mapPreviewItemToStoredOrderItem(order._id, pi, pricingPreview.items[index], now)
-    );
+    const finalItems = processedItems.map((pi, index) => {
+      const storedItem = mapPreviewItemToStoredOrderItem(
+        order._id,
+        pi,
+        pricingPreview.items[index],
+        (isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) ? now : null
+      );
+      return { ...storedItem, batchId };
+    });
     await OrderItemEntity.insertMany(finalItems, { session });
 
     if (processedAddons.length > 0) {
@@ -1016,26 +1044,28 @@ export const addItemsToOrder = async (
   }
 
   // Generate supplemental KOT
-  let tableName: string | undefined = undefined;
-  if (order.tableId) {
-    const table = await TableEntity.findById(order.tableId).lean();
-    if (table) tableName = table.name;
-  }
+  if (isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) {
+    let tableName: string | undefined = undefined;
+    if (order.tableId) {
+      const table = await TableEntity.findById(order.tableId).lean();
+      if (table) tableName = table.name;
+    }
 
-  const kotItemsData = processedItems.map(fi => ({
-    orderItemId: String(fi._id),
-    quantity: fi.quantity
-  }));
-  await generateKOT(
-    brandId,
-    outletId,
-    String(order._id),
-    kotItemsData,
-    order.tokenNo,
-    tableName,
-    order.waiterId ? String(order.waiterId) : undefined,
-    KOT_TYPE.REGULAR
-  );
+    const kotItemsData = processedItems.map(fi => ({
+      orderItemId: String(fi._id),
+      quantity: fi.quantity
+    }));
+    await generateKOT(
+      brandId,
+      outletId,
+      String(order._id),
+      kotItemsData,
+      order.tokenNo,
+      tableName,
+      order.waiterId ? String(order.waiterId) : undefined,
+      KOT_TYPE.REGULAR
+    );
+  }
 
   logOrderAction({
     brandId,
@@ -1294,68 +1324,6 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
  * 1. Payment is fully completed
  * 2. All active items are fully processed (SERVED)
  */
-export const checkAndAutoCloseOrder = async (
-  brandId: string,
-  outletId: string,
-  orderId: string,
-  performedBy?: string
-) => {
-  const order = await OrderEntity.findOne({
-    _id: new Types.ObjectId(orderId),
-    brandId: new Types.ObjectId(brandId),
-    outletId: new Types.ObjectId(outletId),
-    isDelete: false
-  }).lean();
-
-  if (!order || ![ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS].includes(order.status)) {
-    return false;
-  }
-
-  // Condition 1: Payment must be fully completed or settled
-  if (order.settlementStatus === SETTLEMENT_STATUS.UNSETTLED) {
-    return false;
-  }
-
-  // Condition 2: All items must be fully processed
-  const pendingItemsCount = await OrderItemEntity.countDocuments({
-    orderId: order._id,
-    itemStatus: { $nin: [ITEM_STATUS.SERVED, ITEM_STATUS.CANCELLED] },
-    isDelete: false
-  });
-
-  if (pendingItemsCount > 0) {
-    return false;
-  }
-
-  // Both conditions met, auto-close the order
-  await OrderEntity.updateOne(
-    { _id: order._id },
-    {
-      $set: {
-        status: ORDER_STATUS.COMPLETED,
-        closedAt: new Date()
-      }
-    }
-  );
-
-  // Update table status to CLEANING
-  if (order.tableId) {
-    await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.CLEANING });
-  }
-
-  const userIdStr = performedBy ? String(performedBy) : null;
-  logOrderAction({
-    brandId,
-    outletId,
-    orderId: String(order._id),
-    action: ORDER_AUDIT_ACTION.ORDER_CLOSED,
-    performedBy: userIdStr,
-    metadata: { reason: 'auto_closed' }
-  });
-  orderEvents.emit('order.closed', { orderId: String(order._id), brandId, outletId });
-
-  return true;
-};
 
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1599,7 +1567,7 @@ export const getTokenDisplay = async (brandId: string, outletId: string) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const removeUnwantedFields = <T>(obj: T): any => {
+const removeUnwantedFields = <T>(obj: T): unknown => {
   if (!obj || typeof obj !== 'object') return obj;
 
   if (Array.isArray(obj)) {
@@ -1624,52 +1592,171 @@ const removeUnwantedFields = <T>(obj: T): any => {
   return clone;
 };
 
-export const transformOrderToKOTFormat = (
-  order: Order & { items?: any[] }
-): KOTFriendlyResponse => {
-  const cleanedOrder = removeUnwantedFields(order);
-  const kotsMap = new Map<string, any[]>();
+export const transformOrderToGroupFormat = (
+  order: Order & { items?: OrderItem[] },
+  isKotEnabled: boolean
+): OrderGroupResponse => {
+  const cleanedOrder = removeUnwantedFields(order) as Record<string, unknown>;
+  const groupsMap = new Map<string, OrderItem[]>();
 
-  const items = cleanedOrder.items || [];
+  const items = (cleanedOrder['items'] as OrderItem[]) || [];
   for (const item of items) {
-    const timeKey = item.kotSentAt ? new Date(item.kotSentAt).toISOString() : 'UNSENT';
-
-    if (!kotsMap.has(timeKey)) {
-      kotsMap.set(timeKey, []);
+    let groupKey = 'UNSENT';
+    if (isKotEnabled) {
+      groupKey = item.kotSentAt ? new Date(item.kotSentAt).toISOString() : 'UNSENT';
+    } else {
+      groupKey = item.batchId ? String(item.batchId) : 'UNSENT';
     }
 
-    kotsMap.get(timeKey)!.push(item);
+    if (!groupsMap.has(groupKey)) {
+      groupsMap.set(groupKey, []);
+    }
+
+    groupsMap.get(groupKey)!.push(item);
   }
 
-  const sortedKeys = Array.from(kotsMap.keys()).sort((a, b) => {
+  const sortedKeys = Array.from(groupsMap.keys()).sort((a, b) => {
     if (a === 'UNSENT') return 1;
     if (b === 'UNSENT') return -1;
-    return new Date(a).getTime() - new Date(b).getTime();
+    if (isKotEnabled) {
+      return new Date(a).getTime() - new Date(b).getTime();
+    } else {
+      const aTime = groupsMap.get(a)![0]?.createdAt;
+      const bTime = groupsMap.get(b)![0]?.createdAt;
+      return new Date(aTime || 0).getTime() - new Date(bTime || 0).getTime();
+    }
   });
 
-  const kots: KOTFriendlyBatch[] = sortedKeys.map((key, index) => {
+  const groups: OrderGroupBatch[] = sortedKeys.map((key, index) => {
+    let groupType: ORDER_GROUP_TYPE;
+    let groupLabel: string;
+    let createdAt: string | null;
+
+    if (isKotEnabled) {
+      groupType = ORDER_GROUP_TYPE.KOT;
+      groupLabel = `KOT-${index + 1}`;
+      createdAt = key === 'UNSENT' ? null : key;
+    } else {
+      groupType = ORDER_GROUP_TYPE.BATCH;
+      groupLabel = `Batch-${index + 1}`;
+      createdAt = key === 'UNSENT' ? null : new Date(groupsMap.get(key)![0]?.createdAt || Date.now()).toISOString();
+    }
+
     return {
-      kotNumber: `KOT-${index + 1}`,
-      createdAt: key === 'UNSENT' ? null : key,
-      items: kotsMap.get(key)!
+      groupType,
+      groupLabel,
+      createdAt,
+      items: groupsMap.get(key) as unknown as OrderGroupBatch['items']
     };
   });
 
-  delete cleanedOrder.items;
-  cleanedOrder.kots = kots;
+  delete cleanedOrder['items'];
+  cleanedOrder['groups'] = groups;
 
-  return cleanedOrder;
+  return cleanedOrder as OrderGroupResponse;
+};
+
+export const generateKotForOrder = async (
+  brandId: string,
+  outletId: string,
+  userId: string,
+  dto: GenerateKotDTO
+) => {
+  let orderId = dto.orderId;
+
+  // 0. Fetch outlet settings to check if KOT is enabled
+  const outlet = (await OutletEntity.findById(outletId).lean()) as Outlet | null;
+  if (outlet?.settings?.kotSettings?.isKotEnabled === false) {
+    throw { status: 400, message: 'KOT is disabled for this outlet' };
+  }
+
+  // 1. Handle Order Creation or Item Appending
+  if (!orderId) {
+    if (!dto.orderType) {
+      throw { status: 400, message: 'orderType is required to create a new order' };
+    }
+    const order = await createOrder(brandId, outletId, userId, {
+      orderType: dto.orderType,
+      tableId: dto.tableId,
+      customerId: dto.customerId,
+      items: dto.items,
+      notes: dto.notes
+    });
+    orderId = String(order._id);
+  } else {
+    // Existing order
+    if (dto.items && dto.items.length > 0) {
+      await addItemsToOrder(brandId, outletId, {
+        orderId,
+        items: dto.items
+      });
+    }
+  }
+
+  // 2. Identify items that need KOT (kotSentAt = null)
+  const order = await OrderEntity.findOne({
+    _id: new Types.ObjectId(orderId),
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false
+  }).lean();
+
+  if (!order) throw { status: 404, message: 'Order not found' };
+
+  const unsentItems = await OrderItemEntity.find({
+    orderId: order._id,
+    kotSentAt: null,
+    isDelete: false,
+    itemStatus: ITEM_STATUS.PENDING
+  }).lean();
+
+  if (unsentItems.length === 0) {
+    return getOrderById(brandId, outletId, orderId);
+  }
+
+  // 3. Generate KOT
+  let tableName: string | undefined = undefined;
+  if (order.tableId) {
+    const table = await TableEntity.findById(order.tableId).lean();
+    if (table) tableName = table.name;
+  }
+
+  const kotItemsData = unsentItems.map(item => ({
+    orderItemId: String(item._id),
+    quantity: item.quantity
+  }));
+
+  const now = new Date();
+  await generateKOT(
+    brandId,
+    outletId,
+    orderId,
+    kotItemsData,
+    order.tokenNo,
+    tableName,
+    userId,
+    KOT_TYPE.REGULAR
+  );
+
+  // 4. Update kotSentAt for these items
+  await OrderItemEntity.updateMany(
+    { _id: { $in: unsentItems.map(i => i._id) } },
+    { $set: { kotSentAt: now } }
+  );
+
+  return getOrderById(brandId, outletId, orderId);
 };
 
 export const getKOTOrderDetails = async (
   brandId: string,
   outletId: string,
-  orderId: string
-): Promise<KOTFriendlyResponse | null> => {
+  orderId: string,
+  isKotEnabled: boolean
+): Promise<OrderGroupResponse | null> => {
   const order = await getOrderById(brandId, outletId, orderId);
   if (!order) return null;
 
-  return transformOrderToKOTFormat(order);
+  return transformOrderToGroupFormat(order, isKotEnabled);
 };
 
 

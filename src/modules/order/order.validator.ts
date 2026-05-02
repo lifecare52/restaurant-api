@@ -115,3 +115,20 @@ export const listOrdersQuerySchema = Joi.object({
 export const getOrderQuerySchema = Joi.object({
   orderId: objectId.required()
 });
+
+export const generateKotSchema = Joi.object({
+  orderId: objectId.optional().allow(null, ''),
+  orderType: Joi.number()
+    .valid(...Object.values(ORDER_TYPE).filter(v => !isNaN(Number(v))))
+    .when('orderId', {
+      is: Joi.alternatives().try(Joi.valid('', null), Joi.not(Joi.exist())),
+      then: Joi.required(),
+      otherwise: Joi.optional().allow(null)
+    }),
+  tableId: objectId.optional().allow(null, ''),
+  customerId: objectId.optional().allow(null, ''),
+  items: Joi.array().items(orderItemSchema).min(1).required().messages({
+    'array.min': 'At least one item is required'
+  }),
+  notes: Joi.string().trim().max(500).optional().allow('', null)
+});

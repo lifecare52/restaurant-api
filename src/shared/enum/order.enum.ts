@@ -42,6 +42,11 @@ export enum KOT_TYPE {
   REPRINT = 3 // manual reprint requested
 }
 
+export enum KOT_GENERATION_MODE {
+  AUTO = 1,
+  MANUAL = 2
+}
+
 /** Payment methods supported */
 export enum PAYMENT_METHOD {
   CASH = 1,
@@ -66,4 +71,9 @@ export enum SETTLEMENT_SOURCE {
   SETTLEMENT_LEDGER = 3,
   WRITE_OFF = 4,
   REFUND_REVERSAL = 5
+}
+
+export enum ORDER_GROUP_TYPE {
+  KOT = 1,
+  BATCH = 2
 }

@@ -5,14 +5,16 @@ import {
   ITEM_STATUS,
   PAYMENT_METHOD,
   SETTLEMENT_STATUS,
-  SETTLEMENT_SOURCE
+  SETTLEMENT_SOURCE,
+  KOT_GENERATION_MODE,
+  ORDER_GROUP_TYPE
 } from '@shared/enum/order.enum';
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 import type { Types } from 'mongoose';
 import type { Payment } from '@modules/payment/payment.types';
 
-export { ORDER_TYPE, ORDER_STATUS, PAYMENT_STATUS, ITEM_STATUS, PAYMENT_METHOD, SETTLEMENT_STATUS, SETTLEMENT_SOURCE };
+export { ORDER_TYPE, ORDER_STATUS, PAYMENT_STATUS, ITEM_STATUS, PAYMENT_METHOD, SETTLEMENT_STATUS, SETTLEMENT_SOURCE, KOT_GENERATION_MODE, ORDER_GROUP_TYPE };
 
 export interface AppliedTaxSnapshot {
   taxId?: Types.ObjectId | null;
@@ -108,6 +110,7 @@ export interface OrderItem {
   totalPrice: number;
   itemStatus: ITEM_STATUS;
   kotSentAt?: Date | null;
+  batchId?: Types.ObjectId | null;
   cancelReason?: string;
   cancelledAt?: Date | null;
   cancelledBy?: Types.ObjectId | null;
@@ -209,15 +212,25 @@ export interface CancelOrderDTO {
   cancellationReason?: string;
 }
 
+export interface GenerateKotDTO {
+  orderId?: string;
+  orderType?: ORDER_TYPE;
+  tableId?: string;
+  customerId?: string;
+  items: AddItemToOrderDTO[];
+  notes?: string;
+}
+
 export type Cleaned<T> = Omit<T, 'brandId' | 'outletId' | '__v'>;
 
-export interface KOTFriendlyBatch {
-  kotNumber: string;
+export interface OrderGroupBatch {
+  groupType: ORDER_GROUP_TYPE;
+  groupLabel: string;
   createdAt: string | null;
   items: Array<Cleaned<OrderItem> & { addons: Cleaned<OrderItemAddon>[] }>;
 }
 
-export type KOTFriendlyResponse = Cleaned<Order> & {
-  kots: KOTFriendlyBatch[];
+export type OrderGroupResponse = Cleaned<Order> & {
+  groups: OrderGroupBatch[];
   payments: Cleaned<Payment>[];
 };

@@ -56,6 +56,13 @@ export interface PopulatedKOTItem extends Omit<KOTItem, 'orderItemId'> {
 
 // ─── Response Interfaces (Cleaned API Contracts) ──────────────────────────────
 
+export interface KOTItemAddonResponse {
+  _id: Types.ObjectId;
+  addonName: string;
+  addonItemName?: string;
+  quantity: number;
+}
+
 export interface KOTItemResponse {
   _id: Types.ObjectId;
   orderItemId: Types.ObjectId;
@@ -68,6 +75,7 @@ export interface KOTItemResponse {
   servedAt?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
+  addons?: KOTItemAddonResponse[];
 }
 
 export interface KOTResponse {

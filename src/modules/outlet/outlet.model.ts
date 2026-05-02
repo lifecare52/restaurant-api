@@ -1,6 +1,7 @@
 import { Schema, model, type Model, Types } from 'mongoose';
 
 import { GstScheme } from '@shared/enum';
+import { KOT_GENERATION_MODE } from '@shared/enum/order.enum';
 
 export interface Outlet {
   brandId: Types.ObjectId;
@@ -23,6 +24,10 @@ export interface Outlet {
     gstNo?: string;
     gstScheme: GstScheme;
     currency?: string;
+    kotSettings?: {
+      isKotEnabled: boolean;
+      generationMode: KOT_GENERATION_MODE;
+    };
   };
 }
 
@@ -53,7 +58,15 @@ const OutletSchema = new Schema<Outlet>(
         enum: Object.values(GstScheme),
         default: GstScheme.NONE
       },
-      currency: { type: String }
+      currency: { type: String },
+      kotSettings: {
+        isKotEnabled: { type: Boolean, default: true },
+        generationMode: {
+          type: Number,
+          enum: Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number'),
+          default: KOT_GENERATION_MODE.AUTO
+        }
+      }
     }
   },
   { timestamps: true }

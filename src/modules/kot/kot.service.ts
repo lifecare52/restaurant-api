@@ -15,10 +15,9 @@ import {
 import DailySequenceEntity from '@modules/order/daily-sequence.model';
 import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
 import { logOrderAction } from '@modules/order/order-audit.service';
-import { OrderEntity } from '@modules/order/order.model';
-import { OrderItemEntity } from '@modules/order/order.model';
-import { checkAndAutoCloseOrder } from '@modules/order/order.service';
-import { ORDER_STATUS } from '@modules/order/order.types';
+import { OrderEntity, OrderItemEntity, OrderItemAddonEntity } from '@modules/order/order.model';
+import { checkAndAutoCloseOrder } from '@modules/order/order-lifecycle.service';
+import { ORDER_STATUS, OrderItemAddon } from '@modules/order/order.types';
 
 import { orderEvents } from '@shared/events/order.events';
 
@@ -153,8 +152,9 @@ export const generateKOT = async (
 // ─── Helper Functions ─────────────────────────────────────────────────────────
 
 /** Flatten and clean individual KOT item for API consumption */
-const formatKOTItemResponse = (item: PopulatedKOTItem): KOTItemResponse => {
+const formatKOTItemResponse = (item: PopulatedKOTItem, addons: OrderItemAddon[]): KOTItemResponse => {
   const orderItem = item.orderItemId;
+  const itemAddons = addons.filter(addon => String(addon.orderItemId) === String(orderItem?._id));
   return {
     _id: item._id,
     orderItemId: orderItem?._id as Types.ObjectId,
@@ -166,13 +166,19 @@ const formatKOTItemResponse = (item: PopulatedKOTItem): KOTItemResponse => {
     preparedAt: item.preparedAt,
     servedAt: item.servedAt,
     createdAt: item.createdAt,
-    updatedAt: item.updatedAt
+    updatedAt: item.updatedAt,
+    addons: itemAddons.map(a => ({
+      _id: a._id as Types.ObjectId,
+      addonName: a.addonName,
+      addonItemName: a.addonItemName,
+      quantity: a.quantity
+    }))
   };
 };
 
 /** Clean and format full KOT response for API consumption */
-const formatKOTResponse = (kot: KOT, items: PopulatedKOTItem[]): KOTResponse => {
-  const formattedItems = items.map(formatKOTItemResponse);
+const formatKOTResponse = (kot: KOT, items: PopulatedKOTItem[], addons: OrderItemAddon[]): KOTResponse => {
+  const formattedItems = items.map(item => formatKOTItemResponse(item, addons));
 
   return {
     _id: kot._id,
@@ -216,9 +222,15 @@ export const listKOTsByOrder = async (
     .populate('orderItemId', 'itemName instruction quantity variationName')
     .lean()) as unknown as PopulatedKOTItem[];
 
+  const orderItemIds = allKotItems.map(item => item.orderItemId?._id).filter(Boolean);
+  const addons = await OrderItemAddonEntity.find({
+    orderItemId: { $in: orderItemIds },
+    isDelete: false
+  }).lean();
+
   return kots.map(kot => {
     const itemsForKot = allKotItems.filter(item => String(item.kotId) === String(kot._id));
-    return formatKOTResponse(kot as unknown as KOT, itemsForKot);
+    return formatKOTResponse(kot as unknown as KOT, itemsForKot, addons);
   });
 };
 
@@ -258,9 +270,15 @@ export const listAllKOTs = async (
     .populate('orderItemId', 'itemName instruction quantity variationName')
     .lean()) as unknown as PopulatedKOTItem[];
 
+  const orderItemIds = allKotItems.map(item => item.orderItemId?._id).filter(Boolean);
+  const addons = await OrderItemAddonEntity.find({
+    orderItemId: { $in: orderItemIds },
+    isDelete: false
+  }).lean();
+
   return kots.map(kot => {
     const itemsForKot = allKotItems.filter(item => String(item.kotId) === String(kot._id));
-    return formatKOTResponse(kot as unknown as KOT, itemsForKot);
+    return formatKOTResponse(kot as unknown as KOT, itemsForKot, addons);
   });
 };
 
