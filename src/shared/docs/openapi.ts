@@ -2159,6 +2159,108 @@ export const getOpenApiSpec = () => {
               }
             }
           }
+        },
+        PrintMode: {
+          type: 'string',
+          enum: ['SILENT', 'PREVIEW'],
+          description: 'SILENT=Directly to printer, PREVIEW=Show print preview before printing'
+        },
+        PrintSetting: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            brandId: { type: 'string' },
+            outletId: { type: 'string' },
+            billPrinting: {
+              type: 'object',
+              properties: {
+                isEnabled: { type: 'boolean' },
+                autoPrintOnSettlement: { type: 'boolean' },
+                paperSize: { type: 'string', enum: ['58mm', '80mm'] },
+                printMode: { $ref: '#/components/schemas/PrintMode' },
+                printerName: { type: 'string' },
+                header: {
+                  type: 'object',
+                  properties: {
+                    showLogo: { type: 'boolean' },
+                    restaurantName: { type: 'string' },
+                    address: { type: 'string' },
+                    contactNumber: { type: 'string' },
+                    taxNumber: { type: 'string' }
+                  }
+                },
+                footer: {
+                  type: 'object',
+                  properties: {
+                    thankYouMessage: { type: 'string' },
+                    termsAndConditions: { type: 'string' }
+                  }
+                },
+                showQRCode: { type: 'boolean' },
+                numberOfCopies: { type: 'number' }
+              }
+            },
+            kotPrinting: {
+              type: 'object',
+              properties: {
+                isEnabled: { type: 'boolean' },
+                autoPrintOnGeneration: { type: 'boolean' },
+                paperSize: { type: 'string', enum: ['58mm', '80mm'] },
+                printMode: { $ref: '#/components/schemas/PrintMode' },
+                printerName: { type: 'string' },
+                showOrderType: { type: 'boolean' },
+                showWaiterName: { type: 'boolean' }
+              }
+            },
+            createdAt: { type: 'string', format: 'date-time' },
+            updatedAt: { type: 'string', format: 'date-time' }
+          }
+        },
+        UpdatePrintSettingRequest: {
+          type: 'object',
+          properties: {
+            billPrinting: {
+              type: 'object',
+              properties: {
+                isEnabled: { type: 'boolean' },
+                autoPrintOnSettlement: { type: 'boolean' },
+                paperSize: { type: 'string', enum: ['58mm', '80mm'] },
+                printMode: { $ref: '#/components/schemas/PrintMode' },
+                printerName: { type: 'string' },
+                header: {
+                  type: 'object',
+                  properties: {
+                    showLogo: { type: 'boolean' },
+                    restaurantName: { type: 'string' },
+                    address: { type: 'string' },
+                    contactNumber: { type: 'string' },
+                    taxNumber: { type: 'string' }
+                  }
+                },
+                footer: {
+                  type: 'object',
+                  properties: {
+                    thankYouMessage: { type: 'string' },
+                    termsAndConditions: { type: 'string' }
+                  }
+                },
+                showQRCode: { type: 'boolean' },
+                numberOfCopies: { type: 'number' }
+              }
+            },
+            kotPrinting: {
+              type: 'object',
+              properties: {
+                isEnabled: { type: 'boolean' },
+                autoPrintOnGeneration: { type: 'boolean' },
+                paperSize: { type: 'string', enum: ['58mm', '80mm'] },
+                printMode: { $ref: '#/components/schemas/PrintMode' },
+                printerName: { type: 'string' },
+                showOrderType: { type: 'boolean' },
+                showWaiterName: { type: 'boolean' }
+              }
+            }
+          }
         }
       }
     },
@@ -2199,9 +2301,71 @@ export const getOpenApiSpec = () => {
       {
         name: 'Reports',
         description: 'Requires brand-id and outlet-id on all endpoints.'
+      },
+      {
+        name: 'Print-Settings',
+        description: 'Manage outlet-level printer configurations for Bill and KOT printing.'
       }
     ],
     paths: {
+      '/api/v1/print-setting': {
+        get: {
+          tags: ['Print-Settings'],
+          summary: 'Get outlet print settings',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          responses: {
+            200: {
+              description: 'Print settings retrieved successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/PrintSetting' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        put: {
+          tags: ['Print-Settings'],
+          summary: 'Update or create outlet print settings',
+          security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/UpdatePrintSettingRequest' } }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Print settings updated successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: { $ref: '#/components/schemas/PrintSetting' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       '/api/v1/taxes': {
         get: {
           tags: ['Tax'],
