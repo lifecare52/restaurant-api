@@ -739,6 +739,25 @@ export const getOpenApiSpec = () => {
           enum: [1, 2],
           description: '1=AUTO, 2=MANUAL'
         },
+        Brand: {
+          type: 'object',
+          properties: {
+            _id: { type: 'string' },
+            name: { type: 'string' },
+            plan: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                outletLimit: { type: 'number' }
+              }
+            },
+            isActive: { type: 'boolean' },
+            isDelete: { type: 'boolean' },
+            createdAt: { type: 'string' },
+            updatedAt: { type: 'string' }
+          },
+          required: ['_id', 'name', 'isActive', 'isDelete']
+        },
         CreateBrandRequest: {
           type: 'object',
           properties: {
@@ -756,6 +775,7 @@ export const getOpenApiSpec = () => {
         UpdateBrandRequest: {
           type: 'object',
           properties: {
+            brandId: { type: 'string', description: 'Brand ID' },
             name: { type: 'string', minLength: 2 },
             plan: {
               type: 'object',
@@ -823,6 +843,8 @@ export const getOpenApiSpec = () => {
         UpdateOutletRequest: {
           type: 'object',
           properties: {
+            brandId: { type: 'string', description: 'Brand ID' },
+            outletId: { type: 'string', description: 'Outlet ID' },
             basicInfo: {
               type: 'object',
               properties: {
@@ -3103,6 +3125,42 @@ export const getOpenApiSpec = () => {
           }
         }
       },
+      '/api/v1/brands/all': {
+        get: {
+          tags: ['Brands'],
+          summary: 'List all brands with pagination and search (ADMIN only)',
+          security: [{ bearerAuth: [] }],
+          parameters: [
+            { name: 'searchText', in: 'query', schema: { type: 'string' } },
+            { name: 'page', in: 'query', schema: { type: 'number', default: 1 } },
+            { name: 'limit', in: 'query', schema: { type: 'number', default: 20 } }
+          ],
+          responses: {
+            200: {
+              description: 'OK',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'array',
+                            items: { $ref: '#/components/schemas/Brand' }
+                          },
+                          total: { type: 'number' }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       '/api/v1/brands': {
         post: {
           tags: ['Brands'],
@@ -3139,6 +3197,15 @@ export const getOpenApiSpec = () => {
           tags: ['Brands'],
           summary: 'Get brand by id',
           security: [{ bearerAuth: [], brandIdHeader: [] }],
+          parameters: [
+            {
+              name: 'brandId',
+              in: 'query',
+              required: false,
+              description: 'Brand ID (can also be provided in brand-id header)',
+              schema: { type: 'string' }
+            }
+          ],
           responses: {
             200: {
               description: 'OK',
@@ -3247,7 +3314,14 @@ export const getOpenApiSpec = () => {
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateOutletRequest' } }
+              'application/json': {
+                schema: {
+                  allOf: [
+                    { $ref: '#/components/schemas/CreateOutletRequest' },
+                    { type: 'object', properties: { brandId: { type: 'string' } } }
+                  ]
+                }
+              }
             }
           },
           responses: {
@@ -3281,6 +3355,15 @@ export const getOpenApiSpec = () => {
           tags: ['Outlets'],
           summary: 'List brand outlets',
           security: [{ bearerAuth: [], brandIdHeader: [] }],
+          parameters: [
+            {
+              name: 'brandId',
+              in: 'query',
+              required: false,
+              description: 'Brand ID (can also be provided in brand-id header)',
+              schema: { type: 'string' }
+            }
+          ],
           responses: {
             200: {
               description: 'OK',
@@ -3314,6 +3397,8 @@ export const getOpenApiSpec = () => {
         patch: {
           tags: ['Outlets'],
           summary: 'Update outlet',
+          description:
+            'Updates outlet details. IDs can be provided in payload (brandId, outletId) or headers (brand-id, outlet-id). Payload takes priority.',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
           requestBody: {
             required: true,
@@ -3354,6 +3439,22 @@ export const getOpenApiSpec = () => {
           tags: ['Outlets'],
           summary: 'Get outlet details',
           security: [{ bearerAuth: [], brandIdHeader: [], outletIdHeader: [] }],
+          parameters: [
+            {
+              name: 'brandId',
+              in: 'query',
+              required: false,
+              description: 'Brand ID (optional if brand-id header is provided)',
+              schema: { type: 'string' }
+            },
+            {
+              name: 'outletId',
+              in: 'query',
+              required: false,
+              description: 'Outlet ID (optional if outlet-id header is provided)',
+              schema: { type: 'string' }
+            }
+          ],
           responses: {
             200: {
               description: 'OK',

@@ -1,4 +1,4 @@
-import { createBrand, getBrandById, updateBrand } from '@modules/brand/brand.service';
+import { createBrand, getBrandById, updateBrand, listBrands } from '@modules/brand/brand.service';
 
 import { ROLES } from '@shared/constants';
 
@@ -22,7 +22,7 @@ export const createBrandController = async (req: Request, res: Response, next: N
 
 export const getBrandController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId = (req.headers['brand-id'] as string) || '';
+    const brandId = (req.query.brandId as string) || (req.headers['brand-id'] as string) || '';
     const brand = await getBrandById(brandId);
     if (!brand) {
       res.locals.response = { status: false, code: 404, message: 'Not Found' };
@@ -45,7 +45,11 @@ export const updateBrandController = async (req: Request, res: Response, next: N
       next();
       return;
     }
-    const brandId = (req.headers['brand-id'] as string) || '';
+    const brandId =
+      (req.body.brandId as string) ||
+      (req.query.brandId as string) ||
+      (req.headers['brand-id'] as string) ||
+      '';
     if (role !== ROLES.ADMIN && userBrandId !== brandId) {
       res.locals.response = { status: false, code: 403, message: 'Forbidden' };
       next();
@@ -53,6 +57,26 @@ export const updateBrandController = async (req: Request, res: Response, next: N
     }
     const brand = await updateBrand(brandId, req.body);
     res.locals.response = { status: true, code: 200, data: brand };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const listBrandsController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { searchText, page = 1, limit = 20 } = req.query as any;
+    const result = await listBrands({
+      searchText: searchText as string,
+      page: Number(page),
+      limit: Number(limit)
+    });
+    res.locals.response = {
+      status: true,
+      code: 200,
+      data: result.brands,
+      total: result.total
+    };
     next();
   } catch (err) {
     next(err);

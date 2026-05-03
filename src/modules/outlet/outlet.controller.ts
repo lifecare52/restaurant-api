@@ -9,7 +9,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 export const createOutletController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId = (req.headers['brand-id'] as string) || '';
+    const brandId = (req.body.brandId as string) || (req.headers['brand-id'] as string) || '';
     const outlet = await createOutlet(brandId, req.body);
     if (!outlet) {
       res.locals.response = {
@@ -32,7 +32,7 @@ export const createOutletController = async (req: Request, res: Response, next: 
 
 export const listOutletsController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const brandId = (req.headers['brand-id'] as string) || '';
+    const brandId = (req.query.brandId as string) || (req.headers['brand-id'] as string) || '';
     const outlets = await listOutlets(brandId);
     res.locals.response = {
       status: true,
@@ -47,7 +47,16 @@ export const listOutletsController = async (req: Request, res: Response, next: N
 
 export const updateOutletController = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { brandId, outletId } = req.query as { brandId: string; outletId: string };
+    const brandId =
+      (req.body.brandId as string) ||
+      (req.query.brandId as string) ||
+      (req.headers['brand-id'] as string) ||
+      '';
+    const outletId =
+      (req.body.outletId as string) ||
+      (req.query.outletId as string) ||
+      (req.headers['outlet-id'] as string) ||
+      '';
     const outlet = await updateOutlet(brandId, outletId, req.body);
     if (!outlet) {
       res.locals.response = {
@@ -74,8 +83,8 @@ export const getOutletDetailController = async (
   next: NextFunction
 ) => {
   try {
-    const brandId = (req.headers['brand-id'] as string) || '';
-    const outletId = (req.headers['outlet-id'] as string) || '';
+    const brandId = (req.query.brandId as string) || (req.headers['brand-id'] as string) || '';
+    const outletId = (req.query.outletId as string) || (req.headers['outlet-id'] as string) || '';
     const outlet = await getOutletById(brandId, outletId);
     if (!outlet) {
       res.locals.response = { status: false, code: 404, message: 'Not Found' };

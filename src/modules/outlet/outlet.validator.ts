@@ -5,6 +5,7 @@ import { GstScheme } from '@shared/enum';
 import { KOT_GENERATION_MODE } from '@shared/enum/order.enum';
 
 export const createOutletSchema = Joi.object({
+  brandId: Joi.string().optional(), // Now accepted in body
   basicInfo: Joi.object({
     name: Joi.string().trim().min(2).required(),
     logo: Joi.string().uri().allow('').optional(),
@@ -51,6 +52,8 @@ export const createOutletSchema = Joi.object({
 });
 
 export const updateOutletSchema = Joi.object({
+  brandId: Joi.string().optional(),
+  outletId: Joi.string().optional(),
   basicInfo: Joi.object({
     name: Joi.string().trim().min(2).allow(''),
     logo: Joi.string().uri().allow(''),
@@ -89,19 +92,19 @@ export const updateOutletSchema = Joi.object({
 });
 
 export const outletBrandQuerySchema = Joi.object({
-  brandId: Joi.string().required()
+  brandId: Joi.string().optional()
 });
 
 export const outletUpdateQuerySchema = Joi.object({
-  brandId: Joi.string().required(),
-  outletId: Joi.string().required()
+  brandId: Joi.string().optional(),
+  outletId: Joi.string().optional()
 });
 
 export const outletDetailHeaderSchema = Joi.object({
-  'brand-id': Joi.string().required(),
-  'outlet-id': Joi.string().required()
+  'brand-id': Joi.string().optional(),
+  'outlet-id': Joi.string().optional()
 });
 
 export const outletBrandHeaderSchema = Joi.object({
-  'brand-id': Joi.string().required()
+  'brand-id': Joi.string().optional()
 });

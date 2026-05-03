@@ -3,12 +3,13 @@ import { Router } from 'express';
 import {
   createBrandController,
   getBrandController,
-  updateBrandController
+  updateBrandController,
+  listBrandsController
 } from '@modules/brand/brand.controller';
 import {
   createBrandSchema,
   updateBrandSchema,
-  brandHeaderSchema
+  brandIdQuerySchema
 } from '@modules/brand/brand.validator';
 
 import { ROLES, PERMISSIONS } from '@shared/constants';
@@ -27,10 +28,12 @@ router.post(
   createBrandController
 );
 
+router.get('/all', auth, requireRole([ROLES.ADMIN]), listBrandsController);
+
 router.get(
   '/',
   auth,
-  validateRequest(brandHeaderSchema, 'headers'),
+  validateRequest(brandIdQuerySchema, 'query'),
   requireBrandAccess,
   getBrandController
 );
@@ -38,7 +41,6 @@ router.get(
 router.patch(
   '/',
   auth,
-  validateRequest(brandHeaderSchema, 'headers'),
   requireBrandAccess,
   requireRole([ROLES.OWNER, ROLES.PARTNER, ROLES.ADMIN]),
   requirePermissions([PERMISSIONS.BRAND_MANAGEMENT]),

@@ -42,7 +42,11 @@ export const requirePermissionsOrAdmin = (perms: string[]): RequestHandler => {
 };
 
 export const requireBrandAccess: RequestHandler = (req, res, next) => {
-  const brandIdParam = req.headers['brand-id'] as string | undefined;
+  const brandIdParam =
+    (req.params as Record<string, string>).brandId ||
+    (req.query as Record<string, string>).brandId ||
+    (req.body as { brandId?: string }).brandId ||
+    (req.headers['brand-id'] as string | undefined);
   const user = req.user;
   if (!brandIdParam) {
     next({ status: 400, code: 'BAD_REQUEST', message: 'brandId required' });
