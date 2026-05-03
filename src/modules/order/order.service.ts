@@ -51,6 +51,8 @@ import { TABLE_STATUS } from '@modules/table/table.types';
 
 import { orderEvents } from '@shared/events/order.events';
 import type { TokenDisplayItem, TokenDisplayResponse } from '@shared/interfaces';
+import { PrintSetting } from '@modules/print-setting/print-setting.model';
+import { generateReceiptSvg } from './helpers/receipt-svg-generator';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -1759,4 +1761,46 @@ export const getKOTOrderDetails = async (
   return transformOrderToGroupFormat(order, isKotEnabled);
 };
 
+export const printOrderBill = async (
+  brandId: string,
+  outletId: string,
+  orderId: string,
+  userId: string
+) => {
+  // 1. Fetch the full order
+  const order = await getOrderById(brandId, outletId, orderId);
+  if (!order) {
+    throw { status: 404, message: 'Order not found' };
+  }
+
+  // 2. Log audit event
+  await logOrderAction({
+    brandId,
+    outletId,
+    orderId,
+    action: ORDER_AUDIT_ACTION.BILL_PRINTED,
+    performedBy: userId || null,
+    metadata: {
+      totalAmount: order.totalAmount,
+      itemCount: order.items?.length || 0
+    }
+  });
+
+  // 3. Check Print Mode from Settings
+  const settings = await PrintSetting.findOne({ brandId, outletId, isDelete: false }).lean();
+  const billSettings = settings?.billPrinting;
+
+  if (billSettings?.isEnabled && billSettings?.printMode === 'PREVIEW') {
+    const receiptImage = generateReceiptSvg(order, billSettings);
+    return {
+      ...order,
+      receiptImage // Base64 SVG
+    };
+  }
+
+  // 4. Default: Emit Node event for direct/silent printing
+  orderEvents.emit('order.bill.printed', { order, brandId, outletId, userId });
+
+  return order;
+};
 

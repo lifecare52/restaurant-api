@@ -9,7 +9,8 @@ import {
   addItemsToOrder,
   removeItemFromOrder,
   updateOrderItem,
-  generateKotForOrder
+  generateKotForOrder,
+  printOrderBill
 } from '@modules/order/order.service';
 import { getPaymentsByOrder } from '@modules/payment/payment.service';
 import OutletEntity from '@modules/outlet/outlet.model';
@@ -209,6 +210,29 @@ export const listOrdersController = async (req: Request, res: Response, next: Ne
     const { brandId, outletId } = getTenant(req);
     const result = await listOrders(brandId, outletId, req.query as any);
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const printOrderBillController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const userId = getUserId(req);
+    const { orderId } = req.params;
+    
+    if (!orderId) {
+      throw { status: 400, message: 'orderId is required' };
+    }
+    
+    const result = await printOrderBill(brandId, outletId, orderId, userId);
+    res.locals.response = {
+      status: true,
+      code: 200,
+      message: 'Order bill printed successfully',
+      data: result
+    };
     next();
   } catch (err) {
     next(err);
