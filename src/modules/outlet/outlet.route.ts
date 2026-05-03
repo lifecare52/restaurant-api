@@ -11,7 +11,8 @@ import {
   updateOutletSchema,
   outletBrandHeaderSchema,
   outletUpdateQuerySchema,
-  outletDetailHeaderSchema
+  outletDetailHeaderSchema,
+  outletBrandQuerySchema
 } from '@modules/outlet/outlet.validator';
 
 import { ROLES, PERMISSIONS } from '@shared/constants';
@@ -31,6 +32,7 @@ router.post(
   '/outlets',
   auth,
   validateRequest(outletBrandHeaderSchema, 'headers'),
+  validateRequest(outletBrandQuerySchema, 'query'),
   requireBrandAccess,
   requireRole([ROLES.ADMIN, ROLES.OWNER]),
   requirePermissionsOrAdmin([PERMISSIONS.OUTLET_MANAGEMENT]),
@@ -42,6 +44,7 @@ router.get(
   '/outlets',
   auth,
   validateRequest(outletBrandHeaderSchema, 'headers'),
+  validateRequest(outletBrandQuerySchema, 'query'),
   requireBrandAccess,
   listOutletsController
 );
@@ -50,6 +53,7 @@ router.get(
   '/outlets/detail',
   auth,
   validateRequest(outletDetailHeaderSchema, 'headers'),
+  validateRequest(outletUpdateQuerySchema, 'query'),
   requireBrandAccess,
   requireOutletAccess,
   getOutletDetailController
@@ -59,6 +63,7 @@ router.patch(
   '/outlets',
   auth,
   validateRequest(outletUpdateQuerySchema, 'query'),
+  validateRequest(outletDetailHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
   requireRole([ROLES.ADMIN, ROLES.OWNER]),

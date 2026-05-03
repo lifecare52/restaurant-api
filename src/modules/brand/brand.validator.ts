@@ -9,6 +9,7 @@ export const createBrandSchema = Joi.object({
 });
 
 export const updateBrandSchema = Joi.object({
+  brandId: Joi.string().optional(),
   name: Joi.string().trim().min(2),
   plan: Joi.object({
     name: Joi.string().trim(),

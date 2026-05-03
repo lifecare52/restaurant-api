@@ -17,8 +17,26 @@ export const updateBrand = async (brandId: string, dto: BrandUpdateDTO) => {
   return BrandEntity.findByIdAndUpdate(brandId, { $set: dto }, { new: true });
 };
 
+export const listBrands = async (options: {
+  searchText?: string;
+  page: number;
+  limit: number;
+}) => {
+  const query: any = { isDelete: false };
+  if (options.searchText) {
+    query.name = { $regex: options.searchText, $options: 'i' };
+  }
+  const total = await BrandEntity.countDocuments(query);
+  const brands = await BrandEntity.find(query)
+    .sort({ createdAt: -1 })
+    .skip((options.page - 1) * options.limit)
+    .limit(options.limit);
+  return { brands, total };
+};
+
 export default {
   createBrand,
   getBrandById,
-  updateBrand
+  updateBrand,
+  listBrands
 };
