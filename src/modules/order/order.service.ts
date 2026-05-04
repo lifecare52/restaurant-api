@@ -1791,7 +1791,7 @@ export const printOrderBill = async (
   const billSettings = settings?.billPrinting;
 
   if (billSettings?.isEnabled && billSettings?.printMode === 'PREVIEW') {
-    const receiptImage = generateReceiptSvg(order, billSettings);
+    const receiptImage = await generateReceiptSvg(order, billSettings);
     return {
       ...order,
       receiptImage // Base64 SVG

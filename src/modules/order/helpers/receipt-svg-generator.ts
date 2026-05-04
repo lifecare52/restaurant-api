@@ -1,21 +1,59 @@
 import { Order } from '../order.types';
 import { IPrintSetting } from '../../print-setting/print-setting.types';
+import * as QRCode from 'qrcode';
 
 /**
  * Generates a Base64 encoded SVG string of a thermal receipt.
  * This is a lightweight way to provide a print preview without external dependencies.
  */
-export const generateReceiptSvg = (order: Order | any, settings: IPrintSetting['billPrinting']): string => {
+export const generateReceiptSvg = async (order: Order | any, settings: IPrintSetting['billPrinting']): Promise<string> => {
   const paperWidth = settings.paperSize === '58mm' ? 300 : 400; // pixels approx
   const padding = 20;
   const fontSize = 14;
   const lineHeight = 20;
+  const fontFamily = "'Poppins', sans-serif";
+  const charWidth = fontSize * 0.6; // Approximation for layout calculation
+  const maxCharsPerLine = Math.floor((paperWidth - padding * 2) / charWidth);
   
   let currentY = 40;
   const lines: string[] = [];
 
   const addText = (text: string, x: number, align: 'start' | 'middle' | 'end' = 'start', isBold = false) => {
-    lines.push(`<text x="${x}" y="${currentY}" font-family="monospace" font-size="${fontSize}" fill="black" text-anchor="${align}" ${isBold ? 'font-weight="bold"' : ''}>${escapeHtml(text)}</text>`);
+    lines.push(`<text x="${x}" y="${currentY}" font-family="${fontFamily}" font-size="${fontSize}" fill="black" text-anchor="${align}" ${isBold ? 'font-weight="bold"' : ''}>${escapeHtml(text)}</text>`);
+  };
+
+  /**
+   * Adds text to the SVG, handling both explicit newlines (\n) and automatic word wrapping.
+   */
+  const addMultiLineText = (text: string, x: number, align: 'start' | 'middle' | 'end' = 'start', isBold = false) => {
+    if (!text) return;
+
+    const explicitLines = text.split(/\r?\n/);
+
+    explicitLines.forEach((line: string) => {
+      if (!line.trim()) {
+        currentY += lineHeight; 
+        return;
+      }
+
+      const words = line.split(' ');
+      let currentLine = '';
+      
+      words.forEach((word: string) => {
+        if ((currentLine + word).length > maxCharsPerLine) {
+          addText(currentLine.trim(), x, align, isBold);
+          currentY += lineHeight;
+          currentLine = word + ' ';
+        } else {
+          currentLine += word + ' ';
+        }
+      });
+      
+      if (currentLine.trim()) {
+        addText(currentLine.trim(), x, align, isBold);
+        currentY += lineHeight;
+      }
+    });
   };
 
   const addLine = () => {
@@ -24,10 +62,34 @@ export const generateReceiptSvg = (order: Order | any, settings: IPrintSetting['
   };
 
   const renderItem = (item: any) => {
-    addText(item.itemName || item.name, padding, 'start');
+    const name = item.itemName || item.name;
+    const words = name.split(' ');
+    let firstLine = '';
+    let remainingLines: string[] = [];
+    
+    const firstLineMax = maxCharsPerLine - 15; 
+
+    words.forEach((word: string) => {
+      if (!remainingLines.length && (firstLine + word).length <= firstLineMax) {
+        firstLine += word + ' ';
+      } else {
+        if (!remainingLines.length || (remainingLines[remainingLines.length - 1] + word).length > maxCharsPerLine) {
+          remainingLines.push(word + ' ');
+        } else {
+          remainingLines[remainingLines.length - 1] += word + ' ';
+        }
+      }
+    });
+
+    addText(firstLine.trim(), padding, 'start');
     addText(item.quantity.toString(), paperWidth - padding - 80, 'middle');
     addText((item.totalPrice || 0).toFixed(2), paperWidth - padding, 'end');
     currentY += lineHeight;
+
+    remainingLines.forEach((line: string) => {
+      addText(line.trim(), padding, 'start');
+      currentY += lineHeight;
+    });
 
     if (item.variationName) {
       addText(`  (${item.variationName})`, padding, 'start');
@@ -45,8 +107,7 @@ export const generateReceiptSvg = (order: Order | any, settings: IPrintSetting['
   const consolidateItems = (items: any[]) => {
     const map = new Map<string, any>();
     
-    items.forEach(item => {
-      // Create a unique key for item + variation + addons
+    items.forEach((item: any) => {
       const addonKey = (item.addons || [])
         .map((a: any) => `${a.addonItemId || a.addonId}:${a.quantity}`)
         .sort()
@@ -67,19 +128,44 @@ export const generateReceiptSvg = (order: Order | any, settings: IPrintSetting['
 
   // 1. Header
   if (settings.showHeader && settings.headerText) {
-    addText(settings.headerText, paperWidth / 2, 'middle', true);
-    currentY += lineHeight * 1.5;
+    addMultiLineText(settings.headerText, paperWidth / 2, 'middle', true);
+    currentY += 10;
   }
 
   // 2. Order Info
-  addText(`Order #: ${order.orderNumber}`, padding, 'start', true);
-  currentY += lineHeight;
+
+  // Customer Info
+  const customer = order.customerId;
+  if (customer && typeof customer === 'object' && settings.showCustomerDetails) {
+    addText(`Customer: ${customer.name || 'N/A'}`, padding, 'start');
+    currentY += lineHeight;
+    if (customer.mobile) {
+      addText(`Mobile: ${customer.mobile}`, padding, 'start');
+      currentY += lineHeight;
+    }
+  }
+
+  if (order.tokenNo) {
+    addText(`Token No: ${order.tokenNo}`, padding, 'start', true);
+    currentY += lineHeight;
+  }
+
   addText(`Date: ${new Date(order.createdAt).toLocaleString()}`, padding, 'start');
   currentY += lineHeight;
   
   if (settings.showOrderType) {
     const typeStr = order.orderType === 1 ? 'DINE IN' : order.orderType === 2 ? 'TAKEAWAY' : 'DELIVERY';
     addText(`Type: ${typeStr}`, padding, 'start');
+    currentY += lineHeight;
+
+    if (order.orderType === 1 && order.tableId && typeof order.tableId === 'object') {
+      addText(`Table: ${order.tableId.name || 'N/A'}`, padding, 'start');
+      currentY += lineHeight;
+    }
+  }
+
+  if (order.waiterId && typeof order.waiterId === 'object' && settings.showCaptainName) {
+    addText(`Waiter: ${order.waiterId.name || 'N/A'}`, padding, 'start');
     currentY += lineHeight;
   }
 
@@ -124,21 +210,34 @@ export const generateReceiptSvg = (order: Order | any, settings: IPrintSetting['
   // 6. UPI QR Code
   if (settings.showPaymentQrCode && settings.merchantUpiId) {
     addLine();
-    addText('Pay via UPI:', paperWidth / 2, 'middle', true);
-    currentY += lineHeight;
-    addText(settings.merchantUpiId, paperWidth / 2, 'middle');
-    currentY += lineHeight * 1.5;
+    addText('Scan to Pay via UPI:', paperWidth / 2, 'middle', true);
+    currentY += 10;
+    
+    const upiUrl = `upi://pay?pa=${settings.merchantUpiId}&pn=Restaurant&am=${order.totalAmount}&cu=INR`;
+    try {
+      const qrDataUrl = await QRCode.toDataURL(upiUrl, { margin: 1, width: 120 });
+      lines.push(`<image x="${(paperWidth - 120) / 2}" y="${currentY}" width="120" height="120" href="${qrDataUrl}" />`);
+      currentY += 130;
+    } catch (err) {
+      console.error('QR Generation failed', err);
+      addText(settings.merchantUpiId, paperWidth / 2, 'middle');
+      currentY += lineHeight;
+    }
   }
 
   // 7. Footer
   if (settings.showFooter && settings.footerText) {
     addLine();
-    addText(settings.footerText, paperWidth / 2, 'middle');
-    currentY += lineHeight;
+    addMultiLineText(settings.footerText, paperWidth / 2, 'middle');
   }
 
   const svg = `
 <svg width="${paperWidth}" height="${currentY + 20}" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style type="text/css">
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&amp;display=swap');
+    </style>
+  </defs>
   <rect width="100%" height="100%" fill="white" />
   ${lines.join('\n  ')}
 </svg>`.trim();
