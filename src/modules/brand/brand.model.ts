@@ -7,6 +7,8 @@ export interface Brand {
     name: string;
     outletLimit: number;
   };
+  isActive: boolean;
+  isDelete: boolean;
 }
 
 export type BrandModel = Model<Brand>;
@@ -18,7 +20,9 @@ const BrandSchema = new Schema<Brand>(
     plan: {
       name: { type: String },
       outletLimit: { type: Number, default: 10 }
-    }
+    },
+    isActive: { type: Boolean, default: true },
+    isDelete: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

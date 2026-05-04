@@ -53,4 +53,5 @@ export interface OutletUpdateDTO {
       generationMode?: KOT_GENERATION_MODE;
     };
   };
+  isActive?: boolean;
 }

@@ -88,7 +88,8 @@ export const updateOutletSchema = Joi.object({
         .invalid(GstScheme.NONE)
         .required()
     })
-  })
+  }),
+  isActive: Joi.boolean()
 });
 
 export const outletBrandQuerySchema = Joi.object({

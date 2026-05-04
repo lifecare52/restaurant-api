@@ -168,7 +168,14 @@ export const login = async (username: string, password: string) => {
     outlets,
     permissions: user.permissions || []
   });
-  return { token, brandId, outletId };
+  const userObj = {
+    id: user._id.toString(),
+    name: user.name,
+    username: user.username,
+    email: user.email,
+    role: user.role
+  };
+  return { token, brandId, outletId, user: userObj };
 };
 
 export const loginAdmin = async (username: string, password: string) => {
@@ -184,7 +191,14 @@ export const loginAdmin = async (username: string, password: string) => {
     role: user.role,
     permissions: user.permissions || []
   });
-  return { token };
+  const userObj = {
+    id: user._id.toString(),
+    name: user.name,
+    username: user.username,
+    email: user.email,
+    role: user.role
+  };
+  return { token, user: userObj };
 };
 
 export const createAdminBootstrap = async (dto: CreateAdminDTO) => {
