@@ -439,3 +439,55 @@ export const updateKOTItemStatus = async (
 
   return { status };
 };
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Reprint an existing KOT
+ */
+export const reprintKOT = async (
+  brandId: string,
+  outletId: string,
+  kotId: string
+): Promise<KOTResponse> => {
+  const kot = await KOTEntity.findOne({
+    _id: new Types.ObjectId(kotId),
+    brandId: new Types.ObjectId(brandId),
+    outletId: new Types.ObjectId(outletId),
+    isDelete: false
+  })
+    .populate('waiterId', 'name role')
+    .lean();
+
+  if (!kot) throw { status: 404, message: 'KOT not found' };
+
+  const allKotItems = (await KOTItemEntity.find({
+    kotId: new Types.ObjectId(kotId),
+    isDelete: false
+  })
+    .populate('orderItemId', 'itemName instruction quantity variationName')
+    .lean()) as unknown as PopulatedKOTItem[];
+
+  const orderItemIds = allKotItems.map(item => item.orderItemId?._id).filter(Boolean);
+  const addons = await OrderItemAddonEntity.find({
+    orderItemId: { $in: orderItemIds },
+    isDelete: false
+  }).lean();
+
+  logOrderAction({
+    brandId,
+    outletId,
+    orderId: String(kot.orderId),
+    action: ORDER_AUDIT_ACTION.KOT_STATUS_UPDATED,
+    metadata: { kotId, event: 'KOT_REPRINTED' }
+  });
+
+  orderEvents.emit('kot.reprinted', {
+    kotId,
+    orderId: String(kot.orderId),
+    brandId,
+    outletId
+  });
+
+  return formatKOTResponse(kot as unknown as KOT, allKotItems, addons);
+};

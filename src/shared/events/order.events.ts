@@ -19,6 +19,7 @@ import { EventEmitter } from 'events';
  *   kot.created            — a new KOT (regular or void) was generated
  *   kot.status.updated     — KOT-level status changed (PENDING→PREPARING etc.)
  *   kot.item.status.updated — individual KOT item status changed
+ *   order.bill.printed     — bill was requested to be printed
  */
 class OrderEventBus extends EventEmitter {}
 

@@ -3,7 +3,8 @@ import {
   listKOTsByOrder,
   listAllKOTs,
   updateKOTStatus,
-  updateKOTItemStatus
+  updateKOTItemStatus,
+  reprintKOT
 } from '@modules/kot/kot.service';
 import { KOT_TYPE } from '@modules/kot/kot.types';
 
@@ -75,6 +76,28 @@ export const updateKOTItemStatusController = async (
       status: true,
       code: 200,
       message: 'KOT item status updated',
+      data: item
+    };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+/** Reprint an existing KOT */
+export const reprintKOTController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { brandId, outletId } = getTenant(req);
+    const { kotId } = req.params;
+    const item = await reprintKOT(brandId, outletId, kotId);
+    res.locals.response = {
+      status: true,
+      code: 200,
+      message: 'KOT reprint initiated successfully',
       data: item
     };
     next();

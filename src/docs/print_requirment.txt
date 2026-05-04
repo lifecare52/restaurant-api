@@ -1,0 +1,81 @@
+Good Ab mai tuhme proper meri requirment samjata hu uske hisab se proper plan bana...
+
+Muje KOT or Bill Print ki funtionallity imapleament karni hai proper configuration k sath...
+
+
+KOT Configuration:- 
+
+1. Enable KOT print 
+Master switch for all KOT prints
+
+2. Auto-print on order confirm
+No manual trigger needed
+
+3. Reprint KOT button
+Staff can reprint lost KOT
+
+4. Modifier / instruction print
+No onion, extra spicy etc.
+
+5. Item-wise KOT
+Each item on separate KOT slip
+
+6. Show cancelled items
+Strikethrough + "VOID" label
+
+7. Show table / token number
+Dine-in / Takeaway / Delivery
+
+8. Show waiter / captain name
+Accountability tracking
+
+9. Show order type badge
+DINE-IN / TAKEAWAY / DELIVERY
+
+10. Show cover count (pax)
+Number of guests at table
+
+11. Paper size
+Thermal roll width
+
+12. In Sub configuration Wise Frontend mai preview dikhna chahiye
+
+Bill Print Configuration:- 
+
+1. Enable bill print
+Master switch
+
+2. Show restaurant logo
+PNG/JPG upload supported
+
+3. Show header text
+Tagline / welcome message
+
+4. Show footer text
+Thank you / social handles
+
+5. Show customer details
+Name, phone for loyalty
+
+6. Show captain / waiter name
+
+7. Show cover count
+
+8. Show item HSN code
+GST compliance requirement
+
+9. Show discount details
+Discount name + amount
+
+10. Bill Payment QR Code
+UPI QR for direct payment
+
+11. Show order type
+Dine-in / Takeaway / Delivery
+
+12. Paper size
+
+13. In Sub configuration Wise Frontend mai preview dikhna chahiye
+
+
+Asi Kuch Requirment hai meri so proper hamare project ko review karo or uske baad proper plan banao...

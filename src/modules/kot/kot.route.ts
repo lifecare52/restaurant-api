@@ -4,7 +4,8 @@ import {
   listKOTsByOrderController,
   listAllKOTsController,
   updateKOTStatusController,
-  updateKOTItemStatusController
+  updateKOTItemStatusController,
+  reprintKOTController
 } from '@modules/kot/kot.controller';
 import {
   updateKOTStatusSchema,
@@ -58,6 +59,13 @@ router.patch(
   ...tenantMiddleware,
   validateRequest(updateKOTItemStatusSchema, 'body'),
   updateKOTItemStatusController
+);
+
+// POST /kots/:kotId/reprint — Reprint an existing KOT
+router.post(
+  '/:kotId/reprint',
+  ...tenantMiddleware,
+  reprintKOTController
 );
 
 export default router;

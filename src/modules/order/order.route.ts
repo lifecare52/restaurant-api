@@ -11,7 +11,8 @@ import {
   addItemsToOrderController,
   removeItemFromOrderController,
   updateOrderItemController,
-  generateKotController
+  generateKotController,
+  printOrderBillController
 } from '@modules/order/order.controller';
 import {
   createOrderSchema,
@@ -126,5 +127,12 @@ router.post(
 
 // GET /orders/tokens — Token display board (preparing vs ready takeaway orders)
 router.get('/tokens', ...tenantMiddleware, getTokenDisplayController);
+
+// POST /orders/:orderId/print-bill — Print bill for a specific order
+router.post(
+  '/:orderId/print-bill',
+  ...tenantMiddleware,
+  printOrderBillController
+);
 
 export default router;
