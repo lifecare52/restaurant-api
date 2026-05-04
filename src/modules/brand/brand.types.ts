@@ -12,4 +12,5 @@ export interface BrandUpdateDTO {
     name: string;
     outletLimit: number;
   };
+  isActive?: boolean;
 }

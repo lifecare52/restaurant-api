@@ -14,7 +14,8 @@ export const updateBrandSchema = Joi.object({
   plan: Joi.object({
     name: Joi.string().trim(),
     outletLimit: Joi.number().integer().min(1)
-  })
+  }),
+  isActive: Joi.boolean()
 });
 
 export const brandIdQuerySchema = Joi.object({

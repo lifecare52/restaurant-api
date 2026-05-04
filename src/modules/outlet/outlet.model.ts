@@ -29,6 +29,8 @@ export interface Outlet {
       generationMode: KOT_GENERATION_MODE;
     };
   };
+  isActive: boolean;
+  isDelete: boolean;
 }
 
 export type OutletModel = Model<Outlet>;
@@ -67,7 +69,9 @@ const OutletSchema = new Schema<Outlet>(
           default: KOT_GENERATION_MODE.AUTO
         }
       }
-    }
+    },
+    isActive: { type: Boolean, default: true },
+    isDelete: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

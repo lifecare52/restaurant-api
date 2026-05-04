@@ -659,9 +659,20 @@ export const getOpenApiSpec = () => {
               type: 'string',
               nullable: true,
               description: 'First outlet assigned (if any)'
+            },
+            user: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                name: { type: 'string' },
+                username: { type: 'string' },
+                email: { type: 'string', nullable: true },
+                role: { type: 'string' }
+              },
+              required: ['id', 'name', 'username', 'role']
             }
           },
-          required: ['token']
+          required: ['token', 'user']
         },
         CreateAdminRequest: {
           type: 'object',
@@ -783,7 +794,8 @@ export const getOpenApiSpec = () => {
                 name: { type: 'string' },
                 outletLimit: { type: 'number' }
               }
-            }
+            },
+            isActive: { type: 'boolean' }
           }
         },
         CreateOutletRequest: {
@@ -886,7 +898,8 @@ export const getOpenApiSpec = () => {
                   }
                 }
               }
-            }
+            },
+            isActive: { type: 'boolean' }
           }
         },
         OutletDetail: {
@@ -3219,7 +3232,7 @@ export const getOpenApiSpec = () => {
                         properties: {
                           data: {
                             type: 'array',
-                            items: { $ref: '#/components/schemas/Category' }
+                            items: { $ref: '#/components/schemas/Brand' }
                           }
                         }
                       }
@@ -3283,7 +3296,7 @@ export const getOpenApiSpec = () => {
                       {
                         type: 'object',
                         properties: {
-                          data: { $ref: '#/components/schemas/Category' }
+                          data: { $ref: '#/components/schemas/Brand' }
                         }
                       }
                     ]

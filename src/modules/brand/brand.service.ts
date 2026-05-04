@@ -10,11 +10,11 @@ export const createBrand = async (dto: BrandCreateDTO) => {
 };
 
 export const getBrandById = async (brandId: string) => {
-  return BrandEntity.findById(brandId);
+  return BrandEntity.findOne({ _id: brandId, isDelete: false });
 };
 
 export const updateBrand = async (brandId: string, dto: BrandUpdateDTO) => {
-  return BrandEntity.findByIdAndUpdate(brandId, { $set: dto }, { new: true });
+  return BrandEntity.findOneAndUpdate({ _id: brandId, isDelete: false }, { $set: dto }, { new: true });
 };
 
 export const listBrands = async (options: {

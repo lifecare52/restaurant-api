@@ -19,21 +19,26 @@ export const createOutlet = async (brandId: string, dto: OutletCreateDTO) => {
 };
 
 export const listOutlets = async (brandId: string) => {
-  return OutletEntity.find({ brandId: new Types.ObjectId(brandId) });
+  return OutletEntity.find({ brandId: new Types.ObjectId(brandId), isDelete: false });
 };
 
 export const getOutletById = async (brandId: string, outletId: string) => {
   return OutletEntity.findOne({
     _id: new Types.ObjectId(outletId),
-    brandId: new Types.ObjectId(brandId)
+    brandId: new Types.ObjectId(brandId),
+    isDelete: false
   })
-    .select('basicInfo contact settings createdAt updatedAt')
+    .select('basicInfo contact settings isActive createdAt updatedAt')
     .lean();
 };
 
 export const updateOutlet = async (brandId: string, outletId: string, dto: OutletUpdateDTO) => {
   return OutletEntity.findOneAndUpdate(
-    { _id: new Types.ObjectId(outletId), brandId: new Types.ObjectId(brandId) },
+    {
+      _id: new Types.ObjectId(outletId),
+      brandId: new Types.ObjectId(brandId),
+      isDelete: false
+    },
     { $set: dto },
     { new: true }
   );
