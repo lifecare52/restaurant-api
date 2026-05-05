@@ -177,7 +177,7 @@ export interface CreateOrderDTO {
   tableId?: string;
   customerId?: string;
   items: AddItemToOrderDTO[];
-  manualTagId?: string;
+  manualTagId?: string | null;
   notes?: string;
   shippingAddress?: string;
 }
@@ -187,6 +187,7 @@ export interface PreviewOrderDTO extends CreateOrderDTO { }
 export interface AddItemsToOrderDTO {
   orderId: string;
   items: AddItemToOrderDTO[];
+  manualTagId?: string | null;
 }
 
 export interface RemoveOrderItemDTO {
@@ -218,6 +219,7 @@ export interface GenerateKotDTO {
   tableId?: string;
   customerId?: string;
   items: AddItemToOrderDTO[];
+  manualTagId?: string | null;
   notes?: string;
 }
 

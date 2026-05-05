@@ -975,8 +975,9 @@ export const addItemsToOrder = async (
   }).lean();
 
   if (!order) throw { status: 404, message: 'Active order not found' };
-  if (!dto.items || dto.items.length === 0)
-    throw { status: 400, message: 'At least one item required' };
+  // items are optional if manualTagId is being updated
+  if ((!dto.items || dto.items.length === 0) && dto.manualTagId === undefined)
+    throw { status: 400, message: 'At least one item or manualTagId required' };
 
   // Fetch outlet settings
   const outlet = (await OutletEntity.findById(outletId).lean()) as Outlet | null;
@@ -1034,6 +1035,14 @@ export const addItemsToOrder = async (
       );
     }
 
+    if (dto.manualTagId !== undefined) {
+      await OrderEntity.updateOne(
+        { _id: order._id },
+        { $set: { manualTagId: dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null } },
+        { session }
+      );
+    }
+
     // Atomic total update — no read-modify-write race condition
     await recalculatePersistedOrderTotals(order._id, session);
 
@@ -1046,7 +1055,7 @@ export const addItemsToOrder = async (
   }
 
   // Generate supplemental KOT
-  if (isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) {
+  if (dto.items && dto.items.length > 0 && isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) {
     let tableName: string | undefined = undefined;
     if (order.tableId) {
       const table = await TableEntity.findById(order.tableId).lean();
@@ -1289,6 +1298,7 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
     .populate('tableId', 'name')
     .populate('waiterId', 'name role')
     .populate('customerId', 'name mobile email tags loyaltyPoints totalSpent totalOrders lastVisitAt creditBalance isActive')
+    .populate('manualTagId', 'name discountType discountValue')
     .populate('cancelledBy', 'name')
     .lean();
 
@@ -1682,15 +1692,17 @@ export const generateKotForOrder = async (
       tableId: dto.tableId,
       customerId: dto.customerId,
       items: dto.items,
+      manualTagId: dto.manualTagId,
       notes: dto.notes
     });
     orderId = String(order._id);
   } else {
     // Existing order
-    if (dto.items && dto.items.length > 0) {
+    if ((dto.items && dto.items.length > 0) || dto.manualTagId !== undefined) {
       await addItemsToOrder(brandId, outletId, {
         orderId,
-        items: dto.items
+        items: dto.items || [],
+        manualTagId: dto.manualTagId
       });
     }
   }

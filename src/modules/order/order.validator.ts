@@ -69,10 +69,11 @@ export const previewOrderSchema = Joi.object({
 
 export const addItemsToOrderSchema = Joi.object({
   orderId: objectId.required(),
-  items: Joi.array().items(orderItemSchema).min(1).required().messages({
+  items: Joi.array().items(orderItemSchema).min(1).optional().messages({
     'array.min': 'At least one item is required'
-  })
-});
+  }),
+  manualTagId: objectId.optional().allow(null, '')
+}).or('items', 'manualTagId');
 
 export const removeOrderItemSchema = Joi.object({
   orderId: objectId.required(),
@@ -130,5 +131,6 @@ export const generateKotSchema = Joi.object({
   items: Joi.array().items(orderItemSchema).min(1).required().messages({
     'array.min': 'At least one item is required'
   }),
+  manualTagId: objectId.optional().allow(null, ''),
   notes: Joi.string().trim().max(500).optional().allow('', null)
 });
