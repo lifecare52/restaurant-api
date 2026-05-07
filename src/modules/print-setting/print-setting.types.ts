@@ -9,7 +9,6 @@ export interface IPrintSetting {
     autoPrintOnSettlement: boolean;
     paperSize: '58mm' | '80mm';
     printMode: 'SILENT' | 'PREVIEW';
-    printerName?: string;
     
     showLogo: boolean;
     showHeader: boolean;
@@ -35,7 +34,6 @@ export interface IPrintSetting {
     autoPrintOnGeneration: boolean;
     paperSize: '58mm' | '80mm';
     printMode: 'SILENT' | 'PREVIEW';
-    printerName?: string;
     
     showModifiers: boolean;
     itemWiseKOT: boolean;

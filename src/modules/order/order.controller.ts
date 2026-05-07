@@ -10,7 +10,8 @@ import {
   removeItemFromOrder,
   updateOrderItem,
   generateKotForOrder,
-  printOrderBill
+  printOrderBill,
+  reprintKOT
 } from '@modules/order/order.service';
 import { getPaymentsByOrder } from '@modules/payment/payment.service';
 import OutletEntity from '@modules/outlet/outlet.model';
@@ -210,6 +211,24 @@ export const listOrdersController = async (req: Request, res: Response, next: Ne
     const { brandId, outletId } = getTenant(req);
     const result = await listOrders(brandId, outletId, req.query as any);
     res.locals.response = { status: true, code: 200, data: result.items, total: result.total };
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const reprintKOTController = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { orderId } = req.params;
+    const { brandId, outletId } = getTenant(req);
+
+    const result = await reprintKOT(brandId, outletId, orderId);
+    res.locals.response = {
+      status: true,
+      code: 200,
+      message: 'KOT reprinted successfully',
+      data: result
+    };
     next();
   } catch (err) {
     next(err);

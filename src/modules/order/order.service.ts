@@ -53,6 +53,7 @@ import { orderEvents } from '@shared/events/order.events';
 import type { TokenDisplayItem, TokenDisplayResponse } from '@shared/interfaces';
 import { PrintSetting } from '@modules/print-setting/print-setting.model';
 import { generateReceiptSvg } from './helpers/receipt-svg-generator';
+import { generateKOTSvg } from './helpers/kot-svg-generator';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -1079,7 +1080,23 @@ export const addItemsToOrder = async (
   });
   orderEvents.emit('order.items.added', { orderId: dto.orderId, brandId, outletId });
 
-  return getOrderById(brandId, outletId, dto.orderId);
+  // Generate KOT SVGs for the NEW items
+  const printSettings = await PrintSetting.findOne({ brandId, outletId, isDelete: false }).lean();
+  let kotImages: string[] = [];
+  
+  if (printSettings?.kotPrinting?.isEnabled) {
+    // We need the full order object for the generator
+    const updatedOrder = await OrderEntity.findById(dto.orderId).populate('tableId').populate('waiterId').lean();
+    if (updatedOrder) {
+      kotImages = await generateKOTSvg(updatedOrder, processedItems as any, printSettings.kotPrinting);
+    }
+  }
+
+  const result = await getOrderById(brandId, outletId, dto.orderId);
+  return {
+    ...result,
+    kotImages
+  };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1701,7 +1718,10 @@ export const generateKotForOrder = async (
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false
-  }).lean();
+  })
+    .populate('tableId', 'name')
+    .populate('waiterId', 'name')
+    .lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
 
@@ -1746,7 +1766,19 @@ export const generateKotForOrder = async (
     { $set: { kotSentAt: now } }
   );
 
-  return getOrderById(brandId, outletId, orderId);
+  // 5. Generate Print Data if enabled
+  const printSettings = await PrintSetting.findOne({ brandId, outletId, isDelete: false }).lean();
+  let kotImages: string[] = [];
+  
+  if (printSettings?.kotPrinting?.isEnabled) {
+    kotImages = await generateKOTSvg(order, unsentItems, printSettings.kotPrinting);
+  }
+
+  const orderData = await getOrderById(brandId, outletId, orderId);
+  return {
+    ...orderData,
+    kotImages // Array of Base64 SVG strings
+  };
 };
 
 export const getKOTOrderDetails = async (
@@ -1790,7 +1822,7 @@ export const printOrderBill = async (
   const settings = await PrintSetting.findOne({ brandId, outletId, isDelete: false }).lean();
   const billSettings = settings?.billPrinting;
 
-  if (billSettings?.isEnabled && billSettings?.printMode === 'PREVIEW') {
+  if (billSettings?.isEnabled) {
     const receiptImage = await generateReceiptSvg(order, billSettings);
     return {
       ...order,
@@ -1798,9 +1830,27 @@ export const printOrderBill = async (
     };
   }
 
-  // 4. Default: Emit Node event for direct/silent printing
-  orderEvents.emit('order.bill.printed', { order, brandId, outletId, userId });
-
   return order;
+};
+
+export const reprintKOT = async (
+  brandId: string,
+  outletId: string,
+  orderId: string
+) => {
+  const order = await getOrderById(brandId, outletId, orderId);
+  if (!order) throw { status: 404, message: 'Order not found' };
+
+  const settings = await PrintSetting.findOne({ brandId, outletId, isDelete: false }).lean();
+  if (!settings?.kotPrinting?.isEnabled) {
+    throw { status: 400, message: 'KOT printing is not enabled for this outlet.' };
+  }
+
+  const kotImages = await generateKOTSvg(order, order.items || [], settings.kotPrinting);
+
+  return {
+    ...order,
+    kotImages
+  };
 };
 

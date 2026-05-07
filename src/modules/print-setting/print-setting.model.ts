@@ -24,7 +24,7 @@ const printSettingSchema = new Schema<PrintSettingDocument>(
       autoPrintOnSettlement: { type: Boolean, default: false },
       paperSize: { type: String, enum: ['58mm', '80mm'], default: '80mm' },
       printMode: { type: String, enum: ['SILENT', 'PREVIEW'], default: 'PREVIEW' },
-      printerName: { type: String, default: '' },
+
       
       showLogo: { type: Boolean, default: false },
       showHeader: { type: Boolean, default: true },
@@ -49,7 +49,7 @@ const printSettingSchema = new Schema<PrintSettingDocument>(
       autoPrintOnGeneration: { type: Boolean, default: false },
       paperSize: { type: String, enum: ['58mm', '80mm'], default: '80mm' },
       printMode: { type: String, enum: ['SILENT', 'PREVIEW'], default: 'PREVIEW' },
-      printerName: { type: String, default: '' },
+
       
       showModifiers: { type: Boolean, default: true },
       itemWiseKOT: { type: Boolean, default: false },

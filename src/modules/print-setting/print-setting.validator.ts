@@ -7,7 +7,6 @@ export const printSettingValidator = {
       autoPrintOnSettlement: Joi.boolean(),
       paperSize: Joi.string().valid('58mm', '80mm'),
       printMode: Joi.string().valid('SILENT', 'PREVIEW'),
-      printerName: Joi.string().allow('', null),
       
       showLogo: Joi.boolean(),
       showHeader: Joi.boolean(),
@@ -32,7 +31,6 @@ export const printSettingValidator = {
       autoPrintOnGeneration: Joi.boolean(),
       paperSize: Joi.string().valid('58mm', '80mm'),
       printMode: Joi.string().valid('SILENT', 'PREVIEW'),
-      printerName: Joi.string().allow('', null),
       
       showModifiers: Joi.boolean(),
       itemWiseKOT: Joi.boolean(),

@@ -12,7 +12,8 @@ import {
   removeItemFromOrderController,
   updateOrderItemController,
   generateKotController,
-  printOrderBillController
+  printOrderBillController,
+  reprintKOTController
 } from '@modules/order/order.controller';
 import {
   createOrderSchema,
@@ -133,6 +134,13 @@ router.post(
   '/:orderId/print-bill',
   ...tenantMiddleware,
   printOrderBillController
+);
+
+// POST /orders/:orderId/reprint-kot — Reprint KOT for a specific order
+router.post(
+  '/:orderId/reprint-kot',
+  ...tenantMiddleware,
+  reprintKOTController
 );
 
 export default router;
