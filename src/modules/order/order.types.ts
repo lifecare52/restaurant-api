@@ -186,8 +186,11 @@ export interface PreviewOrderDTO extends CreateOrderDTO { }
 
 export interface AddItemsToOrderDTO {
   orderId: string;
-  items: AddItemToOrderDTO[];
+  items?: AddItemToOrderDTO[];
   manualTagId?: string | null;
+  customerId?: string | null;
+  notes?: string;
+  shippingAddress?: string;
 }
 
 export interface RemoveOrderItemDTO {
@@ -217,10 +220,11 @@ export interface GenerateKotDTO {
   orderId?: string;
   orderType?: ORDER_TYPE;
   tableId?: string;
-  customerId?: string;
-  items: AddItemToOrderDTO[];
+  customerId?: string | null;
+  items?: AddItemToOrderDTO[];
   manualTagId?: string | null;
   notes?: string;
+  shippingAddress?: string;
 }
 
 export type Cleaned<T> = Omit<T, 'brandId' | 'outletId' | '__v'>;

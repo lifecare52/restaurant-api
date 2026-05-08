@@ -37,8 +37,7 @@ export const createOrderSchema = Joi.object({
   }),
   customerId: objectId.optional().allow(null, ''),
   manualTagId: objectId.optional().allow(null, ''),
-  items: Joi.array().items(orderItemSchema).min(1).required().messages({
-    'array.min': 'At least one item is required',
+  items: Joi.array().items(orderItemSchema).optional().allow(null).messages({
     'any.required': 'items array is required'
   }),
   notes: Joi.string().trim().max(500).optional().allow('', null),
@@ -48,9 +47,9 @@ export const createOrderSchema = Joi.object({
       .min(5)
       .required()
       .messages({ 'any.required': 'shippingAddress is required for DELIVERY orders' }),
-    otherwise: Joi.string().optional().allow('', null)
+  otherwise: Joi.string().optional().allow('', null)
   })
-});
+}).or('items', 'customerId', 'manualTagId', 'notes');
 
 export const previewOrderSchema = Joi.object({
   orderType: Joi.number()
@@ -59,9 +58,8 @@ export const previewOrderSchema = Joi.object({
   tableId: objectId.optional().allow(null, ''),
   customerId: objectId.optional().allow(null, ''),
   manualTagId: objectId.optional().allow(null, ''),
-  items: Joi.array().items(orderItemSchema).min(1).required().messages({
-    'array.min': 'At least one item is required',
-    'any.required': 'items array is required'
+  items: Joi.array().items(orderItemSchema).optional().allow(null).messages({
+    'any.required': 'At least one item is required'
   }),
   notes: Joi.string().trim().max(500).optional().allow('', null),
   shippingAddress: Joi.string().optional().allow('', null)
@@ -69,11 +67,12 @@ export const previewOrderSchema = Joi.object({
 
 export const addItemsToOrderSchema = Joi.object({
   orderId: objectId.required(),
-  items: Joi.array().items(orderItemSchema).min(1).optional().messages({
-    'array.min': 'At least one item is required'
-  }),
-  manualTagId: objectId.optional().allow(null, '')
-}).or('items', 'manualTagId');
+  items: Joi.array().items(orderItemSchema).optional().allow(null),
+  manualTagId: objectId.optional().allow(null, ''),
+  customerId: objectId.optional().allow(null, ''),
+  notes: Joi.string().trim().max(500).optional().allow('', null),
+  shippingAddress: Joi.string().optional().allow('', null)
+}).or('items', 'manualTagId', 'customerId', 'notes', 'shippingAddress');
 
 export const removeOrderItemSchema = Joi.object({
   orderId: objectId.required(),
@@ -128,9 +127,12 @@ export const generateKotSchema = Joi.object({
     }),
   tableId: objectId.optional().allow(null, ''),
   customerId: objectId.optional().allow(null, ''),
-  items: Joi.array().items(orderItemSchema).min(1).required().messages({
-    'array.min': 'At least one item is required'
+  items: Joi.array().items(orderItemSchema).when('orderId', {
+    is: Joi.alternatives().try(Joi.valid('', null), Joi.not(Joi.exist())),
+    then: Joi.array().items(orderItemSchema).optional().allow(null),
+    otherwise: Joi.array().items(orderItemSchema).optional().allow(null)
   }),
   manualTagId: objectId.optional().allow(null, ''),
-  notes: Joi.string().trim().max(500).optional().allow('', null)
-});
+  notes: Joi.string().trim().max(500).optional().allow('', null),
+  shippingAddress: Joi.string().optional().allow('', null)
+}).or('items', 'customerId', 'manualTagId', 'notes', 'shippingAddress');

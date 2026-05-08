@@ -765,8 +765,14 @@ export const createOrder = async (
   if (!userId) {
     throw { status: 400, message: 'Authenticated staff ID is required to create an order' };
   }
-  if (!dto.items || dto.items.length === 0) {
-    throw { status: 400, message: 'At least one item is required' };
+  const hasMetadataUpdate =
+    dto.manualTagId !== undefined ||
+    dto.customerId !== undefined ||
+    dto.notes !== undefined ||
+    dto.shippingAddress !== undefined;
+
+  if ((!dto.items || dto.items.length === 0) && !hasMetadataUpdate) {
+    throw { status: 400, message: 'At least one item or metadata update is required' };
   }
 
   // Fetch outlet settings
@@ -975,9 +981,15 @@ export const addItemsToOrder = async (
   }).lean();
 
   if (!order) throw { status: 404, message: 'Active order not found' };
-  // items are optional if manualTagId is being updated
-  if ((!dto.items || dto.items.length === 0) && dto.manualTagId === undefined)
-    throw { status: 400, message: 'At least one item or manualTagId required' };
+  // items are optional if metadata is being updated
+  const hasMetadataUpdate =
+    dto.manualTagId !== undefined ||
+    dto.customerId !== undefined ||
+    dto.notes !== undefined ||
+    dto.shippingAddress !== undefined;
+
+  if ((!dto.items || dto.items.length === 0) && !hasMetadataUpdate)
+    throw { status: 400, message: 'At least one item or metadata update required' };
 
   // Fetch outlet settings
   const outlet = (await OutletEntity.findById(outletId).lean()) as Outlet | null;
@@ -986,13 +998,13 @@ export const addItemsToOrder = async (
   const generationMode = kotSettings?.generationMode ?? KOT_GENERATION_MODE.AUTO;
 
   const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(
-    dto.items
+    dto.items || []
   );
   const {
     processedItems,
     processedAddons
   } = processItems(
-    dto.items,
+    dto.items || [],
     brandId,
     outletId,
     menuItemMap,
@@ -1005,7 +1017,7 @@ export const addItemsToOrder = async (
     brandId,
     outletId,
     order.orderType,
-    dto.items,
+    dto.items || [],
     processedItems,
     menuItemMap
   );
@@ -1026,7 +1038,9 @@ export const addItemsToOrder = async (
       );
       return { ...storedItem, batchId };
     });
-    await OrderItemEntity.insertMany(finalItems, { session });
+    if (processedItems.length > 0) {
+      await OrderItemEntity.insertMany(finalItems, { session });
+    }
 
     if (processedAddons.length > 0) {
       await OrderItemAddonEntity.insertMany(
@@ -1035,12 +1049,22 @@ export const addItemsToOrder = async (
       );
     }
 
-    if (dto.manualTagId !== undefined) {
-      await OrderEntity.updateOne(
-        { _id: order._id },
-        { $set: { manualTagId: dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null } },
-        { session }
-      );
+    if (hasMetadataUpdate) {
+      const updateFields: any = {};
+      if (dto.manualTagId !== undefined) {
+        updateFields.manualTagId = dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null;
+      }
+      if (dto.customerId !== undefined) {
+        updateFields.customerId = dto.customerId ? new Types.ObjectId(dto.customerId) : null;
+      }
+      if (dto.notes !== undefined) {
+        updateFields.notes = dto.notes;
+      }
+      if (dto.shippingAddress !== undefined) {
+        updateFields.shippingAddress = dto.shippingAddress;
+      }
+
+      await OrderEntity.updateOne({ _id: order._id }, { $set: updateFields }, { session });
     }
 
     // Atomic total update — no read-modify-write race condition
@@ -1682,27 +1706,38 @@ export const generateKotForOrder = async (
     throw { status: 400, message: 'KOT is disabled for this outlet' };
   }
 
+  const hasMetadataUpdate =
+    dto.manualTagId !== undefined ||
+    dto.customerId !== undefined ||
+    dto.notes !== undefined ||
+    dto.shippingAddress !== undefined;
+
   // 1. Handle Order Creation or Item Appending
   if (!orderId) {
     if (!dto.orderType) {
       throw { status: 400, message: 'orderType is required to create a new order' };
     }
+    
     const order = await createOrder(brandId, outletId, userId, {
       orderType: dto.orderType,
       tableId: dto.tableId,
-      customerId: dto.customerId,
-      items: dto.items,
+      customerId: dto.customerId || undefined,
+      items: dto.items || [],
       manualTagId: dto.manualTagId,
-      notes: dto.notes
+      notes: dto.notes,
+      shippingAddress: dto.shippingAddress
     });
     orderId = String(order._id);
   } else {
     // Existing order
-    if ((dto.items && dto.items.length > 0) || dto.manualTagId !== undefined) {
+    if ((dto.items && dto.items.length > 0) || hasMetadataUpdate) {
       await addItemsToOrder(brandId, outletId, {
         orderId,
         items: dto.items || [],
-        manualTagId: dto.manualTagId
+        manualTagId: dto.manualTagId,
+        customerId: dto.customerId,
+        notes: dto.notes,
+        shippingAddress: dto.shippingAddress
       });
     }
   }
@@ -1716,6 +1751,7 @@ export const generateKotForOrder = async (
   }).lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
+
 
   const unsentItems = await OrderItemEntity.find({
     orderId: order._id,
