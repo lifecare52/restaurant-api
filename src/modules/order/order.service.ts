@@ -957,7 +957,22 @@ export const createOrder = async (
   });
   orderEvents.emit('order.created', { orderId: String(orderId), brandId, outletId, orderNumber });
 
-  return getOrderById(brandId, outletId, String(orderId));
+  // Generate KOT SVGs for the NEW items
+  const printSettings = await PrintSetting.findOne({ brandId, outletId, isDelete: false }).lean();
+  let kotImages: string[] = [];
+  
+  if (printSettings?.kotPrinting?.isEnabled && isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) {
+    const updatedOrder = await OrderEntity.findById(orderId).populate('tableId').populate('waiterId').lean();
+    if (updatedOrder) {
+      kotImages = await generateKOTSvg(updatedOrder, processedItems as any, printSettings.kotPrinting);
+    }
+  }
+
+  const result = await getOrderById(brandId, outletId, String(orderId));
+  return {
+    ...result,
+    kotImages
+  };
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1689,26 +1704,30 @@ export const generateKotForOrder = async (
     throw { status: 400, message: 'KOT is disabled for this outlet' };
   }
 
+  let actionKotImages: string[] = [];
+
   // 1. Handle Order Creation or Item Appending
   if (!orderId) {
     if (!dto.orderType) {
       throw { status: 400, message: 'orderType is required to create a new order' };
     }
-    const order = await createOrder(brandId, outletId, userId, {
+    const result = await createOrder(brandId, outletId, userId, {
       orderType: dto.orderType,
       tableId: dto.tableId,
       customerId: dto.customerId,
       items: dto.items,
       notes: dto.notes
     });
-    orderId = String(order._id);
+    orderId = String(result._id);
+    actionKotImages = result.kotImages || [];
   } else {
     // Existing order
     if (dto.items && dto.items.length > 0) {
-      await addItemsToOrder(brandId, outletId, {
+      const result = await addItemsToOrder(brandId, outletId, {
         orderId,
         items: dto.items
       });
+      actionKotImages = result.kotImages || [];
     }
   }
 
@@ -1733,7 +1752,11 @@ export const generateKotForOrder = async (
   }).lean();
 
   if (unsentItems.length === 0) {
-    return getOrderById(brandId, outletId, orderId);
+    const orderData = await getOrderById(brandId, outletId, orderId);
+    return {
+      ...orderData,
+      kotImages: actionKotImages
+    };
   }
 
   // 3. Generate KOT
@@ -1777,7 +1800,7 @@ export const generateKotForOrder = async (
   const orderData = await getOrderById(brandId, outletId, orderId);
   return {
     ...orderData,
-    kotImages // Array of Base64 SVG strings
+    kotImages: [...actionKotImages, ...kotImages] // Array of Base64 SVG strings
   };
 };
 

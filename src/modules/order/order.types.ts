@@ -233,4 +233,5 @@ export interface OrderGroupBatch {
 export type OrderGroupResponse = Cleaned<Order> & {
   groups: OrderGroupBatch[];
   payments: Cleaned<Payment>[];
+  kotImages?: string[];
 };
