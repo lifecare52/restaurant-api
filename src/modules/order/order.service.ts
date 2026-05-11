@@ -766,8 +766,14 @@ export const createOrder = async (
   if (!userId) {
     throw { status: 400, message: 'Authenticated staff ID is required to create an order' };
   }
-  if (!dto.items || dto.items.length === 0) {
-    throw { status: 400, message: 'At least one item is required' };
+  const hasMetadataUpdate =
+    dto.manualTagId !== undefined ||
+    dto.customerId !== undefined ||
+    dto.notes !== undefined ||
+    dto.shippingAddress !== undefined;
+
+  if ((!dto.items || dto.items.length === 0) && !hasMetadataUpdate) {
+    throw { status: 400, message: 'At least one item or metadata update is required' };
   }
 
   // Fetch outlet settings
@@ -991,8 +997,15 @@ export const addItemsToOrder = async (
   }).lean();
 
   if (!order) throw { status: 404, message: 'Active order not found' };
-  if (!dto.items || dto.items.length === 0)
-    throw { status: 400, message: 'At least one item required' };
+  // items are optional if metadata is being updated
+  const hasMetadataUpdate =
+    dto.manualTagId !== undefined ||
+    dto.customerId !== undefined ||
+    dto.notes !== undefined ||
+    dto.shippingAddress !== undefined;
+
+  if ((!dto.items || dto.items.length === 0) && !hasMetadataUpdate)
+    throw { status: 400, message: 'At least one item or metadata update required' };
 
   // Fetch outlet settings
   const outlet = (await OutletEntity.findById(outletId).lean()) as Outlet | null;
@@ -1001,13 +1014,13 @@ export const addItemsToOrder = async (
   const generationMode = kotSettings?.generationMode ?? KOT_GENERATION_MODE.AUTO;
 
   const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(
-    dto.items
+    dto.items || []
   );
   const {
     processedItems,
     processedAddons
   } = processItems(
-    dto.items,
+    dto.items || [],
     brandId,
     outletId,
     menuItemMap,
@@ -1020,7 +1033,7 @@ export const addItemsToOrder = async (
     brandId,
     outletId,
     order.orderType,
-    dto.items,
+    dto.items || [],
     processedItems,
     menuItemMap
   );
@@ -1041,13 +1054,33 @@ export const addItemsToOrder = async (
       );
       return { ...storedItem, batchId };
     });
-    await OrderItemEntity.insertMany(finalItems, { session });
+    if (processedItems.length > 0) {
+      await OrderItemEntity.insertMany(finalItems, { session });
+    }
 
     if (processedAddons.length > 0) {
       await OrderItemAddonEntity.insertMany(
         processedAddons.map(pa => ({ ...pa, orderId: order._id })),
         { session }
       );
+    }
+
+    if (hasMetadataUpdate) {
+      const updateFields: any = {};
+      if (dto.manualTagId !== undefined) {
+        updateFields.manualTagId = dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null;
+      }
+      if (dto.customerId !== undefined) {
+        updateFields.customerId = dto.customerId ? new Types.ObjectId(dto.customerId) : null;
+      }
+      if (dto.notes !== undefined) {
+        updateFields.notes = dto.notes;
+      }
+      if (dto.shippingAddress !== undefined) {
+        updateFields.shippingAddress = dto.shippingAddress;
+      }
+
+      await OrderEntity.updateOne({ _id: order._id }, { $set: updateFields }, { session });
     }
 
     // Atomic total update — no read-modify-write race condition
@@ -1062,7 +1095,7 @@ export const addItemsToOrder = async (
   }
 
   // Generate supplemental KOT
-  if (isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) {
+  if (dto.items && dto.items.length > 0 && isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) {
     let tableName: string | undefined = undefined;
     if (order.tableId) {
       const table = await TableEntity.findById(order.tableId).lean();
@@ -1321,6 +1354,7 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
     .populate('tableId', 'name')
     .populate('waiterId', 'name role')
     .populate('customerId', 'name mobile email tags loyaltyPoints totalSpent totalOrders lastVisitAt creditBalance isActive')
+    .populate('manualTagId', 'name discountType discountValue')
     .populate('cancelledBy', 'name')
     .lean();
 
@@ -1704,6 +1738,12 @@ export const generateKotForOrder = async (
     throw { status: 400, message: 'KOT is disabled for this outlet' };
   }
 
+  const hasMetadataUpdate =
+    dto.manualTagId !== undefined ||
+    dto.customerId !== undefined ||
+    dto.notes !== undefined ||
+    dto.shippingAddress !== undefined;
+
   let actionKotImages: string[] = [];
 
   // 1. Handle Order Creation or Item Appending
@@ -1711,18 +1751,21 @@ export const generateKotForOrder = async (
     if (!dto.orderType) {
       throw { status: 400, message: 'orderType is required to create a new order' };
     }
+    
     const result = await createOrder(brandId, outletId, userId, {
       orderType: dto.orderType,
       tableId: dto.tableId,
-      customerId: dto.customerId,
-      items: dto.items,
-      notes: dto.notes
+      customerId: dto.customerId || undefined,
+      items: dto.items || [],
+      manualTagId: dto.manualTagId,
+      notes: dto.notes,
+      shippingAddress: dto.shippingAddress
     });
     orderId = String(result._id);
     actionKotImages = result.kotImages || [];
   } else {
     // Existing order
-    if (dto.items && dto.items.length > 0) {
+    if ((dto.items && dto.items.length > 0) || hasMetadataUpdate) {
       const result = await addItemsToOrder(brandId, outletId, {
         orderId,
         items: dto.items
@@ -1743,6 +1786,7 @@ export const generateKotForOrder = async (
     .lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
+
 
   const unsentItems = await OrderItemEntity.find({
     orderId: order._id,

@@ -32,7 +32,7 @@ export class TagRepository {
       isDelete: false
     })
       .collation({ locale: 'en', strength: 2 })
-      .select('-isDelete')
+      .select('-isDelete -brandId -outletId')
       .lean();
   }
 
@@ -49,7 +49,7 @@ export class TagRepository {
 
     return CustomerTagEntity.findOne(query)
       .collation({ locale: 'en', strength: 2 })
-      .select('-isDelete')
+      .select('-isDelete -brandId -outletId')
       .lean();
   }
 
@@ -64,7 +64,7 @@ export class TagRepository {
       query._id = { $ne: toObjectId(excludeId) } as any;
     }
 
-    return CustomerTagEntity.findOne(query).select('-isDelete').lean();
+    return CustomerTagEntity.findOne(query).select('-isDelete -brandId -outletId').lean();
   }
 
   async updateById(brandId: string, outletId: string, id: string, payload: UpdateCustomerTagDTO) {
@@ -75,7 +75,7 @@ export class TagRepository {
         isDelete: false
       },
       { $set: payload },
-      { new: true, runValidators: true, projection: { isDelete: 0 } }
+      { new: true, runValidators: true, projection: { isDelete: 0, brandId: 0, outletId: 0 } }
     ).lean();
   }
 
@@ -117,7 +117,7 @@ export class TagRepository {
         .sort({ [sortColumn]: sortOrder, _id: 1 })
         .skip(skip)
         .limit(limit)
-        .select('-isDelete')
+        .select('-isDelete -brandId -outletId')
         .lean(),
       CustomerTagEntity.countDocuments(filter)
     ]);
@@ -144,7 +144,7 @@ export class TagRepository {
       isDelete: false
     })
       .sort({ priority: -1, name: 1 })
-      .select('-isDelete')
+      .select('-isDelete -brandId -outletId')
       .lean();
   }
 
@@ -174,7 +174,7 @@ export class TagRepository {
       isDelete: false
     })
       .sort({ priority: -1, name: 1 })
-      .select('-isDelete')
+      .select('-isDelete -brandId -outletId')
       .lean();
   }
 }
