@@ -1,4 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
+
 import { printSettingService } from './print-setting.service';
 
 const getTenant = (req: Request) => ({
@@ -14,10 +15,15 @@ export class PrintSettingController {
   async getSettings(req: Request, res: Response, next: NextFunction) {
     try {
       const { brandId, outletId } = getTenant(req);
-      
+
       const settings = await printSettingService.getSettings(brandId, outletId);
-      
-      res.locals.response = { status: true, code: 200, message: 'Print settings retrieved successfully', data: settings };
+
+      res.locals.response = {
+        status: true,
+        code: 200,
+        message: 'Print settings retrieved successfully',
+        data: settings
+      };
       next();
     } catch (error) {
       next(error);
@@ -32,10 +38,15 @@ export class PrintSettingController {
     try {
       const { brandId, outletId } = getTenant(req);
       const updateData = req.body;
-      
+
       const settings = await printSettingService.updateSettings(brandId, outletId, updateData);
-      
-      res.locals.response = { status: true, code: 200, message: 'Print settings updated successfully', data: settings };
+
+      res.locals.response = {
+        status: true,
+        code: 200,
+        message: 'Print settings updated successfully',
+        data: settings
+      };
       next();
     } catch (error) {
       next(error);
