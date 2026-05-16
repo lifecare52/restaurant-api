@@ -6980,6 +6980,78 @@ export const getOpenApiSpec = () => {
             }
           }
         }
+      },
+      '/api/v1/media/upload': {
+        post: {
+          tags: ['Media'],
+          summary: 'Upload media file',
+          description: 'Uploads an image, document, or other media file to AWS S3. Uses multer memory storage and sharp for image optimization. Supports entity and outlet associations.',
+          security: [{ bearerAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              'multipart/form-data': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    file: {
+                      type: 'string',
+                      format: 'binary',
+                      description: 'The file to upload'
+                    },
+                    module: {
+                      type: 'string',
+                      description: 'Target module (e.g. products, users, categories)'
+                    },
+                    visibility: {
+                      type: 'string',
+                      enum: ['PUBLIC', 'PRIVATE'],
+                      default: 'PUBLIC'
+                    },
+                    sourceType: {
+                      type: 'string',
+                      enum: ['CAMERA', 'GALLERY', 'IMPORT', 'SYSTEM']
+                    },
+                    uploadedVia: {
+                      type: 'string',
+                      enum: ['WEB', 'MOBILE', 'API', 'SYSTEM']
+                    }
+                  },
+                  required: ['file', 'module']
+                }
+              }
+            }
+          },
+          responses: {
+            200: {
+              description: 'Media uploaded successfully',
+              content: {
+                'application/json': {
+                  schema: {
+                    allOf: [
+                      { $ref: '#/components/schemas/ApiResponse' },
+                      {
+                        type: 'object',
+                        properties: {
+                          data: {
+                            type: 'object',
+                            properties: {
+                              mediaId: { type: 'string' },
+                              key: { type: 'string' },
+                              url: { type: 'string' },
+                              size: { type: 'number' },
+                              format: { type: 'string' }
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   };
