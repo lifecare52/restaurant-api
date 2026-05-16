@@ -14,17 +14,17 @@ export const printSettingValidator = {
       headerText: Joi.string().allow('', null),
       showFooter: Joi.boolean(),
       footerText: Joi.string().allow('', null),
-      
+
       showCustomerDetails: Joi.boolean(),
       showCaptainName: Joi.boolean(),
       showCoverCount: Joi.boolean(),
       showItemHsnCode: Joi.boolean(),
       showDiscountDetails: Joi.boolean(),
-      
+
       showPaymentQrCode: Joi.boolean(),
       merchantUpiId: Joi.string().allow('', null),
       showOrderType: Joi.boolean(),
-      
+
       numberOfCopies: Joi.number().integer().min(1).max(5)
     }),
     kotPrinting: Joi.object({
