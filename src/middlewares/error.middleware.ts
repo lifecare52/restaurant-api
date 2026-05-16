@@ -30,6 +30,12 @@ export const errorHandler = (
     }
   }
 
+  if (message.includes('buffering timed out')) {
+    status = 503;
+    e.code = 'DATABASE_UNAVAILABLE';
+    message = 'Database connection is unavailable. Please try again after MongoDB reconnects.';
+  }
+
   const apiError: IApiError | undefined = e?.code ? { code: String(e.code), message } : undefined;
   const response: IApiResponse = {
     status: false,

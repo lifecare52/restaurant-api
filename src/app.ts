@@ -22,6 +22,7 @@ import printSettingRoutes from '@modules/print-setting/print-setting.route';
 import { getOpenApiSpec } from '@shared/docs/openapi';
 
 import corsMiddleware from '@middlewares/cors.middleware';
+import requireDatabaseConnection from '@middlewares/database.middleware';
 import { notFoundHandler, errorHandler } from '@middlewares/error.middleware';
 import responseMiddleware from '@middlewares/response.middleware';
 
@@ -31,6 +32,7 @@ export const createApp = (): express.Express => {
   app.use(express.json());
   app.get('/api-docs.json', (_req, res) => res.json(getOpenApiSpec()));
   app.use('/api/v1/api-docs', swaggerUi.serve, swaggerUi.setup(getOpenApiSpec()));
+  app.use('/api/v1', requireDatabaseConnection);
   app.use('/api/v1/brands', brandRoutes);
   app.use('/api/v1/meta', metaRoutes);
   app.use('/api/v1/brands', outletRoutes);
