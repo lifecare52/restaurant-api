@@ -15,8 +15,11 @@ import {
 } from '@modules/order/order.service';
 import OutletEntity from '@modules/outlet/outlet.model';
 import { getPaymentsByOrder } from '@modules/payment/payment.service';
+import { emitPrintJobToOutlet } from '@modules/printer-service/printer-service.dispatcher';
+import type { IApiResponse } from '@shared/interfaces/api';
 
 import type { Request, Response, NextFunction } from 'express';
+import type { Server } from 'socket.io';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
@@ -25,6 +28,19 @@ const getTenant = (req: Request) => ({
 
 const getUserId = (req: Request): string => (req.user?.id || '') as string;
 
+const emitPrintJob = async (
+  req: Request,
+  brandId: string,
+  outletId: string,
+  response: IApiResponse
+): Promise<void> => {
+  try {
+    await emitPrintJobToOutlet(req.app.get('io') as Server | undefined, brandId, outletId, response);
+  } catch {
+    // Printing is a side effect; the HTTP API response should not fail if socket emit fails.
+  }
+};
+
 // ─── Controllers ──────────────────────────────────────────────────────────────
 
 export const createOrderController = async (req: Request, res: Response, next: NextFunction) => {
@@ -32,12 +48,14 @@ export const createOrderController = async (req: Request, res: Response, next: N
     const { brandId, outletId } = getTenant(req);
     const userId = getUserId(req);
     const item = await createOrder(brandId, outletId, userId, req.body);
-    res.locals.response = {
+    const response: IApiResponse = {
       status: true,
       code: 201,
       message: 'Order created successfully',
       data: item,
     };
+    await emitPrintJob(req, brandId, outletId, response);
+    res.locals.response = response;
     next();
   } catch (err) {
     next(err);
@@ -68,12 +86,14 @@ export const addItemsToOrderController = async (
   try {
     const { brandId, outletId } = getTenant(req);
     const result = await addItemsToOrder(brandId, outletId, req.body);
-    res.locals.response = {
+    const response: IApiResponse = {
       status: true,
       code: 200,
       message: 'Items added to order',
       data: result,
     };
+    await emitPrintJob(req, brandId, outletId, response);
+    res.locals.response = response;
     next();
   } catch (err) {
     next(err);
@@ -85,12 +105,14 @@ export const generateKotController = async (req: Request, res: Response, next: N
     const { brandId, outletId } = getTenant(req);
     const userId = getUserId(req);
     const result = await generateKotForOrder(brandId, outletId, userId, req.body);
-    res.locals.response = {
+    const response: IApiResponse = {
       status: true,
       code: 201,
       message: 'KOT generated successfully',
       data: result,
     };
+    await emitPrintJob(req, brandId, outletId, response);
+    res.locals.response = response;
     next();
   } catch (err) {
     next(err);
@@ -223,12 +245,14 @@ export const reprintKOTController = async (req: Request, res: Response, next: Ne
     const { brandId, outletId } = getTenant(req);
 
     const result = await reprintKOT(brandId, outletId, orderId);
-    res.locals.response = {
+    const response: IApiResponse = {
       status: true,
       code: 200,
       message: 'KOT reprinted successfully',
       data: result,
     };
+    await emitPrintJob(req, brandId, outletId, response);
+    res.locals.response = response;
     next();
   } catch (err) {
     next(err);
@@ -246,12 +270,14 @@ export const printOrderBillController = async (req: Request, res: Response, next
     }
 
     const result = await printOrderBill(brandId, outletId, orderId, userId);
-    res.locals.response = {
+    const response: IApiResponse = {
       status: true,
       code: 200,
       message: 'Order bill printed successfully',
       data: result,
     };
+    await emitPrintJob(req, brandId, outletId, response);
+    res.locals.response = response;
     next();
   } catch (err) {
     next(err);
