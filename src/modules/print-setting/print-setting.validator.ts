@@ -8,7 +8,7 @@ export const printSettingValidator = {
       paperSize: Joi.string().valid('58mm', '80mm'),
       printMode: Joi.string().valid('SILENT', 'PREVIEW'),
       printerName: Joi.string().allow('', null),
-      
+
       showLogo: Joi.boolean(),
       showHeader: Joi.boolean(),
       headerText: Joi.string().allow('', null),
@@ -33,7 +33,7 @@ export const printSettingValidator = {
       paperSize: Joi.string().valid('58mm', '80mm'),
       printMode: Joi.string().valid('SILENT', 'PREVIEW'),
       printerName: Joi.string().allow('', null),
-      
+
       showModifiers: Joi.boolean(),
       itemWiseKOT: Joi.boolean(),
       showCancelledItems: Joi.boolean(),

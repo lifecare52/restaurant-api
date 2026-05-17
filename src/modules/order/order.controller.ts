@@ -32,10 +32,15 @@ const emitPrintJob = async (
   req: Request,
   brandId: string,
   outletId: string,
-  response: IApiResponse
+  response: IApiResponse,
 ): Promise<void> => {
   try {
-    await emitPrintJobToOutlet(req.app.get('io') as Server | undefined, brandId, outletId, response);
+    await emitPrintJobToOutlet(
+      req.app.get('io') as Server | undefined,
+      brandId,
+      outletId,
+      response,
+    );
   } catch {
     // Printing is a side effect; the HTTP API response should not fail if socket emit fails.
   }

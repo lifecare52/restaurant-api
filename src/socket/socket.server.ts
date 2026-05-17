@@ -12,8 +12,8 @@ export const initializeSocketServer = (httpServer: HttpServer): SocketIOServer =
       origin: corsConfig.allowedOrigins.includes('*') ? true : corsConfig.allowedOrigins,
       credentials: corsConfig.allowCredentials,
       methods: corsConfig.allowedMethods,
-      allowedHeaders: corsConfig.allowedHeaders
-    }
+      allowedHeaders: corsConfig.allowedHeaders,
+    },
   });
 
   io.on('connection', socket => {

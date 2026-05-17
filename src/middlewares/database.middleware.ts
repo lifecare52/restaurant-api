@@ -13,7 +13,7 @@ export const requireDatabaseConnection: RequestHandler = (_req, _res, next) => {
   next({
     status: 503,
     code: 'DATABASE_UNAVAILABLE',
-    message: 'Database connection is unavailable. Please try again after MongoDB reconnects.'
+    message: 'Database connection is unavailable. Please try again after MongoDB reconnects.',
   });
 };
 

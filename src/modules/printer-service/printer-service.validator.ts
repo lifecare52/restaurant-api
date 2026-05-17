@@ -2,12 +2,10 @@ import Joi from 'joi';
 
 import type {
   GetPrinterServicePayload,
-  RegisterPrinterServicePayload
+  RegisterPrinterServicePayload,
 } from './printer-service.types';
 
-type ValidationResult<T> =
-  | { success: true; value: T }
-  | { success: false; errorMessage: string };
+type ValidationResult<T> = { success: true; value: T } | { success: false; errorMessage: string };
 
 const outletId = Joi.string().trim().length(24).hex().required();
 const systemDetail = Joi.string().trim().min(1).max(150);
@@ -17,18 +15,21 @@ export const printerServiceValidator = {
     outletId,
     systemName: systemDetail.optional(),
     hostname: systemDetail.optional(),
-    platform: systemDetail.optional()
+    platform: systemDetail.optional(),
   }).unknown(true),
 
   get: Joi.object<GetPrinterServicePayload>({
-    outletId
-  }).unknown(false)
+    outletId,
+  }).unknown(false),
 };
 
-export const validateSocketPayload = <T>(schema: Joi.ObjectSchema<T>, payload: unknown): ValidationResult<T> => {
+export const validateSocketPayload = <T>(
+  schema: Joi.ObjectSchema<T>,
+  payload: unknown,
+): ValidationResult<T> => {
   const { value, error } = schema.validate(payload, {
     abortEarly: false,
-    stripUnknown: true
+    stripUnknown: true,
   });
 
   if (error) {

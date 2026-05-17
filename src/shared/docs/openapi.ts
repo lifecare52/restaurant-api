@@ -2211,6 +2211,103 @@ export const getOpenApiSpec = () => {
             },
           },
         },
+        PrinterServiceStatus: {
+          type: 'string',
+          enum: ['online', 'offline'],
+        },
+        PrinterServiceRecord: {
+          type: 'object',
+          properties: {
+            socketId: { type: 'string' },
+            outletId: { type: 'string' },
+            ipAddress: { type: 'string' },
+            systemName: { type: 'string' },
+            platform: { type: 'string' },
+            status: { $ref: '#/components/schemas/PrinterServiceStatus' },
+            connectedAt: { type: 'string', format: 'date-time' },
+            lastSeenAt: { type: 'string', format: 'date-time' },
+          },
+          required: [
+            'socketId',
+            'outletId',
+            'ipAddress',
+            'systemName',
+            'platform',
+            'status',
+            'connectedAt',
+            'lastSeenAt',
+          ],
+        },
+        RegisterPrinterServicePayload: {
+          type: 'object',
+          properties: {
+            outletId: { type: 'string', description: 'Valid outlet ID' },
+            systemName: { type: 'string', description: 'Name of the client system' },
+            hostname: { type: 'string', description: 'Hostname of the client' },
+            platform: { type: 'string', description: 'Operating system/platform of the client' },
+          },
+          required: ['outletId'],
+        },
+        GetPrinterServicePayload: {
+          type: 'object',
+          properties: {
+            outletId: { type: 'string', description: 'Valid outlet ID' },
+          },
+          required: ['outletId'],
+        },
+        SocketAckResponse: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            data: { type: 'object' },
+          },
+          required: ['success'],
+        },
+        SocketAckResponsePrinterServiceRecords: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            message: { type: 'string' },
+            data: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/PrinterServiceRecord' },
+            },
+          },
+          required: ['success'],
+        },
+        PrintJobPayload: {
+          type: 'object',
+          properties: {
+            success: { type: 'boolean' },
+            code: { type: 'number' },
+            message: { type: 'string', nullable: true },
+            data: {
+              type: 'object',
+              properties: {
+                kotImages: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description: 'List of base64 SVGs or image URLs for KOT printing',
+                },
+                receiptImage: {
+                  type: 'string',
+                  description: 'Base64 SVG or image URL for bill printing',
+                },
+                printerName: {
+                  type: 'string',
+                  description: 'Target printer name from print settings',
+                },
+                jobName: {
+                  type: 'string',
+                  description:
+                    'Dynamic identifier name of the print job (e.g., BILL-501 or KOT-501)',
+                },
+              },
+            },
+          },
+          required: ['success', 'code', 'data'],
+        },
       },
     },
     tags: [
@@ -2250,6 +2347,10 @@ export const getOpenApiSpec = () => {
       {
         name: 'Reports',
         description: 'Requires brand-id and outlet-id on all endpoints.',
+      },
+      {
+        name: 'WebSockets',
+        description: 'Real-time WebSocket events and print job dispatching via Socket.io.',
       },
     ],
     paths: {
@@ -7119,6 +7220,142 @@ export const getOpenApiSpec = () => {
               description: 'Forbidden — user does not have access to the brand or outlet',
               content: {
                 'application/json': { schema: { $ref: '#/components/schemas/ApiResponse' } },
+              },
+            },
+          },
+        },
+      },
+      '/socket.io/': {
+        get: {
+          tags: ['WebSockets'],
+          summary: 'Establish real-time Socket.io connection / handshake',
+          description:
+            'Clients connect to the server via standard Socket.io protocol. To test the HTTP polling transport handshake directly in Swagger, make sure the required Socket.io engine parameters (EIO and transport) are provided.',
+          parameters: [
+            {
+              name: 'EIO',
+              in: 'query',
+              required: true,
+              description: 'Engine.IO protocol version (typically 4)',
+              schema: { type: 'string', default: '4' },
+            },
+            {
+              name: 'transport',
+              in: 'query',
+              required: true,
+              description: 'Transport protocol',
+              schema: { type: 'string', enum: ['polling', 'websocket'], default: 'polling' },
+            },
+          ],
+          responses: {
+            200: {
+              description: 'Successful handshake / polling response',
+              content: {
+                'text/plain': {
+                  schema: {
+                    type: 'string',
+                    example:
+                      '0{"sid":"xyz","upgrades":["websocket"],"pingInterval":25000,"pingTimeout":20000}',
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      '/socket.io/events/register-printer-service': {
+        post: {
+          tags: ['WebSockets'],
+          summary: 'Client Event: register-printer-service',
+          description:
+            '**[VIRTUAL DOCUMENTATION ENDPOINT - DO NOT CALL DIRECTLY VIA HTTP]**\n\nSent by the local print agent client to register itself as the printing provider for an active outlet. Emit this event over an established Socket.io connection using: `socket.emit("register-printer-service", payload, callback)`. This client will join the room corresponding to the `outletId`. Any previous agent connected for this outlet is automatically disconnected.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/RegisterPrinterServicePayload' },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Acknowledgement callback response',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/SocketAckResponsePrinterServiceRecords' },
+                },
+              },
+            },
+          },
+        },
+      },
+      '/socket.io/events/get-printer-service': {
+        post: {
+          tags: ['WebSockets'],
+          summary: 'Client Event: get-printer-service',
+          description:
+            '**[VIRTUAL DOCUMENTATION ENDPOINT - DO NOT CALL DIRECTLY VIA HTTP]**\n\nSent by any connected client (e.g. POS UI) to retrieve the currently active printer service agents for the specified outlet. Emit this event over an established Socket.io connection using: `socket.emit("get-printer-service", payload, callback)`. The client will also join the room corresponding to the `outletId` to receive updates.',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/GetPrinterServicePayload' },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Acknowledgement callback response',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/SocketAckResponsePrinterServiceRecords' },
+                },
+              },
+            },
+          },
+        },
+      },
+      '/socket.io/events/printer-service-updated': {
+        get: {
+          tags: ['WebSockets'],
+          summary: 'Server Event: printer-service-updated',
+          description:
+            '**[VIRTUAL DOCUMENTATION ENDPOINT - DO NOT CALL DIRECTLY VIA HTTP]**\n\nBroadcasted to all sockets in the outlet room when a new printer service registers or an active printer service disconnects. Listen on the client using: `socket.on("printer-service-updated", (data) => { ... })`.',
+          responses: {
+            200: {
+              description: 'Broadcast Payload',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      outletId: { type: 'string' },
+                      data: {
+                        type: 'array',
+                        items: { $ref: '#/components/schemas/PrinterServiceRecord' },
+                      },
+                    },
+                    required: ['outletId', 'data'],
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+      '/socket.io/events/print-job': {
+        get: {
+          tags: ['WebSockets'],
+          summary: 'Server Event: print-job',
+          description:
+            '**[VIRTUAL DOCUMENTATION ENDPOINT - DO NOT CALL DIRECTLY VIA HTTP]**\n\nEmitted by the server directly to the active printer service agent socket whenever a print job (KOT or Bill) needs to be processed. Listen on the client using: `socket.on("print-job", (data) => { ... })`.',
+          responses: {
+            200: {
+              description: 'Direct Message Payload',
+              content: {
+                'application/json': {
+                  schema: { $ref: '#/components/schemas/PrintJobPayload' },
+                },
               },
             },
           },

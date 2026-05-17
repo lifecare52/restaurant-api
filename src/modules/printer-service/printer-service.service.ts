@@ -26,7 +26,7 @@ class PrinterServiceRegistry {
       platform,
       status: 'online',
       connectedAt: now,
-      lastSeenAt: now
+      lastSeenAt: now,
     };
 
     if (existingService) {
@@ -37,7 +37,7 @@ class PrinterServiceRegistry {
     this.socketOutletIndex.set(socket.id, payload.outletId);
     return {
       record,
-      replacedSocketId: existingService?.socketId
+      replacedSocketId: existingService?.socketId,
     };
   }
 
@@ -68,7 +68,7 @@ class PrinterServiceRegistry {
     const outlet = await OutletEntity.exists({
       _id: new Types.ObjectId(outletId),
       isActive: true,
-      isDelete: false
+      isDelete: false,
     });
 
     return Boolean(outlet);
@@ -83,7 +83,7 @@ class PrinterServiceRegistry {
 
   private getSystemName(
     socket: PrinterServiceSocketContext['socket'],
-    payload: PrinterServiceSocketContext['payload']
+    payload: PrinterServiceSocketContext['payload'],
   ): string {
     const headerHostname = socket.handshake.headers['x-hostname'];
     const hostname = Array.isArray(headerHostname) ? headerHostname[0] : headerHostname;
@@ -92,7 +92,7 @@ class PrinterServiceRegistry {
 
   private getPlatform(
     socket: PrinterServiceSocketContext['socket'],
-    payload: PrinterServiceSocketContext['payload']
+    payload: PrinterServiceSocketContext['payload'],
   ): string {
     const clientHintPlatform = socket.handshake.headers['sec-ch-ua-platform'];
     const userAgent = socket.handshake.headers['user-agent'];
