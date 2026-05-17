@@ -5,7 +5,7 @@ import AddonEntity from '@modules/menu/addons/addon.model';
 import type {
   AddonCreateDTO,
   AddonUpdateDTO,
-  AddonItemUpdateDTO
+  AddonItemUpdateDTO,
 } from '@modules/menu/addons/addon.types';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
@@ -26,11 +26,11 @@ export const createAddon = async (brandId: string, outletId: string, dto: AddonC
         price: i.price,
         sapCode: i.sapCode?.trim(),
         dietary: i.dietary,
-        available: i.available ?? true
+        available: i.available ?? true,
       })),
       isActive: dto.isActive ?? true,
       taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
-      isDelete: false
+      isDelete: false,
     });
   } catch (err) {
     const e = err as { code?: number; keyPattern?: Record<string, number> };
@@ -44,7 +44,7 @@ export const createAddon = async (brandId: string, outletId: string, dto: AddonC
 export const listAddons = async (
   brandId: string,
   outletId: string,
-  pagination: PaginationQuery
+  pagination: PaginationQuery,
 ) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;
@@ -52,7 +52,7 @@ export const listAddons = async (
   const filter: Record<string, unknown> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   };
   if (pagination.searchText) {
     const regex = new RegExp(pagination.searchText, 'i');
@@ -60,7 +60,7 @@ export const listAddons = async (
       filter[pagination.column] = { $regex: regex };
     } else {
       Object.assign(filter, {
-        $or: [{ name: { $regex: regex } }]
+        $or: [{ name: { $regex: regex } }],
       });
     }
   }
@@ -71,7 +71,7 @@ export const listAddons = async (
       .sort({ [sortColumn]: sortOrder })
       .skip(skip)
       .limit(limit),
-    AddonEntity.countDocuments(filter)
+    AddonEntity.countDocuments(filter),
   ]);
   return { items, total };
 };
@@ -81,7 +81,7 @@ export const listActiveAddons = async (brandId: string, outletId: string) => {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    isActive: true
+    isActive: true,
   };
   const items = await AddonEntity.find(filter).select('name').sort({ name: 1 }).lean();
   return items;
@@ -92,16 +92,13 @@ export const getAddon = async (brandId: string, outletId: string, addonId: strin
     _id: new Types.ObjectId(addonId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   });
 };
 
-const applyAddonItemsDiff = (
-  addon: typeof AddonEntity.prototype,
-  items: AddonItemUpdateDTO[]
-) => {
+const applyAddonItemsDiff = (addon: typeof AddonEntity.prototype, items: AddonItemUpdateDTO[]) => {
   const existingIds = new Set<string>(
-    (addon.items || []).map((i: { _id?: Types.ObjectId }) => String(i._id))
+    (addon.items || []).map((i: { _id?: Types.ObjectId }) => String(i._id)),
   );
 
   const incomingIdSet = new Set<string>();
@@ -144,7 +141,7 @@ const applyAddonItemsDiff = (
       price: item.price,
       sapCode: item.sapCode,
       dietary: item.dietary,
-      available: item.available ?? true
+      available: item.available ?? true,
     } as never);
   }
 };
@@ -153,12 +150,12 @@ export const updateAddonItems = async (
   brandId: string,
   outletId: string,
   addonId: string,
-  items: AddonItemUpdateDTO[]
+  items: AddonItemUpdateDTO[],
 ) => {
   const addon = await AddonEntity.findOne({
     _id: new Types.ObjectId(addonId),
     brandId: new Types.ObjectId(brandId),
-    outletId: new Types.ObjectId(outletId)
+    outletId: new Types.ObjectId(outletId),
   });
   if (!addon) return null;
 
@@ -171,13 +168,13 @@ export const updateAddon = async (
   brandId: string,
   outletId: string,
   addonId: string,
-  dto: AddonUpdateDTO
+  dto: AddonUpdateDTO,
 ) => {
   try {
     const addon = await AddonEntity.findOne({
       _id: new Types.ObjectId(addonId),
       brandId: new Types.ObjectId(brandId),
-      outletId: new Types.ObjectId(outletId)
+      outletId: new Types.ObjectId(outletId),
     });
     if (!addon) return null;
 
@@ -210,10 +207,10 @@ export const deleteAddon = async (brandId: string, outletId: string, addonId: st
     {
       _id: new Types.ObjectId(addonId),
       brandId: new Types.ObjectId(brandId),
-      outletId: new Types.ObjectId(outletId)
+      outletId: new Types.ObjectId(outletId),
     },
     { $set: { isDelete: true } },
-    { new: true }
+    { new: true },
   );
 };
 
@@ -224,5 +221,5 @@ export default {
   getAddon,
   updateAddonItems,
   updateAddon,
-  deleteAddon
+  deleteAddon,
 };

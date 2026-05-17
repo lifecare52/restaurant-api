@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+
 import { mediaService } from './media.service';
 
 export class MediaController {
@@ -9,21 +10,21 @@ export class MediaController {
       }
 
       const uploadedBy = (req as any).user?.id || (req as any).user?._id;
+      const brandId = req.headers['brand-id'] as string;
       const outletId = req.headers['outlet-id'] as string;
-      const entityId = req.headers['entity-id'] as string;
 
       const result = await mediaService.uploadMedia(req.file, {
-        ...req.body,
+        module: req.body.module,
+        brandId,
         outletId,
-        entityId,
-        uploadedBy
+        uploadedBy,
       });
 
       res.locals.response = {
         status: true,
         code: 201,
         message: 'Media uploaded successfully',
-        data: result
+        data: result,
       };
       next();
     } catch (error) {

@@ -28,7 +28,7 @@ async function seedData() {
       { brandId, outletId, name: 'Main Course' },
       { brandId, outletId, name: 'Breads' },
       { brandId, outletId, name: 'Desserts' },
-      { brandId, outletId, name: 'Beverages' }
+      { brandId, outletId, name: 'Beverages' },
     ];
     let categories: any[] = [];
     for (const cat of categoriesToCreate) {
@@ -51,8 +51,8 @@ async function seedData() {
         items: [
           { name: 'Mint Chutney', price: 20, dietary: Dietary.VEG },
           { name: 'Garlic Mayo', price: 30, dietary: Dietary.VEG },
-          { name: 'Sweet Chili', price: 25, dietary: Dietary.VEG }
-        ]
+          { name: 'Sweet Chili', price: 25, dietary: Dietary.VEG },
+        ],
       },
       {
         brandId,
@@ -61,9 +61,9 @@ async function seedData() {
         items: [
           { name: 'Extra Cheese', price: 50, dietary: Dietary.VEG },
           { name: 'Olives & Jalapenos', price: 40, dietary: Dietary.VEG },
-          { name: 'Chicken Tikka Chunks', price: 80, dietary: Dietary.NON_VEG }
-        ]
-      }
+          { name: 'Chicken Tikka Chunks', price: 80, dietary: Dietary.NON_VEG },
+        ],
+      },
     ];
 
     let addons: any[] = [];
@@ -72,7 +72,7 @@ async function seedData() {
       const existing = await AddonEntity.findOne({
         brandId,
         outletId,
-        name: { $regex: new RegExp(`^${addon.name}$`, 'i') }
+        name: { $regex: new RegExp(`^${addon.name}$`, 'i') },
       });
       if (existing) {
         addons.push(existing);
@@ -89,7 +89,7 @@ async function seedData() {
       { brandId, outletId, name: 'Medium', department: VariationDepartment.SIZE },
       { brandId, outletId, name: 'Large', department: VariationDepartment.SIZE },
       { brandId, outletId, name: 'Half', department: VariationDepartment.PORTION },
-      { brandId, outletId, name: 'Full', department: VariationDepartment.PORTION }
+      { brandId, outletId, name: 'Full', department: VariationDepartment.PORTION },
     ];
     let variations: any[] = [];
     for (const v of variationsToCreate) {
@@ -97,7 +97,7 @@ async function seedData() {
         brandId,
         outletId,
         department: v.department,
-        name: { $regex: new RegExp(`^${v.name}$`, 'i') }
+        name: { $regex: new RegExp(`^${v.name}$`, 'i') },
       });
       if (existing) {
         variations.push(existing);
@@ -156,7 +156,7 @@ async function seedData() {
         name: 'Chocolate Brownie with Ice Cream',
         categoryIndex: 3,
         dietary: Dietary.EGG,
-        basePrice: 220
+        basePrice: 220,
       },
       { name: 'Moong Dal Halwa', categoryIndex: 3, dietary: Dietary.VEG, basePrice: 160 },
       { name: 'Kheer', categoryIndex: 3, dietary: Dietary.VEG, basePrice: 130 },
@@ -174,7 +174,7 @@ async function seedData() {
       { name: 'Oreo Shake', categoryIndex: 4, dietary: Dietary.VEG, basePrice: 180 },
       { name: 'Masala Chai', categoryIndex: 4, dietary: Dietary.VEG, basePrice: 50 },
       { name: 'Filter Coffee', categoryIndex: 4, dietary: Dietary.VEG, basePrice: 70 },
-      { name: 'Mango Smoothie', categoryIndex: 4, dietary: Dietary.VEG, basePrice: 200 }
+      { name: 'Mango Smoothie', categoryIndex: 4, dietary: Dietary.VEG, basePrice: 200 },
     ];
 
     let createdCount = 0;
@@ -201,7 +201,7 @@ async function seedData() {
         takeAway: true,
         dineIn: true,
         isActive: true,
-        isVariation: false
+        isVariation: false,
       };
 
       if (itemDef.categoryIndex === 1 || itemDef.categoryIndex === 4) {

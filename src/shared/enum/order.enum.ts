@@ -1,21 +1,21 @@
 export enum ORDER_TYPE {
   DINE_IN = 1,
   TAKEAWAY = 2,
-  DELIVERY = 3
+  DELIVERY = 3,
 }
 
 export enum ORDER_STATUS {
   OPEN = 1,
   IN_PROGRESS = 2,
   COMPLETED = 3,
-  CANCELLED = 4
+  CANCELLED = 4,
 }
 
 export enum PAYMENT_STATUS {
   UNPAID = 1,
   PARTIAL = 2,
   PAID = 3,
-  REFUNDED = 4
+  REFUNDED = 4,
 }
 
 export enum KOT_STATUS {
@@ -23,7 +23,7 @@ export enum KOT_STATUS {
   PREPARING = 2,
   READY = 3,
   SERVED = 4,
-  CANCELLED = 5
+  CANCELLED = 5,
 }
 
 /** Per-item kitchen lifecycle status */
@@ -32,19 +32,19 @@ export enum ITEM_STATUS {
   PREPARING = 2,
   READY = 3,
   SERVED = 4,
-  CANCELLED = 5
+  CANCELLED = 5,
 }
 
 /** KOT document type */
 export enum KOT_TYPE {
   REGULAR = 1, // new items added
   VOID = 2, // item cancellation signal to kitchen
-  REPRINT = 3 // manual reprint requested
+  REPRINT = 3, // manual reprint requested
 }
 
 export enum KOT_GENERATION_MODE {
   AUTO = 1,
-  MANUAL = 2
+  MANUAL = 2,
 }
 
 /** Payment methods supported */
@@ -53,7 +53,7 @@ export enum PAYMENT_METHOD {
   CARD = 2,
   UPI = 3,
   WALLET = 4,
-  ONLINE = 5
+  ONLINE = 5,
 }
 
 export enum SETTLEMENT_STATUS {
@@ -62,7 +62,7 @@ export enum SETTLEMENT_STATUS {
   SHORT_SETTLED = 3,
   OVER_SETTLED = 4,
   REFUNDED = 5,
-  PARTIALLY_REFUNDED = 6
+  PARTIALLY_REFUNDED = 6,
 }
 
 export enum SETTLEMENT_SOURCE {
@@ -70,10 +70,10 @@ export enum SETTLEMENT_SOURCE {
   CUSTOMER_CREDIT = 2,
   SETTLEMENT_LEDGER = 3,
   WRITE_OFF = 4,
-  REFUND_REVERSAL = 5
+  REFUND_REVERSAL = 5,
 }
 
 export enum ORDER_GROUP_TYPE {
   KOT = 1,
-  BATCH = 2
+  BATCH = 2,
 }

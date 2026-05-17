@@ -18,9 +18,9 @@ const DailySequenceSchema = new Schema<DailySequence>(
     outletId: { type: Schema.Types.ObjectId, required: true, ref: 'Outlet' },
     date: { type: String, required: true },
     type: { type: String, enum: ['ORDER', 'KOT', 'TOKEN'], required: true, default: 'TOKEN' },
-    seq: { type: Number, default: 0 }
+    seq: { type: Number, default: 0 },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Unique sequencing per outlet, per day, per type
@@ -29,7 +29,7 @@ DailySequenceSchema.index({ brandId: 1, outletId: 1, date: 1, type: 1 }, { uniqu
 export const DailySequenceEntity = model<DailySequence, DailySequenceModel>(
   'DailySequence',
   DailySequenceSchema,
-  'daily_sequences'
+  'daily_sequences',
 );
 
 export default DailySequenceEntity;

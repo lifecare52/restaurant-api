@@ -1,11 +1,12 @@
-import { v7 as uuidv7 } from 'uuid';
 import sharp from 'sharp';
+import { v7 as uuidv7 } from 'uuid';
+
 import type { Express } from 'express';
 
 export interface IMediaStrategy {
   validate(file: Express.Multer.File): void;
   process(file: Express.Multer.File): Promise<Express.Multer.File>;
-  generateKey(filename: string, brandId?: string, outletId?: string, entityId?: string): string;
+  generateKey(filename: string, brandId?: string, outletId?: string): string;
 }
 
 export class BaseMediaStrategy implements IMediaStrategy {
@@ -18,7 +19,13 @@ export class BaseMediaStrategy implements IMediaStrategy {
   }
 
   public validate(file: Express.Multer.File): void {
-    const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml', 'application/pdf'];
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/webp',
+      'image/svg+xml',
+      'application/pdf',
+    ];
     if (!allowedMimeTypes.includes(file.mimetype)) {
       throw new Error(`Unsupported file type: ${file.mimetype}`);
     }
@@ -34,25 +41,23 @@ export class BaseMediaStrategy implements IMediaStrategy {
     }
 
     // Visually lossless processing: strip metadata, retain format if high quality, convert to webp otherwise
-    const processedBuffer = await sharp(file.buffer)
-      .toBuffer();
+    const processedBuffer = await sharp(file.buffer).toBuffer();
 
     return {
       ...file,
       buffer: processedBuffer,
-      size: processedBuffer.length
+      size: processedBuffer.length,
     };
   }
 
-  public generateKey(filename: string, brandId?: string, outletId?: string, entityId?: string): string {
+  public generateKey(filename: string, brandId?: string, outletId?: string): string {
     const ext = filename.split('.').pop() || '';
     const uniqueId = uuidv7();
-    
+
     const brandPart = brandId ? `brands/${brandId}` : 'brands/global';
     const outletPart = outletId ? `outlets/${outletId}` : 'outlets/global';
-    const entityPart = entityId ? `/${entityId}` : '';
 
-    return `${this.environment}/${brandPart}/${outletPart}/modules/${this.moduleName}${entityPart}/${uniqueId}.${ext}`;
+    return `${this.environment}/${brandPart}/${outletPart}/modules/${this.moduleName}/${uniqueId}.${ext}`;
   }
 }
 

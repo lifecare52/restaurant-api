@@ -1,3 +1,5 @@
+import type { Payment } from '@modules/payment/payment.types';
+
 import {
   ORDER_TYPE,
   ORDER_STATUS,
@@ -7,14 +9,23 @@ import {
   SETTLEMENT_STATUS,
   SETTLEMENT_SOURCE,
   KOT_GENERATION_MODE,
-  ORDER_GROUP_TYPE
+  ORDER_GROUP_TYPE,
 } from '@shared/enum/order.enum';
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 import type { Types } from 'mongoose';
-import type { Payment } from '@modules/payment/payment.types';
 
-export { ORDER_TYPE, ORDER_STATUS, PAYMENT_STATUS, ITEM_STATUS, PAYMENT_METHOD, SETTLEMENT_STATUS, SETTLEMENT_SOURCE, KOT_GENERATION_MODE, ORDER_GROUP_TYPE };
+export {
+  ORDER_TYPE,
+  ORDER_STATUS,
+  PAYMENT_STATUS,
+  ITEM_STATUS,
+  PAYMENT_METHOD,
+  SETTLEMENT_STATUS,
+  SETTLEMENT_SOURCE,
+  KOT_GENERATION_MODE,
+  ORDER_GROUP_TYPE,
+};
 
 export interface AppliedTaxSnapshot {
   taxId?: Types.ObjectId | null;
@@ -27,7 +38,7 @@ export interface AppliedTaxSnapshot {
   taxAmount: number;
 }
 
-export interface OrderTaxBreakup extends AppliedTaxSnapshot { }
+export interface OrderTaxBreakup extends AppliedTaxSnapshot {}
 
 export interface Order {
   _id?: Types.ObjectId;
@@ -182,7 +193,7 @@ export interface CreateOrderDTO {
   shippingAddress?: string;
 }
 
-export interface PreviewOrderDTO extends CreateOrderDTO { }
+export interface PreviewOrderDTO extends CreateOrderDTO {}
 
 export interface AddItemsToOrderDTO {
   orderId: string;

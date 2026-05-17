@@ -1,4 +1,5 @@
 import { TREND } from '@shared/enum/dashboard.enum';
+
 import type { Types } from 'mongoose';
 
 export interface SalesSummary {

@@ -6,7 +6,7 @@ import {
   tagHeaderSchema,
   tagIdParamSchema,
   tagListQuerySchema,
-  updateTagSchema
+  updateTagSchema,
 } from '@modules/tag/tag.validator';
 
 import { validateRequest } from '@shared/utils/validateRequest';
@@ -20,18 +20,23 @@ const tenantMiddleware = [
   auth,
   validateRequest(tagHeaderSchema, 'headers'),
   requireBrandAccess,
-  requireOutletAccess
+  requireOutletAccess,
 ];
 
 router.post('/', ...tenantMiddleware, validateRequest(createTagSchema), tagController.createTag);
 
-router.get('/', ...tenantMiddleware, validateRequest(tagListQuerySchema, 'query'), tagController.getTags);
+router.get(
+  '/',
+  ...tenantMiddleware,
+  validateRequest(tagListQuerySchema, 'query'),
+  tagController.getTags,
+);
 
 router.get(
   '/:id',
   ...tenantMiddleware,
   validateRequest(tagIdParamSchema, 'params'),
-  tagController.getTagById
+  tagController.getTagById,
 );
 
 router.put(
@@ -39,14 +44,14 @@ router.put(
   ...tenantMiddleware,
   validateRequest(tagIdParamSchema, 'params'),
   validateRequest(updateTagSchema),
-  tagController.updateTag
+  tagController.updateTag,
 );
 
 router.delete(
   '/:id',
   ...tenantMiddleware,
   validateRequest(tagIdParamSchema, 'params'),
-  tagController.deleteTag
+  tagController.deleteTag,
 );
 
 export default router;

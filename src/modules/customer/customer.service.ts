@@ -3,14 +3,16 @@ import type {
   AssignCustomerTagsDTO,
   CreateCustomerDTO,
   CustomerListQuery,
-  UpdateCustomerDTO
+  UpdateCustomerDTO,
 } from '@modules/customer/customer.types';
 import { tagRepository } from '@modules/tag/tag.repository';
 
 export class CustomerService {
   private normalizeMobile(mobile: string) {
     const digitsOnly = mobile.replace(/\D/g, '');
-    return digitsOnly.length === 12 && digitsOnly.startsWith('91') ? digitsOnly.slice(2) : digitsOnly;
+    return digitsOnly.length === 12 && digitsOnly.startsWith('91')
+      ? digitsOnly.slice(2)
+      : digitsOnly;
   }
 
   private normalizeEmail(email?: string | null) {
@@ -44,7 +46,7 @@ export class CustomerService {
     const normalizedMobile = this.normalizeMobile(payload.mobile);
     await Promise.all([
       this.ensureMobileAvailable(brandId, normalizedMobile),
-      this.ensureTagsBelongToTenant(brandId, outletId, payload.tags)
+      this.ensureTagsBelongToTenant(brandId, outletId, payload.tags),
     ]);
 
     return customerRepository.create(brandId, outletId, {
@@ -54,16 +56,11 @@ export class CustomerService {
       tags: payload.tags ?? [],
       loyaltyPoints: payload.loyaltyPoints ?? 0,
       creditBalance: payload.creditBalance ?? 0,
-      isActive: payload.isActive ?? true
+      isActive: payload.isActive ?? true,
     });
   }
 
-  async updateCustomer(
-    brandId: string,
-    outletId: string,
-    id: string,
-    payload: UpdateCustomerDTO
-  ) {
+  async updateCustomer(brandId: string, outletId: string, id: string, payload: UpdateCustomerDTO) {
     const existing = await customerRepository.findRawById(brandId, outletId, id);
     if (!existing) {
       throw { status: 404, message: 'Customer not found' };
@@ -71,14 +68,16 @@ export class CustomerService {
 
     const normalizedMobile = payload.mobile ? this.normalizeMobile(payload.mobile) : undefined;
     await Promise.all([
-      normalizedMobile ? this.ensureMobileAvailable(brandId, normalizedMobile, id) : Promise.resolve(),
-      this.ensureTagsBelongToTenant(brandId, outletId, payload.tags)
+      normalizedMobile
+        ? this.ensureMobileAvailable(brandId, normalizedMobile, id)
+        : Promise.resolve(),
+      this.ensureTagsBelongToTenant(brandId, outletId, payload.tags),
     ]);
 
     const updated = await customerRepository.updateById(brandId, outletId, id, {
       ...payload,
       mobile: normalizedMobile,
-      email: payload.email !== undefined ? this.normalizeEmail(payload.email) : undefined
+      email: payload.email !== undefined ? this.normalizeEmail(payload.email) : undefined,
     });
 
     if (!updated) {
@@ -110,12 +109,7 @@ export class CustomerService {
     return customer;
   }
 
-  async assignTags(
-    brandId: string,
-    outletId: string,
-    id: string,
-    payload: AssignCustomerTagsDTO
-  ) {
+  async assignTags(brandId: string, outletId: string, id: string, payload: AssignCustomerTagsDTO) {
     await this.ensureTagsBelongToTenant(brandId, outletId, payload.tagIds);
     const customer = await customerRepository.assignTags(brandId, outletId, id, payload);
 
@@ -144,7 +138,12 @@ export class CustomerService {
     return customer;
   }
 
-  async updateCustomerStats(brandId: string, outletId: string, customerId: string, totalAmount: number) {
+  async updateCustomerStats(
+    brandId: string,
+    outletId: string,
+    customerId: string,
+    totalAmount: number,
+  ) {
     await customerRepository.updateStats(brandId, outletId, customerId, totalAmount);
   }
 

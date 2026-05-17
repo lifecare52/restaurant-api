@@ -121,5 +121,4 @@ export interface UpdateKOTItemStatusDTO {
 
 export interface KOTItemStatusUpdateResponse {
   status: ITEM_STATUS;
-  
 }

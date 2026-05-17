@@ -3,7 +3,7 @@ import {
   CUSTOMER_TAG_DISCOUNT_TYPE,
   type CreateCustomerTagDTO,
   type CustomerTagListQuery,
-  type UpdateCustomerTagDTO
+  type UpdateCustomerTagDTO,
 } from '@modules/tag/tag.types';
 
 export class TagService {
@@ -25,14 +25,14 @@ export class TagService {
     ) {
       throw {
         status: 400,
-        message: 'discountValue must be between 0.01 and 100 for percentage discounts'
+        message: 'discountValue must be between 0.01 and 100 for percentage discounts',
       };
     }
 
     if (discountType === CUSTOMER_TAG_DISCOUNT_TYPE.FLAT && discountValue <= 0) {
       throw {
         status: 400,
-        message: 'discountValue must be greater than 0 for flat discounts'
+        message: 'discountValue must be greater than 0 for flat discounts',
       };
     }
   }
@@ -41,7 +41,7 @@ export class TagService {
     brandId: string,
     outletId: string,
     name: string | undefined,
-    excludeId?: string
+    excludeId?: string,
   ) {
     if (!name) {
       return;
@@ -57,7 +57,7 @@ export class TagService {
     brandId: string,
     outletId: string,
     priority: number | undefined,
-    excludeId?: string
+    excludeId?: string,
   ) {
     if (priority === undefined) {
       return;
@@ -74,26 +74,21 @@ export class TagService {
     this.validateDiscountPayload(payload);
     await Promise.all([
       this.ensureNameAvailable(brandId, outletId, normalizedName),
-      this.ensurePriorityAvailable(brandId, outletId, payload.priority)
+      this.ensurePriorityAvailable(brandId, outletId, payload.priority),
     ]);
 
     return tagRepository.create(brandId, outletId, {
       ...payload,
       name: normalizedName,
       discountValue:
-        payload.discountType === CUSTOMER_TAG_DISCOUNT_TYPE.NONE ? 0 : payload.discountValue ?? 0,
+        payload.discountType === CUSTOMER_TAG_DISCOUNT_TYPE.NONE ? 0 : (payload.discountValue ?? 0),
       minOrderAmount: payload.minOrderAmount ?? 0,
       priority: payload.priority ?? 1,
-      isActive: payload.isActive ?? true
+      isActive: payload.isActive ?? true,
     });
   }
 
-  async updateTag(
-    brandId: string,
-    outletId: string,
-    id: string,
-    payload: UpdateCustomerTagDTO
-  ) {
+  async updateTag(brandId: string, outletId: string, id: string, payload: UpdateCustomerTagDTO) {
     const existing = await tagRepository.findById(brandId, outletId, id);
     if (!existing) {
       throw { status: 404, message: 'Tag not found' };
@@ -103,13 +98,13 @@ export class TagService {
     const mergedPayload = {
       ...existing,
       ...payload,
-      name: normalizedName ?? existing.name
+      name: normalizedName ?? existing.name,
     };
 
     this.validateDiscountPayload(mergedPayload);
     await Promise.all([
       this.ensureNameAvailable(brandId, outletId, normalizedName, id),
-      this.ensurePriorityAvailable(brandId, outletId, payload.priority, id)
+      this.ensurePriorityAvailable(brandId, outletId, payload.priority, id),
     ]);
 
     const updated = await tagRepository.updateById(brandId, outletId, id, {
@@ -118,7 +113,7 @@ export class TagService {
       discountValue:
         mergedPayload.discountType === CUSTOMER_TAG_DISCOUNT_TYPE.NONE
           ? 0
-          : mergedPayload.discountValue
+          : mergedPayload.discountValue,
     });
 
     if (!updated) {

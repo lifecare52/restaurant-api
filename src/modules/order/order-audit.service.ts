@@ -23,7 +23,7 @@ export const logOrderAction = (params: LogParams): void => {
     action: params.action,
     performedBy: params.performedBy ? new Types.ObjectId(params.performedBy) : null,
     metadata: params.metadata ?? {},
-    timestamp: new Date()
+    timestamp: new Date(),
   }).catch(err => {
     // Audit failures should never crash the request pipeline
     console.error('[AuditLog] Failed to write audit entry:', err?.message);

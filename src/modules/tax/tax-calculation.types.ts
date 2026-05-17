@@ -1,7 +1,7 @@
-import type { ORDER_TYPE } from '@shared/enum/order.enum';
-
 import type { AppliedTaxSnapshot, OrderTaxBreakup } from '@modules/order/order.types';
 import type { OrderType, TaxCalculationMethod, TaxType } from '@modules/tax/tax.types';
+
+import type { ORDER_TYPE } from '@shared/enum/order.enum';
 
 export interface TaxEngineTaxInput {
   taxId?: string | null;

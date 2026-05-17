@@ -15,7 +15,7 @@ export const responseMiddleware = (_req: Request, res: Response, next: NextFunct
     data: r.data,
     errors: r.errors,
     validationMessages: r.validationMessages,
-    total: r.total
+    total: r.total,
   };
   res.status(code).json(payload);
 };

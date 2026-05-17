@@ -42,7 +42,7 @@ const OutletSchema = new Schema<Outlet>(
       name: { type: String, required: true, trim: true },
       logo: { type: String },
       cuisineType: [{ type: String }],
-      outletType: { type: String, required: true, trim: true }
+      outletType: { type: String, required: true, trim: true },
     },
     contact: {
       email: { type: String, required: true, trim: true, lowercase: true },
@@ -50,7 +50,7 @@ const OutletSchema = new Schema<Outlet>(
       country: { type: String, required: true, trim: true },
       state: { type: String, required: true, trim: true },
       city: { type: String, required: true, trim: true },
-      address: { type: String, required: true, trim: true }
+      address: { type: String, required: true, trim: true },
     },
     settings: {
       gstEnabled: { type: Boolean, default: false },
@@ -58,7 +58,7 @@ const OutletSchema = new Schema<Outlet>(
       gstScheme: {
         type: String,
         enum: Object.values(GstScheme),
-        default: GstScheme.NONE
+        default: GstScheme.NONE,
       },
       currency: { type: String },
       kotSettings: {
@@ -66,14 +66,14 @@ const OutletSchema = new Schema<Outlet>(
         generationMode: {
           type: Number,
           enum: Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number'),
-          default: KOT_GENERATION_MODE.AUTO
-        }
-      }
+          default: KOT_GENERATION_MODE.AUTO,
+        },
+      },
     },
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false }
+    isDelete: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const OutletEntity = model<Outlet, OutletModel>('Outlet', OutletSchema);

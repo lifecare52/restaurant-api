@@ -8,7 +8,7 @@ import {
   customerIdParamSchema,
   customerListQuerySchema,
   customerTagParamSchema,
-  updateCustomerSchema
+  updateCustomerSchema,
 } from '@modules/customer/customer.validator';
 
 import { validateRequest } from '@shared/utils/validateRequest';
@@ -22,28 +22,28 @@ const tenantMiddleware = [
   auth,
   validateRequest(customerHeaderSchema, 'headers'),
   requireBrandAccess,
-  requireOutletAccess
+  requireOutletAccess,
 ];
 
 router.post(
   '/',
   ...tenantMiddleware,
   validateRequest(createCustomerSchema),
-  customerController.createCustomer
+  customerController.createCustomer,
 );
 
 router.get(
   '/',
   ...tenantMiddleware,
   validateRequest(customerListQuerySchema, 'query'),
-  customerController.getCustomers
+  customerController.getCustomers,
 );
 
 router.get(
   '/:id',
   ...tenantMiddleware,
   validateRequest(customerIdParamSchema, 'params'),
-  customerController.getCustomerById
+  customerController.getCustomerById,
 );
 
 router.put(
@@ -51,14 +51,14 @@ router.put(
   ...tenantMiddleware,
   validateRequest(customerIdParamSchema, 'params'),
   validateRequest(updateCustomerSchema),
-  customerController.updateCustomer
+  customerController.updateCustomer,
 );
 
 router.delete(
   '/:id',
   ...tenantMiddleware,
   validateRequest(customerIdParamSchema, 'params'),
-  customerController.deleteCustomer
+  customerController.deleteCustomer,
 );
 
 router.post(
@@ -66,14 +66,14 @@ router.post(
   ...tenantMiddleware,
   validateRequest(customerIdParamSchema, 'params'),
   validateRequest(assignCustomerTagsSchema),
-  customerController.assignTags
+  customerController.assignTags,
 );
 
 router.delete(
   '/:id/tags/:tagId',
   ...tenantMiddleware,
   validateRequest(customerTagParamSchema, 'params'),
-  customerController.removeTag
+  customerController.removeTag,
 );
 
 export default router;

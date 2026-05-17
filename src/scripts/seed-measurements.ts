@@ -36,7 +36,7 @@ async function seedMeasurements() {
           unit: 'kg',
           baseUnit: 'g',
           conversionFactor: 1000,
-          isDecimalAllowed: true
+          isDecimalAllowed: true,
         },
         {
           name: 'Volume in Liters',
@@ -44,7 +44,7 @@ async function seedMeasurements() {
           unit: 'L',
           baseUnit: 'ml',
           conversionFactor: 1000,
-          isDecimalAllowed: true
+          isDecimalAllowed: true,
         },
         {
           name: 'Quantity in Pcs',
@@ -52,7 +52,7 @@ async function seedMeasurements() {
           unit: 'pc',
           baseUnit: 'pc',
           conversionFactor: 1,
-          isDecimalAllowed: false
+          isDecimalAllowed: false,
         },
         {
           name: 'Custom Box',
@@ -60,8 +60,8 @@ async function seedMeasurements() {
           unit: 'box',
           baseUnit: 'box',
           conversionFactor: 1,
-          isDecimalAllowed: false
-        }
+          isDecimalAllowed: false,
+        },
       ];
       measurements = await MeasurementEntity.insertMany(defaultMeasurements);
     }
@@ -84,7 +84,7 @@ async function seedMeasurements() {
         brandId,
         outletId,
         department: VariationDepartment.CUSTOM,
-        name: { $regex: new RegExp(`^${vName}$`, 'i') }
+        name: { $regex: new RegExp(`^${vName}$`, 'i') },
       });
       if (existing) {
         variations.push(existing._id as Types.ObjectId);
@@ -93,7 +93,7 @@ async function seedMeasurements() {
           brandId,
           outletId,
           name: vName,
-          department: VariationDepartment.CUSTOM
+          department: VariationDepartment.CUSTOM,
         });
         variations.push(created._id as Types.ObjectId);
       }
@@ -114,7 +114,7 @@ async function seedMeasurements() {
           baseValue: 1, // Start with 1 unit
           minValue: meas.isDecimalAllowed ? 0.5 : 1, // If decimal allowed, 0.5 kg etc.
           maxValue: 10,
-          stepValue: meas.isDecimalAllowed ? 0.25 : 1 // Can jump by 250g or 1 pc
+          stepValue: meas.isDecimalAllowed ? 0.25 : 1, // Can jump by 250g or 1 pc
         },
         {
           name: `Realistic Item 2 for ${meas.name}`,
@@ -122,8 +122,8 @@ async function seedMeasurements() {
           baseValue: 2,
           minValue: 1,
           maxValue: 20,
-          stepValue: meas.isDecimalAllowed ? 0.5 : 1
-        }
+          stepValue: meas.isDecimalAllowed ? 0.5 : 1,
+        },
       ];
 
       for (let j = 0; j < itemDefs.length; j++) {
@@ -152,14 +152,14 @@ async function seedMeasurements() {
               baseValue: def.baseValue,
               minValue: def.minValue,
               maxValue: def.maxValue,
-              stepValue: def.stepValue
+              stepValue: def.stepValue,
             },
 
             online: true,
             takeAway: true,
             dineIn: true,
             isActive: true,
-            isVariation: true // Mark it as having variations
+            isVariation: true, // Mark it as having variations
           };
 
           existing = await MenuItemEntity.create(menuItemData);
@@ -175,7 +175,7 @@ async function seedMeasurements() {
             brandId,
             outletId,
             menuItemId: existing._id,
-            variationId
+            variationId,
           });
           if (!existingVariant) {
             await MenuItemVariantEntity.create({
@@ -193,10 +193,10 @@ async function seedMeasurements() {
                 baseValue: def.baseValue,
                 minValue: def.minValue,
                 maxValue: def.maxValue,
-                stepValue: def.stepValue
+                stepValue: def.stepValue,
               },
               isActive: true,
-              isDefault: v === 0 // Make the first one default
+              isDefault: v === 0, // Make the first one default
             });
           }
         }
@@ -204,7 +204,7 @@ async function seedMeasurements() {
     }
 
     console.log(
-      `Successfully created/updated ${createdCount} Measurement-based Menu Items with full Variant coverage!`
+      `Successfully created/updated ${createdCount} Measurement-based Menu Items with full Variant coverage!`,
     );
   } catch (err) {
     console.error('Error seeding measurement data:', err);

@@ -6,7 +6,7 @@ import type {
   CreateCustomerDTO,
   Customer,
   CustomerListQuery,
-  UpdateCustomerDTO
+  UpdateCustomerDTO,
 } from '@modules/customer/customer.types';
 
 const toObjectId = (value: string) => new Types.ObjectId(value);
@@ -14,7 +14,7 @@ const toObjectId = (value: string) => new Types.ObjectId(value);
 export class CustomerRepository {
   private buildTenantFilter(brandId: string): FilterQuery<Customer> {
     return {
-      brandId: toObjectId(brandId)
+      brandId: toObjectId(brandId),
     };
   }
 
@@ -23,7 +23,7 @@ export class CustomerRepository {
       ...payload,
       tags: (payload.tags ?? []).map(tagId => toObjectId(tagId)),
       brandId: toObjectId(brandId),
-      outletId: toObjectId(outletId)
+      outletId: toObjectId(outletId),
     });
   }
 
@@ -31,7 +31,7 @@ export class CustomerRepository {
     return CustomerEntity.findOne({
       ...this.buildTenantFilter(brandId),
       _id: toObjectId(id),
-      isDelete: false
+      isDelete: false,
     })
       .populate('tags')
       .select('-isDelete')
@@ -42,7 +42,7 @@ export class CustomerRepository {
     return CustomerEntity.findOne({
       ...this.buildTenantFilter(brandId),
       _id: toObjectId(id),
-      isDelete: false
+      isDelete: false,
     })
       .select('-isDelete')
       .lean();
@@ -52,7 +52,7 @@ export class CustomerRepository {
     const query: FilterQuery<Customer> = {
       brandId: toObjectId(brandId),
       mobile: mobile.trim(),
-      isDelete: false
+      isDelete: false,
     };
 
     if (excludeId) {
@@ -72,16 +72,20 @@ export class CustomerRepository {
       {
         ...this.buildTenantFilter(brandId),
         _id: toObjectId(id),
-        isDelete: false
+        isDelete: false,
       },
       { $set: updatePayload },
-      { new: true, runValidators: true, projection: { isDelete: 0 } }
+      { new: true, runValidators: true, projection: { isDelete: 0 } },
     )
       .populate('tags')
       .lean();
   }
 
-  async list(brandId: string, outletId: string, query: CustomerListQuery & { searchText?: string }) {
+  async list(
+    brandId: string,
+    outletId: string,
+    query: CustomerListQuery & { searchText?: string },
+  ) {
     const page = Math.max(1, Number(query.page) || 1);
     const limit = Math.max(1, Math.min(100, Number(query.limit) || 20));
     const skip = (page - 1) * limit;
@@ -92,7 +96,7 @@ export class CustomerRepository {
       const trimmedSearch = searchValue.trim();
       const mobileSearch = trimmedSearch.replace(/[^\d+]/g, '');
       const searchConditions: FilterQuery<Customer>[] = [
-        { name: { $regex: new RegExp(trimmedSearch, 'i') } }
+        { name: { $regex: new RegExp(trimmedSearch, 'i') } },
       ];
 
       if (mobileSearch) {
@@ -123,7 +127,7 @@ export class CustomerRepository {
         .limit(limit)
         .select('-isDelete')
         .lean(),
-      CustomerEntity.countDocuments(filter)
+      CustomerEntity.countDocuments(filter),
     ]);
 
     return {
@@ -131,8 +135,8 @@ export class CustomerRepository {
       pagination: {
         total,
         page,
-        limit
-      }
+        limit,
+      },
     };
   }
 
@@ -141,10 +145,10 @@ export class CustomerRepository {
       {
         ...this.buildTenantFilter(brandId),
         _id: toObjectId(id),
-        isDelete: false
+        isDelete: false,
       },
       { $set: { isDelete: true } },
-      { new: true, projection: { isDelete: 0 } }
+      { new: true, projection: { isDelete: 0 } },
     )
       .populate('tags')
       .lean();
@@ -155,14 +159,14 @@ export class CustomerRepository {
       {
         ...this.buildTenantFilter(brandId),
         _id: toObjectId(id),
-        isDelete: false
+        isDelete: false,
       },
       {
         $addToSet: {
-          tags: { $each: payload.tagIds.map(tagId => toObjectId(tagId)) }
-        }
+          tags: { $each: payload.tagIds.map(tagId => toObjectId(tagId)) },
+        },
       },
-      { new: true, projection: { isDelete: 0 } }
+      { new: true, projection: { isDelete: 0 } },
     )
       .populate('tags')
       .lean();
@@ -173,12 +177,12 @@ export class CustomerRepository {
       {
         ...this.buildTenantFilter(brandId),
         _id: toObjectId(id),
-        isDelete: false
+        isDelete: false,
       },
       {
-        $pull: { tags: toObjectId(tagId) }
+        $pull: { tags: toObjectId(tagId) },
       },
-      { new: true, projection: { isDelete: 0 } }
+      { new: true, projection: { isDelete: 0 } },
     )
       .populate('tags')
       .lean();
@@ -189,7 +193,7 @@ export class CustomerRepository {
     const filter = {
       ...this.buildTenantFilter(brandId),
       _id: toObjectId(id),
-      isDelete: false
+      isDelete: false,
     };
 
     // 1. Try to update existing outlet stats entry
@@ -200,14 +204,14 @@ export class CustomerRepository {
           totalSpent: totalAmount,
           totalOrders: 1,
           'outletStats.$.totalOrders': 1,
-          'outletStats.$.totalSpent': totalAmount
+          'outletStats.$.totalSpent': totalAmount,
         },
         $set: {
           lastVisitAt: new Date(),
-          'outletStats.$.lastVisitAt': new Date()
-        }
+          'outletStats.$.lastVisitAt': new Date(),
+        },
       },
-      { new: true, projection: { isDelete: 0 } }
+      { new: true, projection: { isDelete: 0 } },
     ).lean();
 
     if (updated) {
@@ -220,21 +224,21 @@ export class CustomerRepository {
       {
         $inc: {
           totalSpent: totalAmount,
-          totalOrders: 1
+          totalOrders: 1,
         },
         $push: {
           outletStats: {
             outletId: oId,
             totalOrders: 1,
             totalSpent: totalAmount,
-            lastVisitAt: new Date()
-          }
+            lastVisitAt: new Date(),
+          },
         },
         $set: {
-          lastVisitAt: new Date()
-        }
+          lastVisitAt: new Date(),
+        },
       },
-      { new: true, projection: { isDelete: 0 } }
+      { new: true, projection: { isDelete: 0 } },
     ).lean();
   }
 
@@ -243,12 +247,12 @@ export class CustomerRepository {
       {
         ...this.buildTenantFilter(brandId),
         _id: toObjectId(id),
-        isDelete: false
+        isDelete: false,
       },
       {
-        $inc: { creditBalance: amount }
+        $inc: { creditBalance: amount },
       },
-      { new: true, session, projection: { isDelete: 0 } }
+      { new: true, session, projection: { isDelete: 0 } },
     );
     return query.lean();
   }
@@ -258,12 +262,12 @@ export class CustomerRepository {
       {
         ...this.buildTenantFilter(brandId),
         _id: toObjectId(id),
-        isDelete: false
+        isDelete: false,
       },
       {
-        $inc: { dueBalance: amount }
+        $inc: { dueBalance: amount },
       },
-      { new: true, session, projection: { isDelete: 0 } }
+      { new: true, session, projection: { isDelete: 0 } },
     );
     return query.lean();
   }

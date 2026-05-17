@@ -9,7 +9,7 @@ export class MediaUrlService {
     if (cdnBase) {
       return `${cdnBase.replace(/\/$/, '')}/${key}`;
     }
-    
+
     // Fallback to S3 direct URL
     const bucket = process.env.AWS_S3_BUCKET_NAME || '';
     const region = process.env.AWS_REGION || 'ap-south-1';

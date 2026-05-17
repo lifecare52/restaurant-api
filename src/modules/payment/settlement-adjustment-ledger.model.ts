@@ -5,7 +5,7 @@ export enum ADJUSTMENT_TYPE {
   SHORTFALL = 'SHORTFALL',
   WRITE_OFF = 'WRITE_OFF',
   CORRECTION = 'CORRECTION',
-  REVERSAL = 'REVERSAL'
+  REVERSAL = 'REVERSAL',
 }
 
 export interface SettlementAdjustmentLedger {
@@ -35,22 +35,21 @@ const SettlementAdjustmentLedgerSchema = new Schema<SettlementAdjustmentLedger>(
     adjustmentType: {
       type: String,
       enum: Object.values(ADJUSTMENT_TYPE),
-      required: true
+      required: true,
     },
     recordedBy: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     approvedBy: { type: Schema.Types.ObjectId, default: null, ref: 'User' },
-    notes: { type: String, trim: true, default: '' }
+    notes: { type: String, trim: true, default: '' },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 SettlementAdjustmentLedgerSchema.index({ brandId: 1, outletId: 1, orderId: 1 });
 SettlementAdjustmentLedgerSchema.index({ brandId: 1, outletId: 1, createdAt: -1 });
 
-export const SettlementAdjustmentLedgerEntity = model<SettlementAdjustmentLedger, SettlementAdjustmentLedgerModel>(
-  'SettlementAdjustmentLedger',
-  SettlementAdjustmentLedgerSchema,
-  'settlement_adjustment_ledgers'
-);
+export const SettlementAdjustmentLedgerEntity = model<
+  SettlementAdjustmentLedger,
+  SettlementAdjustmentLedgerModel
+>('SettlementAdjustmentLedger', SettlementAdjustmentLedgerSchema, 'settlement_adjustment_ledgers');
 
 export default SettlementAdjustmentLedgerEntity;

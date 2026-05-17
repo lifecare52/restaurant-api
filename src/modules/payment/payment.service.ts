@@ -1,10 +1,12 @@
 import mongoose, { Types, type FilterQuery } from 'mongoose';
 
+import { customerService } from '@modules/customer/customer.service';
 import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
 import { logOrderAction } from '@modules/order/order-audit.service';
-import { OrderEntity } from '@modules/order/order.model';
 import { checkAndAutoCloseOrder } from '@modules/order/order-lifecycle.service';
+import { OrderEntity } from '@modules/order/order.model';
 import { ORDER_STATUS } from '@modules/order/order.types';
+import { OutletEntity } from '@modules/outlet/outlet.model';
 import { PaymentEntity } from '@modules/payment/payment.model';
 import {
   PAYMENT_METHOD,
@@ -16,12 +18,13 @@ import {
   type PaymentListQuery,
   type OrderPaymentSummary,
   type SettlePaymentDTO,
-  type RefundPaymentDTO
+  type RefundPaymentDTO,
 } from '@modules/payment/payment.types';
+import {
+  SettlementAdjustmentLedgerEntity,
+  ADJUSTMENT_TYPE,
+} from '@modules/payment/settlement-adjustment-ledger.model';
 import { UserEntity } from '@modules/user/user.model';
-import { OutletEntity } from '@modules/outlet/outlet.model';
-import { customerService } from '@modules/customer/customer.service';
-import { SettlementAdjustmentLedgerEntity, ADJUSTMENT_TYPE } from '@modules/payment/settlement-adjustment-ledger.model';
 
 // ─── recordPayment ────────────────────────────────────────────────────────────
 
@@ -34,7 +37,7 @@ export const recordPayment = async (
   brandId: string,
   outletId: string,
   userId: string,
-  dto: CreatePaymentDTO
+  dto: CreatePaymentDTO,
 ): Promise<{ payments: Payment[]; order: Record<string, unknown> }> => {
   // Normalize payload
   const paymentsInput = dto.payments?.length
@@ -42,7 +45,7 @@ export const recordPayment = async (
     : [{ amount: dto.amount!, paymentMethod: dto.paymentMethod!, reference: dto.reference }];
 
   const totalPaymentAmount = parseFloat(
-    paymentsInput.reduce((sum, p) => sum + p.amount, 0).toFixed(2)
+    paymentsInput.reduce((sum, p) => sum + p.amount, 0).toFixed(2),
   );
 
   // ── 1. Fetch and validate order ──────────────────────────────────────────
@@ -50,7 +53,7 @@ export const recordPayment = async (
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
@@ -75,7 +78,7 @@ export const recordPayment = async (
     // +0.001 for float tolerance
     throw {
       status: 400,
-      message: `Total payment amount (${totalPaymentAmount}) exceeds balance due (${balanceDue.toFixed(2)})`
+      message: `Total payment amount (${totalPaymentAmount}) exceeds balance due (${balanceDue.toFixed(2)})`,
     };
   }
 
@@ -88,12 +91,12 @@ export const recordPayment = async (
     orderId: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   });
 
   const allMethods = new Set([
     ...previousPaymentMethods,
-    ...paymentsInput.map(p => p.paymentMethod)
+    ...paymentsInput.map(p => p.paymentMethod),
   ]);
   const isSplitPayment = allMethods.size > 1;
 
@@ -114,7 +117,7 @@ export const recordPayment = async (
       paymentMethod: p.paymentMethod,
       reference: p.reference?.trim() || null,
       recordedBy: new Types.ObjectId(userId),
-      isDelete: false
+      isDelete: false,
     }));
 
     const paymentDocs = await PaymentEntity.insertMany(paymentDocsToInsert, { session });
@@ -132,10 +135,10 @@ export const recordPayment = async (
               : order.settlementStatus || SETTLEMENT_STATUS.UNSETTLED,
           isSplitPayment,
           // Record first / primary paymentMethod on the order for quick reporting
-          paymentMethod: order.paymentMethod ?? paymentsInput[0].paymentMethod
-        }
+          paymentMethod: order.paymentMethod ?? paymentsInput[0].paymentMethod,
+        },
       },
-      { new: true, session }
+      { new: true, session },
     ).lean()) as Record<string, unknown>;
 
     await session.commitTransaction();
@@ -159,8 +162,8 @@ export const recordPayment = async (
       isSplitPayment: order.isSplitPayment || isSplitPayment,
       paymentMethods: paymentsInput.map(p => p.paymentMethod),
       newPaidAmount,
-      newPaymentStatus
-    }
+      newPaymentStatus,
+    },
   });
 
   // ── 5. Auto-close Evaluation ────────────────────────────────────────────
@@ -179,8 +182,8 @@ export const recordPayment = async (
       balanceDue: parseFloat((order.totalAmount - newPaidAmount).toFixed(2)),
       paymentStatus: newPaymentStatus,
       paymentMethod: updatedOrder!['paymentMethod'],
-      isSplitPayment: updatedOrder!['isSplitPayment']
-    }
+      isSplitPayment: updatedOrder!['isSplitPayment'],
+    },
   };
 };
 
@@ -192,13 +195,13 @@ export const recordPayment = async (
 export const getPaymentsByOrder = async (
   brandId: string,
   outletId: string,
-  orderId: string
+  orderId: string,
 ): Promise<OrderPaymentSummary> => {
   const order = await OrderEntity.findOne({
     _id: new Types.ObjectId(orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
@@ -207,7 +210,7 @@ export const getPaymentsByOrder = async (
     orderId: new Types.ObjectId(orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   })
     .sort({ createdAt: 1 })
     .lean();
@@ -222,7 +225,7 @@ export const getPaymentsByOrder = async (
     balanceDue,
     paymentStatus: order.paymentStatus,
     isSplitPayment: order.isSplitPayment ?? false,
-    payments: payments as Payment[]
+    payments: payments as Payment[],
   };
 };
 
@@ -234,12 +237,12 @@ export const getPaymentsByOrder = async (
 export const listPayments = async (
   brandId: string,
   outletId: string,
-  query: PaymentListQuery | Record<string, never> = {}
+  query: PaymentListQuery | Record<string, never> = {},
 ): Promise<{ items: Payment[]; total: number }> => {
   const filter: FilterQuery<Payment> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   };
 
   if (query.orderId) filter.orderId = new Types.ObjectId(query.orderId);
@@ -261,7 +264,7 @@ export const listPayments = async (
       .skip(skip)
       .limit(limit)
       .lean(),
-    PaymentEntity.countDocuments(filter)
+    PaymentEntity.countDocuments(filter),
   ]);
 
   return { items: items as Payment[], total };
@@ -273,19 +276,19 @@ export const settleOrderPayment = async (
   brandId: string,
   outletId: string,
   userId: string,
-  dto: SettlePaymentDTO
+  dto: SettlePaymentDTO,
 ) => {
   const { orderId, payments: paymentsInput, useCustomerCredit } = dto;
 
   const totalCollectedAmount = parseFloat(
-    paymentsInput.reduce((sum, p) => sum + p.amount, 0).toFixed(2)
+    paymentsInput.reduce((sum, p) => sum + p.amount, 0).toFixed(2),
   );
 
   const order = await OrderEntity.findOne({
     _id: new Types.ObjectId(orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
@@ -299,7 +302,7 @@ export const settleOrderPayment = async (
 
   const outlet = await OutletEntity.findOne({
     _id: new Types.ObjectId(outletId),
-    brandId: new Types.ObjectId(brandId)
+    brandId: new Types.ObjectId(brandId),
   }).lean();
 
   if (!outlet) throw { status: 404, message: 'Outlet not found' };
@@ -311,7 +314,11 @@ export const settleOrderPayment = async (
   let creditUsed = 0;
 
   if (useCustomerCredit && totalCollectedAmount < balanceDue && order.customerId) {
-    const customer = await customerService.getCustomerById(brandId, outletId, order.customerId.toString());
+    const customer = await customerService.getCustomerById(
+      brandId,
+      outletId,
+      order.customerId.toString(),
+    );
     if (customer && customer.creditBalance > 0) {
       const shortfall = parseFloat((balanceDue - totalCollectedAmount).toFixed(2));
       creditUsed = Math.min(customer.creditBalance, shortfall);
@@ -328,19 +335,24 @@ export const settleOrderPayment = async (
     newSettlementStatus = SETTLEMENT_STATUS.OVER_SETTLED;
   }
 
-  const newPaymentStatus = newSettlementStatus === SETTLEMENT_STATUS.SHORT_SETTLED ? PAYMENT_STATUS.PARTIAL : PAYMENT_STATUS.PAID;
-  const newPaidAmount = parseFloat((currentPaidAmount + totalCollectedAmount + creditUsed).toFixed(2));
+  const newPaymentStatus =
+    newSettlementStatus === SETTLEMENT_STATUS.SHORT_SETTLED
+      ? PAYMENT_STATUS.PARTIAL
+      : PAYMENT_STATUS.PAID;
+  const newPaidAmount = parseFloat(
+    (currentPaidAmount + totalCollectedAmount + creditUsed).toFixed(2),
+  );
 
   const previousPaymentMethods = await PaymentEntity.distinct('paymentMethod', {
     orderId: new Types.ObjectId(orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   });
 
   const allMethods = new Set([
     ...previousPaymentMethods,
-    ...paymentsInput.map(p => p.paymentMethod)
+    ...paymentsInput.map(p => p.paymentMethod),
   ]);
   if (creditUsed > 0) allMethods.add(PAYMENT_METHOD.WALLET);
   const isSplitPayment = allMethods.size > 1;
@@ -363,7 +375,7 @@ export const settleOrderPayment = async (
       reference: p.reference?.trim() || null,
       recordedBy: new Types.ObjectId(userId),
       settlementSource: SETTLEMENT_SOURCE.DIRECT_PAYMENT,
-      isDelete: false
+      isDelete: false,
     }));
 
     if (creditUsed > 0) {
@@ -377,9 +389,14 @@ export const settleOrderPayment = async (
         reference: 'Customer Credit Applied',
         recordedBy: new Types.ObjectId(userId),
         settlementSource: SETTLEMENT_SOURCE.CUSTOMER_CREDIT,
-        isDelete: false
+        isDelete: false,
       });
-      await customerService.adjustCreditBalance(brandId, order.customerId!.toString(), -creditUsed, session);
+      await customerService.adjustCreditBalance(
+        brandId,
+        order.customerId!.toString(),
+        -creditUsed,
+        session,
+      );
     }
 
     if (paymentDocsToInsert.length > 0) {
@@ -389,31 +406,51 @@ export const settleOrderPayment = async (
 
     if (settlementAdjustmentAmount < -0.001) {
       if (order.customerId) {
-        await customerService.adjustDueBalance(brandId, order.customerId.toString(), Math.abs(settlementAdjustmentAmount), session);
+        await customerService.adjustDueBalance(
+          brandId,
+          order.customerId.toString(),
+          Math.abs(settlementAdjustmentAmount),
+          session,
+        );
       } else {
-        adjustmentLedgerRecord = await SettlementAdjustmentLedgerEntity.create([{
-          brandId: new Types.ObjectId(brandId),
-          outletId: new Types.ObjectId(outletId),
-          orderId: new Types.ObjectId(orderId),
-          amount: Math.abs(settlementAdjustmentAmount),
-          adjustmentType: ADJUSTMENT_TYPE.WRITE_OFF,
-          recordedBy: new Types.ObjectId(userId),
-          notes: 'Automatic write-off during settlement'
-        }], { session });
+        adjustmentLedgerRecord = await SettlementAdjustmentLedgerEntity.create(
+          [
+            {
+              brandId: new Types.ObjectId(brandId),
+              outletId: new Types.ObjectId(outletId),
+              orderId: new Types.ObjectId(orderId),
+              amount: Math.abs(settlementAdjustmentAmount),
+              adjustmentType: ADJUSTMENT_TYPE.WRITE_OFF,
+              recordedBy: new Types.ObjectId(userId),
+              notes: 'Automatic write-off during settlement',
+            },
+          ],
+          { session },
+        );
       }
     } else if (settlementAdjustmentAmount > 0.001) {
       if (order.customerId) {
-        await customerService.adjustCreditBalance(brandId, order.customerId.toString(), settlementAdjustmentAmount, session);
+        await customerService.adjustCreditBalance(
+          brandId,
+          order.customerId.toString(),
+          settlementAdjustmentAmount,
+          session,
+        );
       } else {
-        adjustmentLedgerRecord = await SettlementAdjustmentLedgerEntity.create([{
-          brandId: new Types.ObjectId(brandId),
-          outletId: new Types.ObjectId(outletId),
-          orderId: new Types.ObjectId(orderId),
-          amount: settlementAdjustmentAmount,
-          adjustmentType: ADJUSTMENT_TYPE.OVERPAYMENT,
-          recordedBy: new Types.ObjectId(userId),
-          notes: 'Overpayment during settlement'
-        }], { session });
+        adjustmentLedgerRecord = await SettlementAdjustmentLedgerEntity.create(
+          [
+            {
+              brandId: new Types.ObjectId(brandId),
+              outletId: new Types.ObjectId(outletId),
+              orderId: new Types.ObjectId(orderId),
+              amount: settlementAdjustmentAmount,
+              adjustmentType: ADJUSTMENT_TYPE.OVERPAYMENT,
+              recordedBy: new Types.ObjectId(userId),
+              notes: 'Overpayment during settlement',
+            },
+          ],
+          { session },
+        );
       }
     }
 
@@ -426,10 +463,12 @@ export const settleOrderPayment = async (
           settlementStatus: newSettlementStatus,
           settlementAdjustmentAmount,
           isSplitPayment,
-          paymentMethod: order.paymentMethod ?? (paymentsInput.length > 0 ? paymentsInput[0].paymentMethod : null)
-        }
+          paymentMethod:
+            order.paymentMethod ??
+            (paymentsInput.length > 0 ? paymentsInput[0].paymentMethod : null),
+        },
       },
-      { new: true, session }
+      { new: true, session },
     ).lean()) as Record<string, unknown>;
 
     await session.commitTransaction();
@@ -451,8 +490,8 @@ export const settleOrderPayment = async (
       creditUsed,
       settlementAdjustmentAmount,
       newSettlementStatus,
-      newPaidAmount
-    }
+      newPaidAmount,
+    },
   });
 
   await checkAndAutoCloseOrder(brandId, outletId, orderId, userId);
@@ -468,8 +507,8 @@ export const settleOrderPayment = async (
       settlementStatus: newSettlementStatus,
       settlementAdjustmentAmount,
       paymentMethod: updatedOrder!['paymentMethod'],
-      isSplitPayment: updatedOrder!['isSplitPayment']
-    }
+      isSplitPayment: updatedOrder!['isSplitPayment'],
+    },
   };
 };
 
@@ -479,7 +518,7 @@ export const processRefund = async (
   brandId: string,
   outletId: string,
   userId: string,
-  dto: RefundPaymentDTO
+  dto: RefundPaymentDTO,
 ) => {
   const { orderId, refundAmount, reason } = dto;
 
@@ -491,7 +530,7 @@ export const processRefund = async (
     _id: new Types.ObjectId(orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
@@ -502,7 +541,7 @@ export const processRefund = async (
 
   const outlet = await OutletEntity.findOne({
     _id: new Types.ObjectId(outletId),
-    brandId: new Types.ObjectId(brandId)
+    brandId: new Types.ObjectId(brandId),
   }).lean();
 
   let methodsToRefund: { method: number; amount: number }[] = [];
@@ -514,8 +553,10 @@ export const processRefund = async (
       orderId: new Types.ObjectId(orderId),
       brandId: new Types.ObjectId(brandId),
       isRefund: false,
-      isDelete: false
-    }).sort({ amount: -1 }).lean();
+      isDelete: false,
+    })
+      .sort({ amount: -1 })
+      .lean();
 
     let amountLeftToRefund = refundAmount;
     for (const p of previousPayments) {
@@ -529,7 +570,10 @@ export const processRefund = async (
       if (order.customerId) {
         methodsToRefund.push({ method: PAYMENT_METHOD.WALLET, amount: amountLeftToRefund });
       } else {
-        methodsToRefund.push({ method: previousPayments[0]?.paymentMethod || PAYMENT_METHOD.CASH, amount: amountLeftToRefund });
+        methodsToRefund.push({
+          method: previousPayments[0]?.paymentMethod || PAYMENT_METHOD.CASH,
+          amount: amountLeftToRefund,
+        });
       }
     }
   }
@@ -553,7 +597,7 @@ export const processRefund = async (
       settlementSource: SETTLEMENT_SOURCE.REFUND_REVERSAL,
       isRefund: true,
       refundReason: reason || null,
-      isDelete: false
+      isDelete: false,
     }));
 
     const refundDocs = await PaymentEntity.insertMany(refundDocsToInsert, { session });
@@ -562,14 +606,21 @@ export const processRefund = async (
     const walletRefunds = methodsToRefund.filter(m => m.method === PAYMENT_METHOD.WALLET);
     if (walletRefunds.length > 0 && order.customerId) {
       const totalWalletRefund = walletRefunds.reduce((sum, r) => sum + r.amount, 0);
-      await customerService.adjustCreditBalance(brandId, order.customerId.toString(), totalWalletRefund, session);
+      await customerService.adjustCreditBalance(
+        brandId,
+        order.customerId.toString(),
+        totalWalletRefund,
+        session,
+      );
     }
 
     const currentRefundedAmount = order.refundedAmount || 0;
     const newRefundedAmount = currentRefundedAmount + refundAmount;
 
     const isFullyRefunded = newRefundedAmount >= order.paidAmount! - 0.001;
-    const newSettlementStatus = isFullyRefunded ? SETTLEMENT_STATUS.REFUNDED : SETTLEMENT_STATUS.PARTIALLY_REFUNDED;
+    const newSettlementStatus = isFullyRefunded
+      ? SETTLEMENT_STATUS.REFUNDED
+      : SETTLEMENT_STATUS.PARTIALLY_REFUNDED;
 
     updatedOrder = (await OrderEntity.findOneAndUpdate(
       { _id: new Types.ObjectId(orderId) },
@@ -577,10 +628,10 @@ export const processRefund = async (
         $inc: { refundedAmount: refundAmount },
         $set: {
           isRefunded: true,
-          settlementStatus: newSettlementStatus
-        }
+          settlementStatus: newSettlementStatus,
+        },
       },
-      { new: true, session }
+      { new: true, session },
     ).lean()) as Record<string, unknown>;
 
     await session.commitTransaction();
@@ -600,8 +651,8 @@ export const processRefund = async (
     metadata: {
       refundAmount,
       reason,
-      refundMethods: methodsToRefund
-    }
+      refundMethods: methodsToRefund,
+    },
   });
 
   return {
@@ -611,7 +662,7 @@ export const processRefund = async (
       paidAmount: updatedOrder!['paidAmount'],
       refundedAmount: updatedOrder!['refundedAmount'],
       isRefunded: updatedOrder!['isRefunded'],
-      settlementStatus: updatedOrder!['settlementStatus']
-    }
+      settlementStatus: updatedOrder!['settlementStatus'],
+    },
   };
 };

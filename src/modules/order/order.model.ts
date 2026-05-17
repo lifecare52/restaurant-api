@@ -10,7 +10,7 @@ import {
   ORDER_STATUS,
   PAYMENT_STATUS,
   ITEM_STATUS,
-  SETTLEMENT_STATUS
+  SETTLEMENT_STATUS,
 } from '@modules/order/order.types';
 
 export type OrderModel = Model<Order>;
@@ -25,18 +25,18 @@ const AppliedTaxSnapshotSchema = new Schema<AppliedTaxSnapshot>(
     type: {
       type: String,
       enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
-      required: true
+      required: true,
     },
     isInclusive: { type: Boolean, required: true },
     calculationMethod: {
       type: String,
       enum: ['STANDARD', 'CUMULATIVE'],
-      required: true
+      required: true,
     },
     taxableAmount: { type: Number, required: true, min: 0 },
-    taxAmount: { type: Number, required: true, min: 0 }
+    taxAmount: { type: Number, required: true, min: 0 },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const OrderTaxBreakupSchema = new Schema<OrderTaxBreakup>(
@@ -47,18 +47,18 @@ const OrderTaxBreakupSchema = new Schema<OrderTaxBreakup>(
     type: {
       type: String,
       enum: ['PERCENTAGE', 'FLAT_AMOUNT'],
-      required: true
+      required: true,
     },
     isInclusive: { type: Boolean, required: true },
     calculationMethod: {
       type: String,
       enum: ['STANDARD', 'CUMULATIVE'],
-      required: true
+      required: true,
     },
     taxableAmount: { type: Number, required: true, min: 0 },
-    taxAmount: { type: Number, required: true, min: 0 }
+    taxAmount: { type: Number, required: true, min: 0 },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const OrderSchema = new Schema<Order>(
@@ -72,13 +72,13 @@ const OrderSchema = new Schema<Order>(
     orderType: {
       type: Number,
       enum: Object.values(ORDER_TYPE).filter(v => !isNaN(Number(v))),
-      required: true
+      required: true,
     },
     tableId: { type: Schema.Types.ObjectId, ref: 'Table', default: null },
     status: {
       type: Number,
       enum: Object.values(ORDER_STATUS).filter(v => !isNaN(Number(v))),
-      default: ORDER_STATUS.OPEN
+      default: ORDER_STATUS.OPEN,
     },
     grossAmount: { type: Number, required: true, min: 0, default: 0 },
     subtotal: { type: Number, required: true, min: 0 },
@@ -93,7 +93,7 @@ const OrderSchema = new Schema<Order>(
     paymentStatus: {
       type: Number,
       enum: Object.values(PAYMENT_STATUS).filter(v => !isNaN(Number(v))),
-      default: PAYMENT_STATUS.UNPAID
+      default: PAYMENT_STATUS.UNPAID,
     },
     paymentMethod: { type: Number, default: null },
     /** Running total of all payments recorded against this order */
@@ -101,7 +101,7 @@ const OrderSchema = new Schema<Order>(
     settlementStatus: {
       type: Number,
       enum: Object.values(SETTLEMENT_STATUS).filter(v => !isNaN(Number(v))),
-      default: SETTLEMENT_STATUS.UNSETTLED
+      default: SETTLEMENT_STATUS.UNSETTLED,
     },
     settlementAdjustmentAmount: { type: Number, default: 0 },
     refundedAmount: { type: Number, default: 0, min: 0 },
@@ -112,7 +112,7 @@ const OrderSchema = new Schema<Order>(
       type: String,
       trim: true,
       default: '',
-      maxlength: 500
+      maxlength: 500,
     },
     confirmedAt: { type: Date, default: null },
     closedAt: { type: Date, default: null },
@@ -120,9 +120,9 @@ const OrderSchema = new Schema<Order>(
     cancelledBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     manualTagId: { type: Schema.Types.ObjectId, ref: 'CustomerTag', default: null },
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false }
+    isDelete: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 OrderSchema.index({ brandId: 1, outletId: 1, orderNumber: 1 }, { unique: true });
@@ -144,9 +144,9 @@ const MeasurementSelectionSchema = new Schema(
     baseUnitQuantity: { type: Number, required: true },
     baseValue: { type: Number, required: true },
     basePrice: { type: Number, required: true },
-    totalPrice: { type: Number, required: true }
+    totalPrice: { type: Number, required: true },
   },
-  { _id: false }
+  { _id: false },
 );
 
 const OrderItemSchema = new Schema<OrderItem>(
@@ -174,13 +174,13 @@ const OrderItemSchema = new Schema<OrderItem>(
       type: String,
       trim: true,
       default: '',
-      maxlength: 300
+      maxlength: 300,
     },
     totalPrice: { type: Number, required: true, min: 0 },
     itemStatus: {
       type: Number,
       enum: Object.values(ITEM_STATUS).filter(v => !isNaN(Number(v))),
-      default: ITEM_STATUS.PENDING
+      default: ITEM_STATUS.PENDING,
     },
     kotSentAt: { type: Date, default: null },
     batchId: { type: Schema.Types.ObjectId, default: null },
@@ -188,9 +188,9 @@ const OrderItemSchema = new Schema<OrderItem>(
     cancelledAt: { type: Date, default: null },
     cancelledBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false }
+    isDelete: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 OrderItemSchema.index({ orderId: 1, itemStatus: 1 });
@@ -199,7 +199,7 @@ OrderItemSchema.index({ orderId: 1, isDelete: 1 });
 export const OrderItemEntity = model<OrderItem, OrderItemModel>(
   'OrderItem',
   OrderItemSchema,
-  'order_items'
+  'order_items',
 );
 
 const OrderItemAddonSchema = new Schema<OrderItemAddon>(
@@ -215,19 +215,19 @@ const OrderItemAddonSchema = new Schema<OrderItemAddon>(
     price: { type: Number, required: true, min: 0 },
     quantity: { type: Number, required: true, min: 1 },
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false }
+    isDelete: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const OrderItemAddonEntity = model<OrderItemAddon, OrderItemAddonModel>(
   'OrderItemAddon',
   OrderItemAddonSchema,
-  'order_item_addons'
+  'order_item_addons',
 );
 
 export default {
   OrderEntity,
   OrderItemEntity,
-  OrderItemAddonEntity
+  OrderItemAddonEntity,
 };

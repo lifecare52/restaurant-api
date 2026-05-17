@@ -1,11 +1,18 @@
-import type { Request, Response, NextFunction } from 'express';
-import { getFinancialSales, getOutstandingCustomerDue, getActiveStatus, getNetAdjustments } from './dashboard.service';
 import { TREND } from '@shared/enum/dashboard.enum';
+
+import {
+  getFinancialSales,
+  getOutstandingCustomerDue,
+  getActiveStatus,
+  getNetAdjustments,
+} from './dashboard.service';
+
 import type { DashboardQueryDTO, SalesSummary, DashboardSummaryResponse } from './dashboard.types';
+import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string) || '',
-  outletId: (req.headers['outlet-id'] as string) || ''
+  outletId: (req.headers['outlet-id'] as string) || '',
 });
 
 const calculateGrowth = (current: number, previous: number) => {
@@ -22,7 +29,7 @@ const getTrend = (growth: number): TREND => {
 export const getDashboardSummaryController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -50,14 +57,14 @@ export const getDashboardSummaryController = async (
 
     // 2. Periodic boundaries (WTD/MTD)
     const now = new Date();
-    
+
     // WTD
     const wtdStart = new Date(now);
     const day = now.getDay(); // 0 (Sun) to 6 (Sat)
     const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Monday
     wtdStart.setDate(diff);
     wtdStart.setHours(0, 0, 0, 0);
-    
+
     const pwtdStart = new Date(wtdStart);
     pwtdStart.setDate(pwtdStart.getDate() - 7);
     const pwtdEnd = new Date(now);
@@ -66,7 +73,14 @@ export const getDashboardSummaryController = async (
     // MTD
     const mtdStart = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
     const pmtdStart = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0, 0);
-    const pmtdEnd = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate(), now.getHours(), now.getMinutes(), now.getSeconds());
+    const pmtdEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      now.getDate(),
+      now.getHours(),
+      now.getMinutes(),
+      now.getSeconds(),
+    );
 
     // 3. Orchestrate Queries
     const [
@@ -77,7 +91,7 @@ export const getDashboardSummaryController = async (
       wtdSales,
       pwtdSales,
       mtdSales,
-      pmtdSales
+      pmtdSales,
     ] = await Promise.all([
       getFinancialSales(brandId, outletId, start, end),
       getActiveStatus(brandId, outletId),
@@ -86,7 +100,7 @@ export const getDashboardSummaryController = async (
       getFinancialSales(brandId, outletId, wtdStart, now),
       getFinancialSales(brandId, outletId, pwtdStart, pwtdEnd),
       getFinancialSales(brandId, outletId, mtdStart, now),
-      getFinancialSales(brandId, outletId, pmtdStart, pmtdEnd)
+      getFinancialSales(brandId, outletId, pmtdStart, pmtdEnd),
     ]);
 
     const weeklyGrowth = calculateGrowth(wtdSales.netSales, pwtdSales.netSales);
@@ -98,13 +112,13 @@ export const getDashboardSummaryController = async (
         current: wtdSales,
         previous: pwtdSales,
         growth: weeklyGrowth,
-        trend: getTrend(weeklyGrowth)
+        trend: getTrend(weeklyGrowth),
       },
       monthlySummary: {
         current: mtdSales,
         previous: pmtdSales,
         growth: monthlyGrowth,
-        trend: getTrend(monthlyGrowth)
+        trend: getTrend(monthlyGrowth),
       },
       activeOrdersCount: activeStatus.activeOrders,
       activeTablesSummary: activeStatus.tableSummary,
@@ -113,14 +127,14 @@ export const getDashboardSummaryController = async (
       outstandingCustomerDue: outstandingDue,
       lowStockCount: {
         value: 0,
-        isStub: true
-      }
+        isStub: true,
+      },
     };
 
     res.locals.response = {
       status: true,
       code: 200,
-      data: response
+      data: response,
     };
     next();
   } catch (err) {

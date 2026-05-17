@@ -2,22 +2,27 @@ import { Types } from 'mongoose';
 
 import { getBrandById } from '@modules/brand/brand.service';
 import { getAddon } from '@modules/menu/addons/addon.service';
+import CategoryEntity from '@modules/menu/category/category.model';
 import { listActiveCategories } from '@modules/menu/category/category.service';
 import {
   createMenuItemAddon,
   listMenuItemAddons,
-  updateMenuItemAddons
+  updateMenuItemAddons,
 } from '@modules/menu/menu-item-addons/menu-item-addon.service';
+import type {
+  MenuItemAddonSyncItemDTO,
+  MenuItemAddonSyncVariationDTO,
+} from '@modules/menu/menu-item-addons/menu-item-addon.types';
 import {
   listMenuItemVariants,
   createMenuItemVariant,
   getAllMenuItemVariants,
   updateMenuItemVariant,
-  deleteMenuItemVariant
+  deleteMenuItemVariant,
 } from '@modules/menu/menu-item-variants/menu-item-variant.service';
 import type {
   MenuItemVariant,
-  MenuItemVariantUpdateDTO
+  MenuItemVariantUpdateDTO,
 } from '@modules/menu/menu-item-variants/menu-item-variant.types';
 import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
 import type {
@@ -28,18 +33,13 @@ import type {
   MenuItemCreateDTO,
   MenuItemUpdateDTO,
   BulkUpdateAvailabilityDTO,
-  MeasurementConfig
+  MeasurementConfig,
 } from '@modules/menu/menu-items/menu-item.types';
-import type {
-  MenuItemAddonSyncItemDTO,
-  MenuItemAddonSyncVariationDTO
-} from '@modules/menu/menu-item-addons/menu-item-addon.types';
 import { getVariation, listActiveVariations } from '@modules/menu/variations/variation.service';
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
-
-import CategoryEntity from '../category/category.model';
+import { deleteFromS3 } from '@shared/utils/s3.util';
 
 /**
  * Validates that none of the incoming shortCodes are already used by another
@@ -54,7 +54,7 @@ const checkDuplicateShortCodes = async (
   brandId: string,
   outletId: string,
   shortCodes: string[] | undefined,
-  excludeId?: string
+  excludeId?: string,
 ): Promise<void> => {
   if (!shortCodes || shortCodes.length === 0) return;
 
@@ -66,7 +66,7 @@ const checkDuplicateShortCodes = async (
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    shortCodes: { $in: normalised }
+    shortCodes: { $in: normalised },
   };
 
   if (excludeId) {
@@ -91,7 +91,7 @@ const checkDuplicateShortCodes = async (
   throw {
     status: 409,
     code: 'DUPLICATE_SHORTCODE',
-    message: `Short code(s) already in use for this outlet: ${[...takenCodes].join(', ')}`
+    message: `Short code(s) already in use for this outlet: ${[...takenCodes].join(', ')}`,
   };
 };
 
@@ -111,7 +111,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
         addonId: a.addonId,
         isSingleSelect: a.isSingleSelect,
         min: a.min,
-        max: a.max
+        max: a.max,
       }));
     };
     const variationsInput = (dto.variations || []).map(v => ({
@@ -120,7 +120,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       costPrice: v.costPrice,
       isMeasurementBased: v.isMeasurementBased,
       measurementConfig: v.measurementConfig,
-      addons: normalizeAddonCreate(v.addons)
+      addons: normalizeAddonCreate(v.addons),
     }));
     const topLevelAddons = normalizeAddonCreate(dto.addons);
     if (variationsInput.length > 0) {
@@ -130,7 +130,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
           throw {
             status: 400,
             code: 'DUPLICATE_VARIATION',
-            message: 'Duplicate variationId in input'
+            message: 'Duplicate variationId in input',
           };
         }
         ids.add(v.variationId);
@@ -170,6 +170,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
           : undefined,
       categoryId: new Types.ObjectId(dto.categoryId),
       taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
+      image: dto.image,
 
       dietary: dto.dietary,
 
@@ -181,9 +182,9 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
         variationsInput.length > 0 || !dto.measurementConfig
           ? undefined
           : {
-            ...dto.measurementConfig,
-            measurementId: new Types.ObjectId(dto.measurementConfig.measurementId)
-          },
+              ...dto.measurementConfig,
+              measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
+            },
 
       isVariation: variationsInput.length > 0,
 
@@ -192,7 +193,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       dineIn: dto.dineIn ?? false,
 
       isActive: dto.isActive ?? true,
-      isDelete: false
+      isDelete: false,
     });
     let result = created.toObject();
 
@@ -207,9 +208,9 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
             isMeasurementBased: v.isMeasurementBased,
             measurementConfig: v.measurementConfig,
             isActive: true,
-            isDefault: false
-          })
-        )
+            isDefault: false,
+          }),
+        ),
       );
       const byVariationId = new Map<string, Types.ObjectId>();
       createdVariants.forEach((doc, idx) => {
@@ -228,7 +229,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
             isSingleSelect: addon.isSingleSelect,
             min: addon.min,
             max: addon.max,
-            isActive: true
+            isActive: true,
           });
         }
       }
@@ -241,9 +242,9 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
             isSingleSelect: addon.isSingleSelect,
             min: addon.min,
             max: addon.max,
-            isActive: true
-          })
-        )
+            isActive: true,
+          }),
+        ),
       );
     }
 
@@ -256,7 +257,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
       throw {
         status: 409,
         code: 'DUPLICATE_SHORTCODE',
-        message: 'Short code already exists for this outlet'
+        message: 'Short code already exists for this outlet',
       };
     }
     throw err;
@@ -266,7 +267,7 @@ export const createMenuItem = async (brandId: string, outletId: string, dto: Men
 export const listMenuItems = async (
   brandId: string,
   outletId: string,
-  pagination: PaginationQuery
+  pagination: PaginationQuery,
 ) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;
@@ -275,7 +276,7 @@ export const listMenuItems = async (
   const filter: Record<string, unknown> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   };
 
   if (pagination.searchText) {
@@ -290,7 +291,7 @@ export const listMenuItems = async (
       .sort({ [sortColumn]: sortOrder })
       .skip(skip)
       .limit(limit),
-    MenuItemEntity.countDocuments(filter)
+    MenuItemEntity.countDocuments(filter),
   ]);
 
   return { items, total };
@@ -303,14 +304,14 @@ const buildMenuItemNested = async (
     _id: Types.ObjectId;
     outletId: Types.ObjectId;
     toObject?: () => Record<string, unknown>;
-  }
+  },
 ) => {
   const variantsResult = await listMenuItemVariants(brandId, outletId, {
     page: 1,
     limit: 1000,
     menuItemId: String(item?._id),
     column: 'createdAt',
-    order: 'ASC'
+    order: 'ASC',
   });
 
   const variantItems = (variantsResult.items || []) as (MenuItemVariant & {
@@ -328,7 +329,7 @@ const buildMenuItemNested = async (
           brandId,
           outletId,
           { page: 1, limit: 1000, column: 'createdAt', order: 'ASC' },
-          { menuItemId: String(item?._id), menuItemVariantId: String(v._id) }
+          { menuItemId: String(item?._id), menuItemVariantId: String(v._id) },
         );
         const addonItems = (addonsResult.items || []) as Array<{
           addonId: Types.ObjectId;
@@ -350,9 +351,9 @@ const buildMenuItemNested = async (
                 isSingleSelect: a.isSingleSelect ?? false,
                 min: a.min ?? undefined,
                 max: a.max ?? undefined,
-                _id: a._id
+                _id: a._id,
               };
-            })
+            }),
         );
         const varObj = v as unknown as { toObject?: () => Record<string, unknown> } & Record<
           string,
@@ -367,9 +368,9 @@ const buildMenuItemNested = async (
           costPrice: v.costPrice,
           isMeasurementBased: v.isMeasurementBased,
           measurementConfig: varRaw.measurementConfig,
-          addons
+          addons,
         };
-      })
+      }),
   );
 
   let topLevelAddons: MenuItemAddonView[] | undefined;
@@ -378,7 +379,7 @@ const buildMenuItemNested = async (
       brandId,
       outletId,
       { page: 1, limit: 1000, column: 'createdAt', order: 'ASC' },
-      { menuItemId: String(item?._id) }
+      { menuItemId: String(item?._id) },
     );
     const itemAddonItems = (itemAddonsResult.items || []) as Array<{
       addonId: Types.ObjectId;
@@ -402,9 +403,9 @@ const buildMenuItemNested = async (
           isSingleSelect: a.isSingleSelect ?? false,
           min: a.min ?? undefined,
           max: a.max ?? undefined,
-          _id: a._id
+          _id: a._id,
         };
-      })
+      }),
     );
   }
 
@@ -424,7 +425,7 @@ const buildMenuItemNested = async (
 export const listMenuItemsWithNested = async (
   brandId: string,
   outletId: string,
-  pagination: PaginationQuery
+  pagination: PaginationQuery,
 ) => {
   const result = await listMenuItems(brandId, outletId, pagination);
   const enriched = await Promise.all(
@@ -436,9 +437,9 @@ export const listMenuItemsWithNested = async (
           _id: Types.ObjectId;
           outletId: Types.ObjectId;
           toObject?: () => Record<string, unknown>;
-        }
-      )
-    )
+        },
+      ),
+    ),
   );
   return { items: enriched, total: result.total };
 };
@@ -446,7 +447,7 @@ export const listMenuItemsWithNested = async (
 export const getMenuItemWithNested = async (
   brandId: string,
   outletId: string,
-  menuItemId: string
+  menuItemId: string,
 ) => {
   const item = await getMenuItem(brandId, menuItemId);
   if (!item || String(item.outletId) !== String(outletId)) return null;
@@ -457,7 +458,7 @@ export const getMenuItemWithNested = async (
       _id: Types.ObjectId;
       outletId: Types.ObjectId;
       toObject?: () => Record<string, unknown>;
-    }
+    },
   );
 };
 
@@ -465,7 +466,7 @@ export const getMenuItem = async (brandId: string, menuItemId: string) => {
   return MenuItemEntity.findOne({
     _id: new Types.ObjectId(menuItemId),
     brandId: new Types.ObjectId(brandId),
-    isDelete: false
+    isDelete: false,
   });
 };
 
@@ -486,7 +487,7 @@ type UpdateMenuItemVariationsInput = {
 };
 
 const normalizeAddonSyncItems = (
-  addons: MenuItemAddonSyncItemDTO[] | undefined
+  addons: MenuItemAddonSyncItemDTO[] | undefined,
 ): MenuItemAddonSyncItemDTO[] | undefined => {
   if (!addons) return undefined;
   const map = new Map<string, MenuItemAddonSyncItemDTO>();
@@ -501,7 +502,7 @@ const normalizeAddonSyncItems = (
         allowedItemsId: a.allowedItemsId,
         isSingleSelect: a.isSingleSelect,
         min: a.min,
-        max: a.max
+        max: a.max,
       });
     }
   }
@@ -513,7 +514,7 @@ export const updateMenuItemVariations = async ({
   brandId,
   outletId,
   menuItemId,
-  variations
+  variations,
 }: UpdateMenuItemVariationsInput) => {
   if (variations === undefined) {
     return null;
@@ -537,7 +538,7 @@ export const updateMenuItemVariations = async ({
     limit: 1000,
     menuItemId,
     column: 'createdAt',
-    order: 'ASC'
+    order: 'ASC',
   });
 
   const existing = (variantsResult.items || []) as (MenuItemVariant & {
@@ -583,7 +584,7 @@ export const updateMenuItemVariations = async ({
   if (normalized.length === 0) {
     const variantAddonPayload = existing.map(ev => ({
       menuItemVariantId: String(ev._id),
-      addons: [] as MenuItemAddonSyncItemDTO[]
+      addons: [] as MenuItemAddonSyncItemDTO[],
     }));
 
     if (variantAddonPayload.length > 0) {
@@ -592,7 +593,7 @@ export const updateMenuItemVariations = async ({
         outletId,
         menuItemId,
         isVariation: true,
-        variations: variantAddonPayload
+        variations: variantAddonPayload,
       });
     }
 
@@ -601,7 +602,7 @@ export const updateMenuItemVariations = async ({
       outletId,
       menuItemId,
       isVariation: false,
-      addons: []
+      addons: [],
     });
 
     for (const ev of existing) {
@@ -627,7 +628,7 @@ export const updateMenuItemVariations = async ({
         isMeasurementBased: v.isMeasurementBased,
         measurementConfig: v.measurementConfig,
         isActive: true,
-        isDefault: false
+        isDefault: false,
       });
 
       if (!created) continue;
@@ -637,7 +638,7 @@ export const updateMenuItemVariations = async ({
       if (addons) {
         addonPayload.push({
           menuItemVariantId: variantDocId,
-          addons
+          addons,
         });
       }
     }
@@ -654,7 +655,7 @@ export const updateMenuItemVariations = async ({
         basePrice: v.basePrice,
         costPrice: v.costPrice,
         isMeasurementBased: v.isMeasurementBased,
-        measurementConfig: v.measurementConfig
+        measurementConfig: v.measurementConfig,
       };
 
       await updateMenuItemVariant(brandId, outletId, String(existingVariant._id), dto);
@@ -663,7 +664,7 @@ export const updateMenuItemVariations = async ({
       if (addons) {
         addonPayload.push({
           menuItemVariantId: String(existingVariant._id),
-          addons
+          addons,
         });
       }
     }
@@ -675,7 +676,7 @@ export const updateMenuItemVariations = async ({
       variantsToDelete.push(ev);
       addonPayload.push({
         menuItemVariantId: String(ev._id),
-        addons: []
+        addons: [],
       });
     }
 
@@ -685,7 +686,7 @@ export const updateMenuItemVariations = async ({
         outletId,
         menuItemId,
         isVariation: true,
-        variations: addonPayload
+        variations: addonPayload,
       });
     }
 
@@ -700,27 +701,27 @@ export const updateMenuItemVariations = async ({
 export const deleteAllVariationsWithAddons = async (
   brandId: string,
   outletId: string,
-  menuItemId: string
+  menuItemId: string,
 ) => {
   return updateMenuItemVariations({
     brandId,
     outletId,
     menuItemId,
-    variations: []
+    variations: [],
   });
 };
 
 export const updateMenuItem = async (
   brandId: string,
   menuItemId: string,
-  dto: MenuItemUpdateDTO
+  dto: MenuItemUpdateDTO,
 ) => {
   // Explicit duplicate shortCode check before update (exclude current item)
   if (dto.shortCodes && dto.shortCodes.length > 0) {
     const existing = await MenuItemEntity.findOne({
       _id: new Types.ObjectId(menuItemId),
       brandId: new Types.ObjectId(brandId),
-      isDelete: false
+      isDelete: false,
     })
       .select('outletId')
       .lean();
@@ -730,12 +731,27 @@ export const updateMenuItem = async (
         brandId,
         String(existing.outletId),
         dto.shortCodes,
-        menuItemId
+        menuItemId,
       );
     }
   }
 
   try {
+    if (dto.image !== undefined) {
+      const existing = await MenuItemEntity.findOne({
+        _id: new Types.ObjectId(menuItemId),
+        brandId: new Types.ObjectId(brandId),
+        isDelete: false,
+      })
+        .select('image')
+        .lean();
+      if (existing && existing.image && existing.image !== dto.image) {
+        deleteFromS3(existing.image).catch(err => {
+          console.error('Failed to delete old menu item image from S3:', err);
+        });
+      }
+    }
+
     const updateData: Record<string, unknown> = { ...dto };
     let unsetData: Record<string, unknown> | undefined;
 
@@ -754,12 +770,12 @@ export const updateMenuItem = async (
     } else if (dto.measurementConfig) {
       updateData.measurementConfig = {
         ...dto.measurementConfig,
-        measurementId: new Types.ObjectId(dto.measurementConfig.measurementId)
+        measurementId: new Types.ObjectId(dto.measurementConfig.measurementId),
       };
     }
 
     const updateQuery: Record<string, unknown> = {
-      $set: updateData
+      $set: updateData,
     };
     if (unsetData) {
       updateQuery.$unset = unsetData;
@@ -771,7 +787,7 @@ export const updateMenuItem = async (
     const updated = await MenuItemEntity.findOneAndUpdate(
       { _id: new Types.ObjectId(menuItemId), brandId: new Types.ObjectId(brandId) },
       updateQuery,
-      { new: true }
+      { new: true },
     );
     if (!updated) return updated;
 
@@ -790,7 +806,7 @@ export const updateMenuItem = async (
             allowedItemsId: a.allowedItemsId,
             isSingleSelect: a.isSingleSelect,
             min: a.min,
-            max: a.max
+            max: a.max,
           });
         }
       }
@@ -814,9 +830,9 @@ export const updateMenuItem = async (
               allowedItemsId: a.allowedItemsId,
               isSingleSelect: a.isSingleSelect,
               min: a.min,
-              max: a.max
-            }))
-          })) || []
+              max: a.max,
+            })),
+          })) || [],
       });
     } else if (dto.addons !== undefined && !dto.isMeasurementBased) {
       const addons = normalizeAddonUpdate(dto.addons);
@@ -825,7 +841,7 @@ export const updateMenuItem = async (
         outletId,
         menuItemId,
         isVariation: false,
-        addons
+        addons,
       });
     }
     // Recompute isVariation flag based on existing variants
@@ -834,11 +850,11 @@ export const updateMenuItem = async (
       limit: 1,
       menuItemId,
       column: 'createdAt',
-      order: 'ASC'
+      order: 'ASC',
     });
     await MenuItemEntity.updateOne(
       { _id: new Types.ObjectId(menuItemId), brandId: new Types.ObjectId(brandId) },
-      { $set: { isVariation: (variantCheck.items || []).length > 0 } }
+      { $set: { isVariation: (variantCheck.items || []).length > 0 } },
     );
     return updated;
   } catch (err) {
@@ -847,7 +863,7 @@ export const updateMenuItem = async (
       throw {
         status: 409,
         code: 'DUPLICATE_SHORTCODE',
-        message: 'Short code already exists for this outlet'
+        message: 'Short code already exists for this outlet',
       };
     }
     throw err;
@@ -858,7 +874,7 @@ export const listMenuItemsCategoryWise = async (brandId: string, outletId: strin
   const categories = await CategoryEntity.find({
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   })
     .select('_id name isActive')
     .sort({ name: 1 });
@@ -869,12 +885,12 @@ export const listMenuItemsCategoryWise = async (brandId: string, outletId: strin
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
         categoryId: cat._id,
-        isDelete: false
+        isDelete: false,
       })
         .select('_id name dietary isActive online takeAway dineIn taxGroupId')
         .sort({ name: 1 });
       return { category: cat, items };
-    })
+    }),
   );
 
   return result.filter(r => r.items.length > 0);
@@ -884,14 +900,14 @@ export const deleteMenuItem = async (brandId: string, menuItemId: string) => {
   return MenuItemEntity.findOneAndUpdate(
     { _id: new Types.ObjectId(menuItemId), brandId: new Types.ObjectId(brandId) },
     { $set: { isDelete: true } },
-    { new: true }
+    { new: true },
   );
 };
 
 export const bulkUpdateMenuItemAvailability = async (
   brandId: string,
   outletId: string,
-  dto: BulkUpdateAvailabilityDTO[]
+  dto: BulkUpdateAvailabilityDTO[],
 ) => {
   const bulkOps = dto.map(item => ({
     updateOne: {
@@ -899,16 +915,16 @@ export const bulkUpdateMenuItemAvailability = async (
         _id: new Types.ObjectId(item._id),
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
-        isDelete: false
+        isDelete: false,
       },
       update: {
         $set: {
           online: item.online,
           takeAway: item.takeAway,
-          dineIn: item.dineIn
-        }
-      }
-    }
+          dineIn: item.dineIn,
+        },
+      },
+    },
   }));
 
   if (bulkOps.length === 0) return null;
@@ -923,12 +939,12 @@ export const getAddonMapping = async (brandId: string, outletId: string) => {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isActive: true,
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   const variants = (await getAllMenuItemVariants(
     brandId,
-    outletId
+    outletId,
   )) as unknown as (MenuItemVariant & {
     _id: Types.ObjectId;
   })[];
@@ -964,7 +980,7 @@ export const getAddonMapping = async (brandId: string, outletId: string) => {
     if (!item.isVariation) {
       itemsByCategoryId.get(categoryId)?.push({
         Name: item.name,
-        _id: item._id
+        _id: item._id,
       });
     } else {
       const itemVariants = variantsByItemId.get(item._id.toString()) || [];
@@ -973,7 +989,7 @@ export const getAddonMapping = async (brandId: string, outletId: string) => {
         itemsByCategoryId.get(categoryId)?.push({
           Name: `${item.name} ${variationName}`,
           menuItemId: item._id,
-          menuItemVariantId: v._id
+          menuItemVariantId: v._id,
         });
       });
     }
@@ -981,14 +997,14 @@ export const getAddonMapping = async (brandId: string, outletId: string) => {
 
   return categories.map(cat => ({
     Category: cat.name,
-    Items: itemsByCategoryId.get(cat._id.toString()) || []
+    Items: itemsByCategoryId.get(cat._id.toString()) || [],
   }));
 };
 
 export const getAddonMappingAggregationV2 = async (
   brandId: string,
   outletId: string,
-  filterAddonId?: string
+  filterAddonId?: string,
 ) => {
   const brandObjectId = new Types.ObjectId(brandId);
   const outletObjectId = new Types.ObjectId(outletId);
@@ -1002,8 +1018,8 @@ export const getAddonMappingAggregationV2 = async (
         brandId: brandObjectId,
         outletId: outletObjectId,
         isActive: true,
-        isDelete: false
-      }
+        isDelete: false,
+      },
     },
 
     /* ---------------- CATEGORY ---------------- */
@@ -1019,14 +1035,14 @@ export const getAddonMappingAggregationV2 = async (
                 $and: [
                   { $eq: ['$_id', '$$catId'] },
                   { $eq: ['$isDelete', false] },
-                  { $eq: ['$isActive', true] }
-                ]
-              }
-            }
-          }
+                  { $eq: ['$isActive', true] },
+                ],
+              },
+            },
+          },
         ],
-        as: 'category'
-      }
+        as: 'category',
+      },
     },
     { $unwind: '$category' },
 
@@ -1037,8 +1053,8 @@ export const getAddonMappingAggregationV2 = async (
         from: 'menu_item_variants',
         localField: '_id',
         foreignField: 'menuItemId',
-        as: 'variants'
-      }
+        as: 'variants',
+      },
     },
     {
       $addFields: {
@@ -1047,14 +1063,11 @@ export const getAddonMappingAggregationV2 = async (
             input: '$variants',
             as: 'v',
             cond: {
-              $and: [
-                { $eq: ['$$v.isDelete', false] },
-                { $eq: ['$$v.isActive', true] }
-              ]
-            }
-          }
-        }
-      }
+              $and: [{ $eq: ['$$v.isDelete', false] }, { $eq: ['$$v.isActive', true] }],
+            },
+          },
+        },
+      },
     },
 
     /* ---------------- VARIATION MASTER ---------------- */
@@ -1064,8 +1077,8 @@ export const getAddonMappingAggregationV2 = async (
         from: 'variations',
         localField: 'variants.variationId',
         foreignField: '_id',
-        as: 'variationDocs'
-      }
+        as: 'variationDocs',
+      },
     },
 
     /* ---------------- DIRECT ADDONS (NON-VARIATION) ---------------- */
@@ -1081,14 +1094,14 @@ export const getAddonMappingAggregationV2 = async (
                 $and: [
                   { $eq: ['$menuItemId', '$$menuItemId'] },
                   { $eq: ['$isDelete', false] },
-                  { $eq: ['$isActive', true] }
-                ]
-              }
-            }
-          }
+                  { $eq: ['$isActive', true] },
+                ],
+              },
+            },
+          },
         ],
-        as: 'directAddons'
-      }
+        as: 'directAddons',
+      },
     },
 
     /* ---------------- VARIANT ADDONS ---------------- */
@@ -1104,14 +1117,14 @@ export const getAddonMappingAggregationV2 = async (
                 $and: [
                   { $in: ['$menuItemVariantId', '$$variantIds'] },
                   { $eq: ['$isDelete', false] },
-                  { $eq: ['$isActive', true] }
-                ]
-              }
-            }
-          }
+                  { $eq: ['$isActive', true] },
+                ],
+              },
+            },
+          },
         ],
-        as: 'variantAddons'
-      }
+        as: 'variantAddons',
+      },
     },
 
     /* ---------------- BUILD OUTPUT ITEMS ---------------- */
@@ -1131,8 +1144,8 @@ export const getAddonMappingAggregationV2 = async (
               {
                 menuId: '$_id',
                 name: '$name',
-                addons: '$directAddons'
-              }
+                addons: '$directAddons',
+              },
             ],
 
             /* ---------- HAS VARIATION ---------- */
@@ -1156,18 +1169,18 @@ export const getAddonMappingAggregationV2 = async (
                                   input: '$variationDocs',
                                   as: 'vd',
                                   cond: {
-                                    $eq: ['$$vd._id', '$$v.variationId']
-                                  }
-                                }
-                              }
-                            }
+                                    $eq: ['$$vd._id', '$$v.variationId'],
+                                  },
+                                },
+                              },
+                            },
                           },
-                          in: '$$variationDoc.name'
-                        }
+                          in: '$$variationDoc.name',
+                        },
                       },
                       ' ',
-                      '$name'
-                    ]
+                      '$name',
+                    ],
                   },
 
                   addons: {
@@ -1175,47 +1188,47 @@ export const getAddonMappingAggregationV2 = async (
                       input: '$variantAddons',
                       as: 'va',
                       cond: {
-                        $eq: ['$$va.menuItemVariantId', '$$v._id']
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          ]
-        }
-      }
+                        $eq: ['$$va.menuItemVariantId', '$$v._id'],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
     },
 
     /* ---------------- FILTER EXISTING ADDON ---------------- */
 
     ...(addonObjectId
       ? [
-        {
-          $addFields: {
-            items: {
-              $filter: {
-                input: '$items',
-                as: 'i',
-                cond: {
-                  $not: {
-                    $in: [
-                      addonObjectId,
-                      {
-                        $map: {
-                          input: { $ifNull: ['$$i.addons', []] },
-                          as: 'a',
-                          in: '$$a.addonId'
-                        }
-                      }
-                    ]
-                  }
-                }
-              }
-            }
-          }
-        }
-      ]
+          {
+            $addFields: {
+              items: {
+                $filter: {
+                  input: '$items',
+                  as: 'i',
+                  cond: {
+                    $not: {
+                      $in: [
+                        addonObjectId,
+                        {
+                          $map: {
+                            input: { $ifNull: ['$$i.addons', []] },
+                            as: 'a',
+                            in: '$$a.addonId',
+                          },
+                        },
+                      ],
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ]
       : []),
 
     /* ---------------- GROUP CATEGORY ---------------- */
@@ -1224,8 +1237,8 @@ export const getAddonMappingAggregationV2 = async (
       $group: {
         _id: '$categoryId',
         category: { $first: '$category' },
-        items: { $push: '$items' }
-      }
+        items: { $push: '$items' },
+      },
     },
 
     /* ---------------- FLATTEN ---------------- */
@@ -1239,14 +1252,14 @@ export const getAddonMappingAggregationV2 = async (
           $reduce: {
             input: '$items',
             initialValue: [],
-            in: { $concatArrays: ['$$value', '$$this'] }
-          }
-        }
-      }
+            in: { $concatArrays: ['$$value', '$$this'] },
+          },
+        },
+      },
     },
     {
-      $unset: 'items.addons'
-    }
+      $unset: 'items.addons',
+    },
   ]);
 };
 
@@ -1261,5 +1274,5 @@ export default {
   deleteMenuItem,
   bulkUpdateMenuItemAvailability,
   getAddonMapping,
-  getAddonMappingAggregationV2
+  getAddonMappingAggregationV2,
 };

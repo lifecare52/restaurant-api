@@ -4,7 +4,7 @@ import { printSettingService } from './print-setting.service';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || ''
+  outletId: (req.headers['outlet-id'] as string | undefined) || '',
 });
 
 export class PrintSettingController {
@@ -22,7 +22,7 @@ export class PrintSettingController {
         status: true,
         code: 200,
         message: 'Print settings retrieved successfully',
-        data: settings
+        data: settings,
       };
       next();
     } catch (error) {
@@ -45,7 +45,7 @@ export class PrintSettingController {
         status: true,
         code: 200,
         message: 'Print settings updated successfully',
-        data: settings
+        data: settings,
       };
       next();
     } catch (error) {

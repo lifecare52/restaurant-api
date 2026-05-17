@@ -10,23 +10,23 @@ export interface IPrintSetting {
     paperSize: '58mm' | '80mm';
     printMode: 'SILENT' | 'PREVIEW';
     printerName?: string;
-    
+
     showLogo: boolean;
     showHeader: boolean;
     headerText?: string;
     showFooter: boolean;
     footerText?: string;
-    
+
     showCustomerDetails: boolean;
     showCaptainName: boolean;
     showCoverCount: boolean;
     showItemHsnCode: boolean;
     showDiscountDetails: boolean;
-    
+
     showPaymentQrCode: boolean;
     merchantUpiId?: string;
     showOrderType: boolean;
-    
+
     numberOfCopies: number;
   };
 
@@ -36,7 +36,7 @@ export interface IPrintSetting {
     paperSize: '58mm' | '80mm';
     printMode: 'SILENT' | 'PREVIEW';
     printerName?: string;
-    
+
     showModifiers: boolean;
     itemWiseKOT: boolean;
     showCancelledItems: boolean;

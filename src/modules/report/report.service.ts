@@ -7,19 +7,19 @@ export const getSalesReport = async (
   brandId: string,
   outletId: string,
   startDate?: string,
-  endDate?: string
+  endDate?: string,
 ) => {
   const match: FilterQuery<Order> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     status: ORDER_STATUS.COMPLETED,
-    isDelete: false
+    isDelete: false,
   };
 
   if (startDate && endDate) {
     match.createdAt = {
       $gte: new Date(startDate),
-      $lte: new Date(endDate)
+      $lte: new Date(endDate),
     };
   }
 
@@ -29,13 +29,13 @@ export const getSalesReport = async (
       $group: {
         _id: {
           date: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
-          orderType: '$orderType'
+          orderType: '$orderType',
         },
         totalOrders: { $sum: 1 },
         totalAmount: { $sum: { $ifNull: ['$totalAmount', 0] } },
         tax: { $sum: { $ifNull: ['$taxAmount', 0] } },
-        discount: { $sum: { $ifNull: ['$discountAmount', 0] } }
-      }
+        discount: { $sum: { $ifNull: ['$discountAmount', 0] } },
+      },
     },
     {
       $project: {
@@ -45,10 +45,10 @@ export const getSalesReport = async (
         totalOrders: 1,
         totalAmount: 1,
         tax: 1,
-        discount: 1
-      }
+        discount: 1,
+      },
     },
-    { $sort: { date: -1 } }
+    { $sort: { date: -1 } },
   ]);
 
   return result;
@@ -58,18 +58,18 @@ export const getItemSalesReport = async (
   brandId: string,
   outletId: string,
   startDate?: string,
-  endDate?: string
+  endDate?: string,
 ) => {
   const match: FilterQuery<OrderItem> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   };
 
   if (startDate && endDate) {
     match.createdAt = {
       $gte: new Date(startDate),
-      $lte: new Date(endDate)
+      $lte: new Date(endDate),
     };
   }
 
@@ -81,11 +81,11 @@ export const getItemSalesReport = async (
           menuItemId: '$menuItemId',
           itemName: '$itemName',
           variationId: '$variationId',
-          variationName: '$variationName'
+          variationName: '$variationName',
         },
         quantitySold: { $sum: '$quantity' },
-        totalRevenue: { $sum: '$totalPrice' }
-      }
+        totalRevenue: { $sum: '$totalPrice' },
+      },
     },
     {
       $project: {
@@ -95,10 +95,10 @@ export const getItemSalesReport = async (
         variationId: '$_id.variationId',
         variationName: '$_id.variationName',
         quantitySold: 1,
-        totalRevenue: 1
-      }
+        totalRevenue: 1,
+      },
     },
-    { $sort: { quantitySold: -1 } }
+    { $sort: { quantitySold: -1 } },
   ]);
 
   return result;

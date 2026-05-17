@@ -2,7 +2,7 @@ import { Router } from 'express';
 
 import {
   getSalesReportController,
-  getItemSalesReportController
+  getItemSalesReportController,
 } from '@modules/report/report.controller';
 
 import { commonHeaderSchema } from '@shared/utils/common.validation';
@@ -19,7 +19,7 @@ router.get(
   validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  getSalesReportController
+  getSalesReportController,
 );
 
 router.get(
@@ -28,7 +28,7 @@ router.get(
   validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
   requireOutletAccess,
-  getItemSalesReportController
+  getItemSalesReportController,
 );
 
 export default router;

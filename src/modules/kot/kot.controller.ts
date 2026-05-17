@@ -4,7 +4,7 @@ import {
   listAllKOTs,
   updateKOTStatus,
   updateKOTItemStatus,
-  reprintKOT
+  reprintKOT,
 } from '@modules/kot/kot.service';
 import { KOT_TYPE } from '@modules/kot/kot.types';
 
@@ -12,7 +12,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || ''
+  outletId: (req.headers['outlet-id'] as string | undefined) || '',
 });
 
 // ─── Controllers ──────────────────────────────────────────────────────────────
@@ -20,7 +20,7 @@ const getTenant = (req: Request) => ({
 export const listKOTsByOrderController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -49,7 +49,7 @@ export const listAllKOTsController = async (req: Request, res: Response, next: N
 export const updateKOTStatusController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -66,7 +66,7 @@ export const updateKOTStatusController = async (
 export const updateKOTItemStatusController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -76,7 +76,7 @@ export const updateKOTItemStatusController = async (
       status: true,
       code: 200,
       message: 'KOT item status updated',
-      data: item
+      data: item,
     };
     next();
   } catch (err) {
@@ -85,11 +85,7 @@ export const updateKOTItemStatusController = async (
 };
 
 /** Reprint an existing KOT */
-export const reprintKOTController = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const reprintKOTController = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { brandId, outletId } = getTenant(req);
     const { kotId } = req.params;
@@ -98,7 +94,7 @@ export const reprintKOTController = async (
       status: true,
       code: 200,
       message: 'KOT reprint initiated successfully',
-      data: item
+      data: item,
     };
     next();
   } catch (err) {

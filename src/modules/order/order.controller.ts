@@ -11,16 +11,16 @@ import {
   updateOrderItem,
   generateKotForOrder,
   printOrderBill,
-  reprintKOT
+  reprintKOT,
 } from '@modules/order/order.service';
-import { getPaymentsByOrder } from '@modules/payment/payment.service';
 import OutletEntity from '@modules/outlet/outlet.model';
+import { getPaymentsByOrder } from '@modules/payment/payment.service';
 
 import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || ''
+  outletId: (req.headers['outlet-id'] as string | undefined) || '',
 });
 
 const getUserId = (req: Request): string => (req.user?.id || '') as string;
@@ -36,7 +36,7 @@ export const createOrderController = async (req: Request, res: Response, next: N
       status: true,
       code: 201,
       message: 'Order created successfully',
-      data: item
+      data: item,
     };
     next();
   } catch (err) {
@@ -52,7 +52,7 @@ export const previewOrderController = async (req: Request, res: Response, next: 
       status: true,
       code: 200,
       message: 'Order preview calculated successfully',
-      data: preview
+      data: preview,
     };
     next();
   } catch (err) {
@@ -63,7 +63,7 @@ export const previewOrderController = async (req: Request, res: Response, next: 
 export const addItemsToOrderController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -72,7 +72,7 @@ export const addItemsToOrderController = async (
       status: true,
       code: 200,
       message: 'Items added to order',
-      data: result
+      data: result,
     };
     next();
   } catch (err) {
@@ -89,7 +89,7 @@ export const generateKotController = async (req: Request, res: Response, next: N
       status: true,
       code: 201,
       message: 'KOT generated successfully',
-      data: result
+      data: result,
     };
     next();
   } catch (err) {
@@ -100,7 +100,7 @@ export const generateKotController = async (req: Request, res: Response, next: N
 export const removeItemFromOrderController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -110,7 +110,7 @@ export const removeItemFromOrderController = async (
       status: true,
       code: 200,
       message: 'Item removed from order',
-      data: result
+      data: result,
     };
     next();
   } catch (err) {
@@ -121,7 +121,7 @@ export const removeItemFromOrderController = async (
 export const updateOrderItemController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -138,10 +138,10 @@ export const getOrderController = async (req: Request, res: Response, next: Next
   try {
     const { brandId, outletId } = getTenant(req);
     const { orderId } = req.query as { orderId: string };
-    
+
     const outlet = await OutletEntity.findById(outletId).lean();
     const isKotEnabled = outlet?.settings?.kotSettings?.isKotEnabled ?? true;
-    
+
     const item = await getKOTOrderDetails(brandId, outletId, orderId, isKotEnabled);
     if (!item) {
       res.locals.response = { status: false, code: 404, message: 'Order not found' };
@@ -171,7 +171,7 @@ export const closeOrderController = async (req: Request, res: Response, next: Ne
       status: true,
       code: 200,
       message: 'Order closed successfully',
-      data: item
+      data: item,
     };
     next();
   } catch (err) {
@@ -194,7 +194,7 @@ export const cancelOrderController = async (req: Request, res: Response, next: N
 export const getTokenDisplayController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -227,7 +227,7 @@ export const reprintKOTController = async (req: Request, res: Response, next: Ne
       status: true,
       code: 200,
       message: 'KOT reprinted successfully',
-      data: result
+      data: result,
     };
     next();
   } catch (err) {
@@ -240,17 +240,17 @@ export const printOrderBillController = async (req: Request, res: Response, next
     const { brandId, outletId } = getTenant(req);
     const userId = getUserId(req);
     const { orderId } = req.params;
-    
+
     if (!orderId) {
       throw { status: 400, message: 'orderId is required' };
     }
-    
+
     const result = await printOrderBill(brandId, outletId, orderId, userId);
     res.locals.response = {
       status: true,
       code: 200,
       message: 'Order bill printed successfully',
-      data: result
+      data: result,
     };
     next();
   } catch (err) {

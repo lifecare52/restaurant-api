@@ -69,13 +69,13 @@ export const listBrandsController = async (req: Request, res: Response, next: Ne
     const result = await listBrands({
       searchText: searchText as string,
       page: Number(page),
-      limit: Number(limit)
+      limit: Number(limit),
     });
     res.locals.response = {
       status: true,
       code: 200,
       data: result.brands,
-      total: result.total
+      total: result.total,
     };
     next();
   } catch (err) {

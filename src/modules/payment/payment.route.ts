@@ -5,14 +5,14 @@ import {
   getPaymentsByOrderController,
   listPaymentsController,
   settlePaymentController,
-  processRefundController
+  processRefundController,
 } from '@modules/payment/payment.controller';
 import {
   recordPaymentSchema,
   getPaymentsByOrderQuerySchema,
   listPaymentsQuerySchema,
   settlePaymentSchema,
-  refundPaymentSchema
+  refundPaymentSchema,
 } from '@modules/payment/payment.validator';
 
 import { commonHeaderSchema } from '@shared/utils/common.validation';
@@ -27,7 +27,7 @@ const tenantMiddleware = [
   auth,
   validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
-  requireOutletAccess
+  requireOutletAccess,
 ];
 
 // POST /payment/record — Record a payment transaction (supports partial payments)
@@ -35,7 +35,7 @@ router.post(
   '/record',
   ...tenantMiddleware,
   validateRequest(recordPaymentSchema, 'body'),
-  recordPaymentController
+  recordPaymentController,
 );
 
 // POST /payment/settle — Settle an order payment with potential adjustments
@@ -43,7 +43,7 @@ router.post(
   '/settle',
   ...tenantMiddleware,
   validateRequest(settlePaymentSchema, 'body'),
-  settlePaymentController
+  settlePaymentController,
 );
 
 // POST /payment/refund — Process a refund for an order
@@ -51,7 +51,7 @@ router.post(
   '/refund',
   ...tenantMiddleware,
   validateRequest(refundPaymentSchema, 'body'),
-  processRefundController
+  processRefundController,
 );
 
 // GET /payment/order-payments?orderId= — All payments + running totals for one order
@@ -59,7 +59,7 @@ router.get(
   '/order-payments',
   ...tenantMiddleware,
   validateRequest(getPaymentsByOrderQuerySchema, 'query'),
-  getPaymentsByOrderController
+  getPaymentsByOrderController,
 );
 
 // GET /payment/list — Paginated payment history with filters
@@ -67,7 +67,7 @@ router.get(
   '/list',
   ...tenantMiddleware,
   validateRequest(listPaymentsQuerySchema, 'query'),
-  listPaymentsController
+  listPaymentsController,
 );
 
 export default router;

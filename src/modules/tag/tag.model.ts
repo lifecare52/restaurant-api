@@ -1,9 +1,6 @@
 import { Schema, model, type Model } from 'mongoose';
 
-import {
-  CUSTOMER_TAG_DISCOUNT_TYPE,
-  type CustomerTag
-} from '@modules/tag/tag.types';
+import { CUSTOMER_TAG_DISCOUNT_TYPE, type CustomerTag } from '@modules/tag/tag.types';
 
 export type CustomerTagModel = Model<CustomerTag>;
 
@@ -16,15 +13,15 @@ const CustomerTagSchema = new Schema<CustomerTag>(
       type: String,
       enum: Object.values(CUSTOMER_TAG_DISCOUNT_TYPE),
       default: CUSTOMER_TAG_DISCOUNT_TYPE.NONE,
-      required: true
+      required: true,
     },
     discountValue: { type: Number, default: 0, min: 0 },
     minOrderAmount: { type: Number, default: 0, min: 0 },
     priority: { type: Number, default: 1, min: 1 },
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false }
+    isDelete: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 CustomerTagSchema.index(
@@ -32,22 +29,22 @@ CustomerTagSchema.index(
   {
     unique: true,
     partialFilterExpression: { isDelete: false },
-    collation: { locale: 'en', strength: 2 }
-  }
+    collation: { locale: 'en', strength: 2 },
+  },
 );
 CustomerTagSchema.index(
   { brandId: 1, priority: 1 },
   {
     unique: true,
-    partialFilterExpression: { isDelete: false }
-  }
+    partialFilterExpression: { isDelete: false },
+  },
 );
 CustomerTagSchema.index({ brandId: 1, name: 'text' });
 
 export const CustomerTagEntity = model<CustomerTag, CustomerTagModel>(
   'CustomerTag',
   CustomerTagSchema,
-  'customer_tags'
+  'customer_tags',
 );
 
 export default CustomerTagEntity;

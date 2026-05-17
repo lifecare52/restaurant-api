@@ -5,7 +5,7 @@ import type {
   CustomerTag,
   CustomerTagListQuery,
   CreateCustomerTagDTO,
-  UpdateCustomerTagDTO
+  UpdateCustomerTagDTO,
 } from '@modules/tag/tag.types';
 
 const toObjectId = (value: string) => new Types.ObjectId(value);
@@ -13,7 +13,7 @@ const toObjectId = (value: string) => new Types.ObjectId(value);
 export class TagRepository {
   private buildTenantFilter(brandId: string): FilterQuery<CustomerTag> {
     return {
-      brandId: toObjectId(brandId)
+      brandId: toObjectId(brandId),
     };
   }
 
@@ -21,7 +21,7 @@ export class TagRepository {
     return CustomerTagEntity.create({
       ...payload,
       brandId: toObjectId(brandId),
-      outletId: toObjectId(outletId)
+      outletId: toObjectId(outletId),
     });
   }
 
@@ -29,7 +29,7 @@ export class TagRepository {
     return CustomerTagEntity.findOne({
       ...this.buildTenantFilter(brandId),
       _id: toObjectId(id),
-      isDelete: false
+      isDelete: false,
     })
       .collation({ locale: 'en', strength: 2 })
       .select('-isDelete -brandId -outletId')
@@ -40,7 +40,7 @@ export class TagRepository {
     const query: FilterQuery<CustomerTag> = {
       ...this.buildTenantFilter(brandId),
       name: name.trim(),
-      isDelete: false
+      isDelete: false,
     };
 
     if (excludeId) {
@@ -57,7 +57,7 @@ export class TagRepository {
     const query: FilterQuery<CustomerTag> = {
       ...this.buildTenantFilter(brandId),
       priority,
-      isDelete: false
+      isDelete: false,
     };
 
     if (excludeId) {
@@ -72,10 +72,10 @@ export class TagRepository {
       {
         ...this.buildTenantFilter(brandId),
         _id: toObjectId(id),
-        isDelete: false
+        isDelete: false,
       },
       { $set: payload },
-      { new: true, runValidators: true, projection: { isDelete: 0, brandId: 0, outletId: 0 } }
+      { new: true, runValidators: true, projection: { isDelete: 0, brandId: 0, outletId: 0 } },
     ).lean();
   }
 
@@ -84,14 +84,18 @@ export class TagRepository {
       {
         ...this.buildTenantFilter(brandId),
         _id: toObjectId(id),
-        isDelete: false
+        isDelete: false,
       },
       { $set: { isDelete: true } },
-      { new: true }
+      { new: true },
     ).lean();
   }
 
-  async list(brandId: string, outletId: string, query: CustomerTagListQuery & { searchText?: string }) {
+  async list(
+    brandId: string,
+    outletId: string,
+    query: CustomerTagListQuery & { searchText?: string },
+  ) {
     const page = Math.max(1, Number(query.page) || 1);
     const limit = Math.max(1, Math.min(100, Number(query.limit) || 20));
     const skip = (page - 1) * limit;
@@ -119,7 +123,7 @@ export class TagRepository {
         .limit(limit)
         .select('-isDelete -brandId -outletId')
         .lean(),
-      CustomerTagEntity.countDocuments(filter)
+      CustomerTagEntity.countDocuments(filter),
     ]);
 
     return {
@@ -127,8 +131,8 @@ export class TagRepository {
       pagination: {
         total,
         page,
-        limit
-      }
+        limit,
+      },
     };
   }
 
@@ -141,7 +145,7 @@ export class TagRepository {
       ...this.buildTenantFilter(brandId),
       _id: { $in: tagIds.map(id => toObjectId(id)) },
       isActive: true,
-      isDelete: false
+      isDelete: false,
     })
       .sort({ priority: -1, name: 1 })
       .select('-isDelete -brandId -outletId')
@@ -171,7 +175,7 @@ export class TagRepository {
       brandId: toObjectId(brandId),
       _id: { $in: ids },
       isActive: true,
-      isDelete: false
+      isDelete: false,
     })
       .sort({ priority: -1, name: 1 })
       .select('-isDelete -brandId -outletId')

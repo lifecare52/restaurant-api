@@ -25,7 +25,7 @@ export const printSettingValidator = {
       merchantUpiId: Joi.string().allow('', null),
       showOrderType: Joi.boolean(),
 
-      numberOfCopies: Joi.number().integer().min(1).max(5)
+      numberOfCopies: Joi.number().integer().min(1).max(5),
     }),
     kotPrinting: Joi.object({
       isEnabled: Joi.boolean(),
@@ -40,7 +40,7 @@ export const printSettingValidator = {
       showTableToken: Joi.boolean(),
       showWaiterName: Joi.boolean(),
       showOrderType: Joi.boolean(),
-      showCoverCount: Joi.boolean()
-    })
-  })
+      showCoverCount: Joi.boolean(),
+    }),
+  }),
 };

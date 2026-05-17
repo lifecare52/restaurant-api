@@ -16,20 +16,20 @@ const PaymentSchema = new Schema<Payment>(
     paymentMethod: {
       type: Number,
       enum: Object.values(PAYMENT_METHOD).filter(v => !isNaN(Number(v))),
-      required: true
+      required: true,
     },
     reference: { type: String, trim: true, default: null, maxlength: 100 },
     recordedBy: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
     settlementSource: {
       type: Number,
       enum: Object.values(SETTLEMENT_SOURCE).filter(v => !isNaN(Number(v))),
-      default: SETTLEMENT_SOURCE.DIRECT_PAYMENT
+      default: SETTLEMENT_SOURCE.DIRECT_PAYMENT,
     },
     isRefund: { type: Boolean, default: false },
     refundReason: { type: String, trim: true, default: null, maxlength: 500 },
-    isDelete: { type: Boolean, default: false }
+    isDelete: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Fast per-order payment lookup and reporting queries

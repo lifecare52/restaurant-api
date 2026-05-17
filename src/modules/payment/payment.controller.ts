@@ -1,11 +1,22 @@
-import { recordPayment, getPaymentsByOrder, listPayments, settleOrderPayment, processRefund } from '@modules/payment/payment.service';
-import type { CreatePaymentDTO, PaymentListQuery, SettlePaymentDTO, RefundPaymentDTO } from '@modules/payment/payment.types';
+import {
+  recordPayment,
+  getPaymentsByOrder,
+  listPayments,
+  settleOrderPayment,
+  processRefund,
+} from '@modules/payment/payment.service';
+import type {
+  CreatePaymentDTO,
+  PaymentListQuery,
+  SettlePaymentDTO,
+  RefundPaymentDTO,
+} from '@modules/payment/payment.types';
 
 import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || ''
+  outletId: (req.headers['outlet-id'] as string | undefined) || '',
 });
 
 const getUserId = (req: Request): string => (req.user?.id || '') as string;
@@ -19,7 +30,7 @@ const getUserId = (req: Request): string => (req.user?.id || '') as string;
 export const recordPaymentController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -30,7 +41,7 @@ export const recordPaymentController = async (
       status: true,
       code: 201,
       message: 'Payment recorded successfully',
-      data: result
+      data: result,
     };
     next();
   } catch (err) {
@@ -45,7 +56,7 @@ export const recordPaymentController = async (
 export const settlePaymentController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -56,7 +67,7 @@ export const settlePaymentController = async (
       status: true,
       code: 201,
       message: 'Payment settled successfully',
-      data: result
+      data: result,
     };
     next();
   } catch (err) {
@@ -71,7 +82,7 @@ export const settlePaymentController = async (
 export const processRefundController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -82,7 +93,7 @@ export const processRefundController = async (
       status: true,
       code: 201,
       message: 'Refund processed successfully',
-      data: result
+      data: result,
     };
     next();
   } catch (err) {
@@ -97,7 +108,7 @@ export const processRefundController = async (
 export const getPaymentsByOrderController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -106,7 +117,7 @@ export const getPaymentsByOrderController = async (
     res.locals.response = {
       status: true,
       code: 200,
-      data: result
+      data: result,
     };
     next();
   } catch (err) {
@@ -121,7 +132,7 @@ export const getPaymentsByOrderController = async (
 export const listPaymentsController = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { brandId, outletId } = getTenant(req);
@@ -130,7 +141,7 @@ export const listPaymentsController = async (
       status: true,
       code: 200,
       data: result.items,
-      total: result.total
+      total: result.total,
     };
     next();
   } catch (err) {

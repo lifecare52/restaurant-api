@@ -5,22 +5,22 @@ import { SORT_ORDERS } from '@shared/enum';
 export const createCategorySchema = Joi.object({
   name: Joi.string().trim().min(2).required(),
   onlineName: Joi.string().trim().min(2).allow('').optional(),
-  logo: Joi.string().uri().optional().allow(''),
+  logo: Joi.string().optional().allow(''),
   isActive: Joi.boolean().default(true),
-  taxGroupId: Joi.string().hex().length(24).optional().allow('')
+  taxGroupId: Joi.string().hex().length(24).optional().allow(''),
 });
 
 export const updateCategorySchema = Joi.object({
   name: Joi.string().trim().min(2).allow(''),
   onlineName: Joi.string().trim().min(2).optional().allow(''),
-  logo: Joi.string().uri().optional().allow(''),
+  logo: Joi.string().optional().allow(''),
   isActive: Joi.boolean(),
-  taxGroupId: Joi.string().hex().length(24).optional().allow('')
+  taxGroupId: Joi.string().hex().length(24).optional().allow(''),
 });
 
 export const categoryListHeaderSchema = Joi.object({
   'brand-id': Joi.string().required(),
-  'outlet-id': Joi.string().required()
+  'outlet-id': Joi.string().required(),
 });
 
 export const categoryListQuerySchema = Joi.object({
@@ -34,17 +34,17 @@ export const categoryListQuerySchema = Joi.object({
   order: Joi.string()
     .valid(...SORT_ORDERS)
     .optional()
-    .default('ASC')
+    .default('ASC'),
 });
 
 export const categoryGetQuerySchema = Joi.object({
-  categoryId: Joi.string().required()
+  categoryId: Joi.string().required(),
 });
 
 export const categoryModifyQuerySchema = Joi.object({
-  categoryId: Joi.string().required()
+  categoryId: Joi.string().required(),
 });
 
 export const categoryBrandHeaderSchema = Joi.object({
-  'brand-id': Joi.string().required()
+  'brand-id': Joi.string().required(),
 });

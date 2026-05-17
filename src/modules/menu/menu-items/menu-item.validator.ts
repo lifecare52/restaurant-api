@@ -10,7 +10,7 @@ const measurementConfigSchema = Joi.object({
   baseValue: Joi.number().min(0).allow(null).optional(),
   minValue: Joi.number().min(0).allow(null).optional(),
   maxValue: Joi.number().min(0).allow(null).optional(),
-  stepValue: Joi.number().min(0).allow(null).optional()
+  stepValue: Joi.number().min(0).allow(null).optional(),
 });
 
 export const createMenuItemSchema = Joi.object({
@@ -23,6 +23,7 @@ export const createMenuItemSchema = Joi.object({
     .optional(),
   categoryId: objectId.required(),
   taxGroupId: objectId.optional().allow(''),
+  image: Joi.string().optional().allow(''),
 
   dietary: Joi.string()
     .valid(...DIETARIES)
@@ -35,7 +36,7 @@ export const createMenuItemSchema = Joi.object({
   measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
     is: true,
     then: Joi.required(),
-    otherwise: Joi.optional()
+    otherwise: Joi.optional(),
   }),
 
   variations: Joi.array()
@@ -45,7 +46,7 @@ export const createMenuItemSchema = Joi.object({
         basePrice: Joi.number().min(0).allow(null).when('isMeasurementBased', {
           is: true,
           then: Joi.optional(),
-          otherwise: Joi.required()
+          otherwise: Joi.required(),
         }),
         costPrice: Joi.number().min(0).allow(null).optional(),
 
@@ -53,7 +54,7 @@ export const createMenuItemSchema = Joi.object({
         measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
           is: true,
           then: Joi.required(),
-          otherwise: Joi.optional()
+          otherwise: Joi.optional(),
         }),
 
         addons: Joi.array()
@@ -63,15 +64,15 @@ export const createMenuItemSchema = Joi.object({
               isSingleSelect: Joi.boolean().optional(),
               min: Joi.number().integer().min(0).allow(null).optional(),
               max: Joi.number().integer().min(0).allow(null).optional(),
-              allowedItems: Joi.any().forbidden()
-            })
+              allowedItems: Joi.any().forbidden(),
+            }),
           )
           .when('isMeasurementBased', {
             is: true,
             then: Joi.array().max(0).optional(),
-            otherwise: Joi.optional()
-          })
-      })
+            otherwise: Joi.optional(),
+          }),
+      }),
     )
     .allow(null)
     .optional(),
@@ -82,20 +83,20 @@ export const createMenuItemSchema = Joi.object({
         isSingleSelect: Joi.boolean().optional(),
         min: Joi.number().integer().min(0).allow(null).optional(),
         max: Joi.number().integer().min(0).allow(null).optional(),
-        allowedItems: Joi.any().forbidden()
-      })
+        allowedItems: Joi.any().forbidden(),
+      }),
     )
     .when('isMeasurementBased', {
       is: true,
       then: Joi.array().max(0).optional(),
-      otherwise: Joi.optional()
+      otherwise: Joi.optional(),
     }),
 
   online: Joi.boolean().default(false),
   takeAway: Joi.boolean().default(false),
   dineIn: Joi.boolean().default(false),
 
-  isActive: Joi.boolean().default(true)
+  isActive: Joi.boolean().default(true),
 });
 
 export const updateMenuItemSchema = Joi.object({
@@ -108,6 +109,7 @@ export const updateMenuItemSchema = Joi.object({
     .optional(),
   categoryId: objectId,
   taxGroupId: objectId.optional().allow(''),
+  image: Joi.string().optional().allow(''),
 
   dietary: Joi.string().valid(...DIETARIES),
 
@@ -122,7 +124,7 @@ export const updateMenuItemSchema = Joi.object({
   measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
     is: true,
     then: Joi.required(),
-    otherwise: Joi.optional()
+    otherwise: Joi.optional(),
   }),
 
   variations: Joi.array()
@@ -137,7 +139,7 @@ export const updateMenuItemSchema = Joi.object({
         measurementConfig: measurementConfigSchema.when('isMeasurementBased', {
           is: true,
           then: Joi.required(),
-          otherwise: Joi.optional()
+          otherwise: Joi.optional(),
         }),
 
         addons: Joi.array()
@@ -147,15 +149,15 @@ export const updateMenuItemSchema = Joi.object({
               isSingleSelect: Joi.boolean().optional(),
               min: Joi.number().integer().min(0).allow(null).optional(),
               max: Joi.number().integer().min(0).allow(null).optional(),
-              allowedItemsId: Joi.array().items(objectId).optional()
-            })
+              allowedItemsId: Joi.array().items(objectId).optional(),
+            }),
           )
           .when('isMeasurementBased', {
             is: true,
             then: Joi.array().max(0).optional(),
-            otherwise: Joi.optional()
-          })
-      })
+            otherwise: Joi.optional(),
+          }),
+      }),
     )
     .optional(),
   addons: Joi.array()
@@ -165,16 +167,16 @@ export const updateMenuItemSchema = Joi.object({
         isSingleSelect: Joi.boolean().optional(),
         min: Joi.number().integer().min(0).allow(null).optional(),
         max: Joi.number().integer().min(0).allow(null).optional(),
-        allowedItemsId: Joi.array().items(objectId).optional()
-      })
+        allowedItemsId: Joi.array().items(objectId).optional(),
+      }),
     )
     .when('isMeasurementBased', {
       is: true,
       then: Joi.array().max(0).optional(),
-      otherwise: Joi.optional()
+      otherwise: Joi.optional(),
     }),
 
-  isActive: Joi.boolean()
+  isActive: Joi.boolean(),
 });
 
 export const menuItemListQuerySchema = Joi.object({
@@ -183,11 +185,11 @@ export const menuItemListQuerySchema = Joi.object({
   searchText: Joi.string().allow('').optional(),
   column: Joi.string().allow('').optional(),
   order: Joi.string().valid('ASC', 'DESC').allow('').optional(),
-  categoryId: objectId.optional()
+  categoryId: objectId.optional(),
 });
 
 export const menuItemIdQuerySchema = Joi.object({
-  menuItemId: objectId.required()
+  menuItemId: objectId.required(),
 });
 
 export const bulkUpdateMenuItemAvailabilitySchema = Joi.object({
@@ -197,8 +199,8 @@ export const bulkUpdateMenuItemAvailabilitySchema = Joi.object({
         _id: objectId.required(),
         online: Joi.boolean().required(),
         takeAway: Joi.boolean().required(),
-        dineIn: Joi.boolean().required()
-      })
+        dineIn: Joi.boolean().required(),
+      }),
     )
-    .required()
+    .required(),
 });

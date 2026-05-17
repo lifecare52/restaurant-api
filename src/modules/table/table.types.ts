@@ -7,7 +7,7 @@ export enum TABLE_STATUS {
   OCCUPIED = 2,
   BILL_PRINTED = 3,
   CLEANING = 4,
-  RESERVED = 5
+  RESERVED = 5,
 }
 
 export interface TableCreateDTO {

@@ -10,13 +10,13 @@ import {
   KOTItemResponse,
   KOTResponse,
   KOTStatusUpdateResponse,
-  KOTItemStatusUpdateResponse
+  KOTItemStatusUpdateResponse,
 } from '@modules/kot/kot.types';
 import DailySequenceEntity from '@modules/order/daily-sequence.model';
 import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
 import { logOrderAction } from '@modules/order/order-audit.service';
-import { OrderEntity, OrderItemEntity, OrderItemAddonEntity } from '@modules/order/order.model';
 import { checkAndAutoCloseOrder } from '@modules/order/order-lifecycle.service';
+import { OrderEntity, OrderItemEntity, OrderItemAddonEntity } from '@modules/order/order.model';
 import { ORDER_STATUS, OrderItemAddon } from '@modules/order/order.types';
 
 import { orderEvents } from '@shared/events/order.events';
@@ -32,7 +32,7 @@ const VALID_TRANSITIONS: Record<number, number[]> = {
   [KOT_STATUS.PREPARING]: [KOT_STATUS.READY, KOT_STATUS.CANCELLED],
   [KOT_STATUS.READY]: [KOT_STATUS.SERVED, KOT_STATUS.CANCELLED],
   [KOT_STATUS.SERVED]: [], // terminal
-  [KOT_STATUS.CANCELLED]: [] // terminal
+  [KOT_STATUS.CANCELLED]: [], // terminal
 };
 
 const KOT_STATUS_NAMES: Record<number, string> = {
@@ -40,7 +40,7 @@ const KOT_STATUS_NAMES: Record<number, string> = {
   [KOT_STATUS.PREPARING]: 'PREPARING',
   [KOT_STATUS.READY]: 'READY',
   [KOT_STATUS.SERVED]: 'SERVED',
-  [KOT_STATUS.CANCELLED]: 'CANCELLED'
+  [KOT_STATUS.CANCELLED]: 'CANCELLED',
 };
 
 /** Atomically get next daily sequence number */
@@ -50,10 +50,10 @@ const getNextKotSeq = async (brandId: string, outletId: string): Promise<number>
       brandId: new Types.ObjectId(brandId),
       outletId: new Types.ObjectId(outletId),
       date: new Date().toISOString().split('T')[0],
-      type: 'KOT'
+      type: 'KOT',
     },
     { $inc: { seq: 1 } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
   return doc.seq;
 };
@@ -68,7 +68,7 @@ export const generateKOT = async (
   tokenNo?: string | null,
   tableName?: string | null,
   waiterId?: string | null,
-  kotType: KOT_TYPE = KOT_TYPE.REGULAR
+  kotType: KOT_TYPE = KOT_TYPE.REGULAR,
 ) => {
   if (!items || items.length === 0) return null;
 
@@ -81,16 +81,16 @@ export const generateKOT = async (
       _id: orderObjectId,
       brandId: brandObjectId,
       outletId: outletObjectId,
-      isDelete: false
+      isDelete: false,
     })
       .select('notes')
       .lean(),
     OrderItemEntity.find({
       _id: { $in: items.map(item => new Types.ObjectId(item.orderItemId)) },
-      isDelete: false
+      isDelete: false,
     })
       .select('instruction')
-      .lean()
+      .lean(),
   ]);
 
   const instructionMap = new Map<string, string | null>();
@@ -117,10 +117,13 @@ export const generateKOT = async (
     waiterId: waiterId ? new Types.ObjectId(waiterId) : null,
     tokenNo: tokenNo || null,
     tableName: tableName || null,
-    notes: order && typeof order.notes === 'string' && order.notes.trim().length > 0 ? order.notes.trim() : null,
+    notes:
+      order && typeof order.notes === 'string' && order.notes.trim().length > 0
+        ? order.notes.trim()
+        : null,
     status: KOT_STATUS.PENDING,
     isActive: true,
-    isDelete: false
+    isDelete: false,
   });
 
   const kotItemsToInsert = items.map(item => ({
@@ -132,7 +135,7 @@ export const generateKOT = async (
     instruction: instructionMap.get(item.orderItemId) ?? null,
     itemStatus: ITEM_STATUS.PENDING,
     isActive: true,
-    isDelete: false
+    isDelete: false,
   }));
 
   await KOTItemEntity.insertMany(kotItemsToInsert);
@@ -143,7 +146,7 @@ export const generateKOT = async (
     brandId,
     outletId,
     kotType,
-    kotNumber
+    kotNumber,
   });
 
   return createdKOT.toObject();
@@ -152,7 +155,10 @@ export const generateKOT = async (
 // ─── Helper Functions ─────────────────────────────────────────────────────────
 
 /** Flatten and clean individual KOT item for API consumption */
-const formatKOTItemResponse = (item: PopulatedKOTItem, addons: OrderItemAddon[]): KOTItemResponse => {
+const formatKOTItemResponse = (
+  item: PopulatedKOTItem,
+  addons: OrderItemAddon[],
+): KOTItemResponse => {
   const orderItem = item.orderItemId;
   const itemAddons = addons.filter(addon => String(addon.orderItemId) === String(orderItem?._id));
   return {
@@ -171,13 +177,17 @@ const formatKOTItemResponse = (item: PopulatedKOTItem, addons: OrderItemAddon[])
       _id: a._id as Types.ObjectId,
       addonName: a.addonName,
       addonItemName: a.addonItemName,
-      quantity: a.quantity
-    }))
+      quantity: a.quantity,
+    })),
   };
 };
 
 /** Clean and format full KOT response for API consumption */
-const formatKOTResponse = (kot: KOT, items: PopulatedKOTItem[], addons: OrderItemAddon[]): KOTResponse => {
+const formatKOTResponse = (
+  kot: KOT,
+  items: PopulatedKOTItem[],
+  addons: OrderItemAddon[],
+): KOTResponse => {
   const formattedItems = items.map(item => formatKOTItemResponse(item, addons));
 
   return {
@@ -193,20 +203,20 @@ const formatKOTResponse = (kot: KOT, items: PopulatedKOTItem[], addons: OrderIte
     isPrinted: kot.isPrinted,
     createdAt: kot.createdAt,
     updatedAt: kot.updatedAt,
-    items: formattedItems
+    items: formattedItems,
   };
 };
 
 export const listKOTsByOrder = async (
   brandId: string,
   outletId: string,
-  orderId: string
+  orderId: string,
 ): Promise<KOTResponse[]> => {
   const kots = await KOTEntity.find({
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     orderId: new Types.ObjectId(orderId),
-    isDelete: false
+    isDelete: false,
   })
     .populate('waiterId', 'name role')
     .sort({ createdAt: 1 })
@@ -217,7 +227,7 @@ export const listKOTsByOrder = async (
   const kotIds = kots.map(k => k._id);
   const allKotItems = (await KOTItemEntity.find({
     kotId: { $in: kotIds },
-    isDelete: false
+    isDelete: false,
   })
     .populate('orderItemId', 'itemName instruction quantity variationName')
     .lean()) as unknown as PopulatedKOTItem[];
@@ -225,7 +235,7 @@ export const listKOTsByOrder = async (
   const orderItemIds = allKotItems.map(item => item.orderItemId?._id).filter(Boolean);
   const addons = await OrderItemAddonEntity.find({
     orderItemId: { $in: orderItemIds },
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   return kots.map(kot => {
@@ -243,12 +253,12 @@ export const listKOTsByOrder = async (
 export const listAllKOTs = async (
   brandId: string,
   outletId: string,
-  statusFilter?: KOT_STATUS
+  statusFilter?: KOT_STATUS,
 ): Promise<KOTResponse[]> => {
   const filter: Record<string, unknown> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   };
 
   if (statusFilter !== undefined) {
@@ -273,7 +283,7 @@ export const listAllKOTs = async (
   const orderItemIds = allKotItems.map(item => item.orderItemId?._id).filter(Boolean);
   const addons = await OrderItemAddonEntity.find({
     orderItemId: { $in: orderItemIds },
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   return kots.map(kot => {
@@ -288,13 +298,13 @@ export const updateKOTStatus = async (
   brandId: string,
   outletId: string,
   kotId: string,
-  status: KOT_STATUS
+  status: KOT_STATUS,
 ): Promise<KOTStatusUpdateResponse> => {
   const kot = await KOTEntity.findOne({
     _id: new Types.ObjectId(kotId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId), // ← outletId scoped
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!kot) throw { status: 404, message: 'KOT not found' };
@@ -304,14 +314,14 @@ export const updateKOTStatus = async (
   if (!allowed.includes(status)) {
     throw {
       status: 400,
-      message: `Invalid KOT status transition: ${KOT_STATUS_NAMES[kot.status]} → ${KOT_STATUS_NAMES[status] ?? status}`
+      message: `Invalid KOT status transition: ${KOT_STATUS_NAMES[kot.status]} → ${KOT_STATUS_NAMES[status] ?? status}`,
     };
   }
 
   const updated = await KOTEntity.findOneAndUpdate(
     { _id: new Types.ObjectId(kotId) },
     { $set: { status } },
-    { new: true }
+    { new: true },
   ).lean();
 
   if (!updated) throw { status: 404, message: 'KOT not found' };
@@ -323,9 +333,9 @@ export const updateKOTStatus = async (
         _id: updated.orderId,
         brandId: new Types.ObjectId(brandId),
         status: ORDER_STATUS.OPEN,
-        isDelete: false
+        isDelete: false,
       },
-      { $set: { status: ORDER_STATUS.IN_PROGRESS } }
+      { $set: { status: ORDER_STATUS.IN_PROGRESS } },
     );
   }
 
@@ -333,7 +343,7 @@ export const updateKOTStatus = async (
   if (status === KOT_STATUS.SERVED) {
     const kotItems = await KOTItemEntity.find({
       kotId: new Types.ObjectId(kotId),
-      isDelete: false
+      isDelete: false,
     }).lean();
 
     const orderItemIds = kotItems.map(item => item.orderItemId);
@@ -341,12 +351,12 @@ export const updateKOTStatus = async (
     await Promise.all([
       KOTItemEntity.updateMany(
         { kotId: new Types.ObjectId(kotId), isDelete: false },
-        { $set: { itemStatus: ITEM_STATUS.SERVED, servedAt: new Date() } }
+        { $set: { itemStatus: ITEM_STATUS.SERVED, servedAt: new Date() } },
       ),
       OrderItemEntity.updateMany(
         { _id: { $in: orderItemIds }, isDelete: false },
-        { $set: { itemStatus: ITEM_STATUS.SERVED } }
-      )
+        { $set: { itemStatus: ITEM_STATUS.SERVED } },
+      ),
     ]);
 
     // Check if entire order can be closed (all items served + payment settled)
@@ -358,7 +368,7 @@ export const updateKOTStatus = async (
     outletId,
     orderId: String(updated.orderId),
     action: ORDER_AUDIT_ACTION.KOT_STATUS_UPDATED,
-    metadata: { kotId, from: KOT_STATUS_NAMES[kot.status], to: KOT_STATUS_NAMES[status] }
+    metadata: { kotId, from: KOT_STATUS_NAMES[kot.status], to: KOT_STATUS_NAMES[status] },
   });
 
   orderEvents.emit('kot.status.updated', {
@@ -366,7 +376,7 @@ export const updateKOTStatus = async (
     orderId: String(updated.orderId),
     brandId,
     outletId,
-    status
+    status,
   });
 
   return { status: updated.status };
@@ -382,11 +392,11 @@ export const updateKOTItemStatus = async (
   brandId: string,
   outletId: string,
   kotItemId: string,
-  status: ITEM_STATUS
+  status: ITEM_STATUS,
 ): Promise<KOTItemStatusUpdateResponse> => {
   const kotItem = await KOTItemEntity.findOne({
     _id: new Types.ObjectId(kotItemId),
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!kotItem) throw { status: 404, message: 'KOT item not found' };
@@ -396,7 +406,7 @@ export const updateKOTItemStatus = async (
     _id: kotItem.kotId,
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!kot) throw { status: 403, message: 'Access denied: KOT not found in your outlet' };
@@ -415,13 +425,13 @@ export const updateKOTItemStatus = async (
     const remainingItems = await KOTItemEntity.countDocuments({
       kotId: kotItem.kotId,
       itemStatus: { $nin: [ITEM_STATUS.SERVED, ITEM_STATUS.CANCELLED] },
-      isDelete: false
+      isDelete: false,
     });
 
     if (remainingItems === 0) {
       await KOTEntity.updateOne(
         { _id: kotItem.kotId, status: { $ne: KOT_STATUS.SERVED } },
-        { $set: { status: KOT_STATUS.SERVED } }
+        { $set: { status: KOT_STATUS.SERVED } },
       );
     }
 
@@ -434,7 +444,7 @@ export const updateKOTItemStatus = async (
     kotId: String(kotItem.kotId),
     brandId,
     outletId,
-    status
+    status,
   });
 
   return { status };
@@ -448,13 +458,13 @@ export const updateKOTItemStatus = async (
 export const reprintKOT = async (
   brandId: string,
   outletId: string,
-  kotId: string
+  kotId: string,
 ): Promise<KOTResponse> => {
   const kot = await KOTEntity.findOne({
     _id: new Types.ObjectId(kotId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   })
     .populate('waiterId', 'name role')
     .lean();
@@ -463,7 +473,7 @@ export const reprintKOT = async (
 
   const allKotItems = (await KOTItemEntity.find({
     kotId: new Types.ObjectId(kotId),
-    isDelete: false
+    isDelete: false,
   })
     .populate('orderItemId', 'itemName instruction quantity variationName')
     .lean()) as unknown as PopulatedKOTItem[];
@@ -471,7 +481,7 @@ export const reprintKOT = async (
   const orderItemIds = allKotItems.map(item => item.orderItemId?._id).filter(Boolean);
   const addons = await OrderItemAddonEntity.find({
     orderItemId: { $in: orderItemIds },
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   logOrderAction({
@@ -479,14 +489,14 @@ export const reprintKOT = async (
     outletId,
     orderId: String(kot.orderId),
     action: ORDER_AUDIT_ACTION.KOT_STATUS_UPDATED,
-    metadata: { kotId, event: 'KOT_REPRINTED' }
+    metadata: { kotId, event: 'KOT_REPRINTED' },
   });
 
   orderEvents.emit('kot.reprinted', {
     kotId,
     orderId: String(kot.orderId),
     brandId,
-    outletId
+    outletId,
   });
 
   return formatKOTResponse(kot as unknown as KOT, allKotItems, addons);

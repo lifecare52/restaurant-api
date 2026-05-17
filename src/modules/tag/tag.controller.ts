@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || ''
+  outletId: (req.headers['outlet-id'] as string | undefined) || '',
 });
 
 export class TagController {
@@ -17,7 +17,7 @@ export class TagController {
         status: true,
         code: 201,
         message: 'Customer tag created successfully',
-        data: tag
+        data: tag,
       };
       next();
     } catch (error) {
@@ -34,7 +34,7 @@ export class TagController {
         status: true,
         code: 200,
         message: 'Customer tag updated successfully',
-        data: tag
+        data: tag,
       };
       next();
     } catch (error) {
@@ -53,8 +53,8 @@ export class TagController {
         message: 'Customer tags retrieved successfully',
         data: {
           data: result.items,
-          pagination: result.pagination
-        }
+          pagination: result.pagination,
+        },
       };
       next();
     } catch (error) {
@@ -71,7 +71,7 @@ export class TagController {
         status: true,
         code: 200,
         message: 'Customer tag retrieved successfully',
-        data: tag
+        data: tag,
       };
       next();
     } catch (error) {
@@ -88,7 +88,7 @@ export class TagController {
         status: true,
         code: 200,
         message: 'Customer tag deleted successfully',
-        data: tag
+        data: tag,
       };
       next();
     } catch (error) {

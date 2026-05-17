@@ -3,22 +3,22 @@ import swaggerUi from 'swagger-ui-express';
 
 import brandRoutes from '@modules/brand/brand.route';
 import customerRoutes from '@modules/customer/customer.route';
+import dashboardRoutes from '@modules/dashboard/dashboard.route';
 import kotRoutes from '@modules/kot/kot.route';
 import measurementRoutes from '@modules/measurement/measurement.route';
+import mediaRoutes from '@modules/media/media.route';
 import menuRoutes from '@modules/menu/menu.route';
 import metaRoutes from '@modules/meta/meta.route';
 import orderRoutes from '@modules/order/order.route';
 import outletRoutes from '@modules/outlet/outlet.route';
 import paymentRoutes from '@modules/payment/payment.route';
+import printSettingRoutes from '@modules/print-setting/print-setting.route';
 import reportRoutes from '@modules/report/report.route';
-import tagRoutes from '@modules/tag/tag.route';
 import tableRoutes from '@modules/table/table.route';
+import tagRoutes from '@modules/tag/tag.route';
 import { TaxRoutes } from '@modules/tax/tax.route';
 import userRoutes from '@modules/user/user.route';
 import zoneRoutes from '@modules/zone/zone.route';
-import dashboardRoutes from '@modules/dashboard/dashboard.route';
-import printSettingRoutes from '@modules/print-setting/print-setting.route';
-import mediaRoutes from '@modules/media/media.route';
 
 import { getOpenApiSpec } from '@shared/docs/openapi';
 

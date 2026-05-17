@@ -1,20 +1,20 @@
-import { ORDER_TYPE } from '@shared/enum/order.enum';
-
 import type { AppliedTaxSnapshot, OrderTaxBreakup } from '@modules/order/order.types';
-import {
-  ORDER_TYPES,
-  TAX_CALCULATION_METHODS,
-  TAX_TYPES,
-  type OrderType
-} from '@modules/tax/tax.types';
 import type {
   DiscountAllocationInput,
   OrderTaxSummaryInput,
   OrderTaxSummaryResult,
   TaxEngineTaxInput,
   TaxableLineInput,
-  TaxableLineResult
+  TaxableLineResult,
 } from '@modules/tax/tax-calculation.types';
+import {
+  ORDER_TYPES,
+  TAX_CALCULATION_METHODS,
+  TAX_TYPES,
+  type OrderType,
+} from '@modules/tax/tax.types';
+
+import { ORDER_TYPE } from '@shared/enum/order.enum';
 
 const CURRENCY_PRECISION = 2;
 
@@ -49,7 +49,7 @@ const isTaxApplicable = (tax: TaxEngineTaxInput, orderType: OrderType) => {
 const buildTaxSnapshot = (
   tax: TaxEngineTaxInput,
   taxableAmount: number,
-  taxAmount: number
+  taxAmount: number,
 ): AppliedTaxSnapshot => ({
   taxId: tax.taxId ? (tax.taxId as never) : null,
   name: tax.name,
@@ -58,7 +58,7 @@ const buildTaxSnapshot = (
   isInclusive: tax.isInclusive,
   calculationMethod: tax.calculationMethod,
   taxableAmount: roundCurrency(taxableAmount),
-  taxAmount: roundCurrency(taxAmount)
+  taxAmount: roundCurrency(taxAmount),
 });
 
 const extractInclusiveBase = (grossAmount: number, taxes: TaxEngineTaxInput[]) => {
@@ -93,7 +93,7 @@ const extractInclusiveBase = (grossAmount: number, taxes: TaxEngineTaxInput[]) =
 
   return {
     baseAmount: roundCurrency(baseAmount),
-    appliedTaxes
+    appliedTaxes,
   };
 };
 
@@ -119,16 +119,18 @@ const calculateExclusiveTaxes = (baseAmount: number, taxes: TaxEngineTaxInput[])
 
   return {
     taxAmount: roundCurrency(appliedTaxes.reduce((sum, tax) => sum + tax.taxAmount, 0)),
-    appliedTaxes
+    appliedTaxes,
   };
 };
 
 export const allocateDiscountAcrossLines = ({
   lineAmounts,
-  totalDiscount
+  totalDiscount,
 }: DiscountAllocationInput) => {
   const safeTotalDiscount = roundCurrency(Math.max(0, totalDiscount));
-  const totalBase = roundCurrency(lineAmounts.reduce((sum, amount) => sum + Math.max(0, amount), 0));
+  const totalBase = roundCurrency(
+    lineAmounts.reduce((sum, amount) => sum + Math.max(0, amount), 0),
+  );
 
   if (safeTotalDiscount === 0 || totalBase === 0) {
     return lineAmounts.map(() => 0);
@@ -151,16 +153,13 @@ export const calculateLineTax = (input: TaxableLineInput): TaxableLineResult => 
   const addonTotal = roundCurrency(Math.max(0, input.addonAmount ?? 0));
   const baseLineAmount = roundCurrency(Math.max(0, input.baseAmount) * Math.max(1, input.quantity));
   const grossLineAmount = roundCurrency(baseLineAmount + addonTotal);
-  const discountAmount = roundCurrency(
-    clamp(input.discountAmount ?? 0, 0, grossLineAmount)
-  );
+  const discountAmount = roundCurrency(clamp(input.discountAmount ?? 0, 0, grossLineAmount));
   const discountedGrossAmount = roundCurrency(grossLineAmount - discountAmount);
   const taxOrderType = mapOrderTypeToTaxOrderType(input.orderType);
 
   const applicableTaxes = (input.taxes ?? []).filter(tax => isTaxApplicable(tax, taxOrderType));
   const inclusiveTaxes = applicableTaxes.filter(tax => tax.isInclusive);
   const exclusiveTaxes = applicableTaxes.filter(tax => !tax.isInclusive);
-
 
   const inclusiveResult =
     inclusiveTaxes.length > 0
@@ -169,11 +168,8 @@ export const calculateLineTax = (input: TaxableLineInput): TaxableLineResult => 
 
   const exclusiveResult = calculateExclusiveTaxes(inclusiveResult.baseAmount, exclusiveTaxes);
   const appliedTaxes = [...inclusiveResult.appliedTaxes, ...exclusiveResult.appliedTaxes];
-  const totalTaxAmount = roundCurrency(
-    appliedTaxes.reduce((sum, tax) => sum + tax.taxAmount, 0)
-  );
+  const totalTaxAmount = roundCurrency(appliedTaxes.reduce((sum, tax) => sum + tax.taxAmount, 0));
   const netLineAmount = roundCurrency(discountedGrossAmount + exclusiveResult.taxAmount);
-
 
   return {
     quantity: input.quantity,
@@ -184,13 +180,11 @@ export const calculateLineTax = (input: TaxableLineInput): TaxableLineResult => 
     taxableAmount: inclusiveResult.baseAmount,
     taxAmount: totalTaxAmount,
     netLineAmount,
-    appliedTaxes
+    appliedTaxes,
   };
 };
 
-export const summarizeOrderTaxes = ({
-  lines
-}: OrderTaxSummaryInput): OrderTaxSummaryResult => {
+export const summarizeOrderTaxes = ({ lines }: OrderTaxSummaryInput): OrderTaxSummaryResult => {
   const taxBreakupMap = new Map<string, OrderTaxBreakup>();
 
   for (const line of lines) {
@@ -201,7 +195,7 @@ export const summarizeOrderTaxes = ({
         tax.rate,
         tax.type,
         tax.isInclusive,
-        tax.calculationMethod
+        tax.calculationMethod,
       ].join('|');
 
       const existing = taxBreakupMap.get(key);
@@ -225,14 +219,13 @@ export const summarizeOrderTaxes = ({
   const inclusiveTaxAmount = roundCurrency(
     Array.from(taxBreakupMap.values())
       .filter(t => t.isInclusive)
-      .reduce((sum, t) => sum + t.taxAmount, 0)
+      .reduce((sum, t) => sum + t.taxAmount, 0),
   );
   const exclusiveTaxAmount = roundCurrency(
     Array.from(taxBreakupMap.values())
       .filter(t => !t.isInclusive)
-      .reduce((sum, t) => sum + t.taxAmount, 0)
+      .reduce((sum, t) => sum + t.taxAmount, 0),
   );
-
 
   return {
     grossAmount,
@@ -245,7 +238,7 @@ export const summarizeOrderTaxes = ({
     totalTaxAmount,
     roundOffAmount: 0,
     totalAmount,
-    taxBreakup: Array.from(taxBreakupMap.values())
+    taxBreakup: Array.from(taxBreakupMap.values()),
   };
 };
 
@@ -253,7 +246,7 @@ export const taxCalculationService = {
   roundCurrency,
   allocateDiscountAcrossLines,
   calculateLineTax,
-  summarizeOrderTaxes
+  summarizeOrderTaxes,
 };
 
 export default taxCalculationService;

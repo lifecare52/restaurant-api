@@ -25,23 +25,27 @@ const CustomerSchema = new Schema<Customer>(
         outletId: { type: Schema.Types.ObjectId, ref: 'Outlet' },
         totalOrders: { type: Number, default: 0 },
         totalSpent: { type: Number, default: 0 },
-        lastVisitAt: { type: Date, default: null }
-      }
-    ]
+        lastVisitAt: { type: Date, default: null },
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 CustomerSchema.index(
   { brandId: 1, mobile: 1 },
   {
     unique: true,
-    partialFilterExpression: { isDelete: false }
-  }
+    partialFilterExpression: { isDelete: false },
+  },
 );
 CustomerSchema.index({ brandId: 1, name: 'text' });
 CustomerSchema.index({ brandId: 1, tags: 1 });
 
-export const CustomerEntity = model<Customer, CustomerModel>('Customer', CustomerSchema, 'customers');
+export const CustomerEntity = model<Customer, CustomerModel>(
+  'Customer',
+  CustomerSchema,
+  'customers',
+);
 
 export default CustomerEntity;

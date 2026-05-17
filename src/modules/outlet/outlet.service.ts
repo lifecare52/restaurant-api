@@ -4,6 +4,8 @@ import { getBrandById } from '@modules/brand/brand.service';
 import OutletEntity from '@modules/outlet/outlet.model';
 import type { OutletCreateDTO, OutletUpdateDTO } from '@modules/outlet/outlet.types';
 
+import { deleteFromS3 } from '@shared/utils/s3.util';
+
 export const createOutlet = async (brandId: string, dto: OutletCreateDTO) => {
   const brand = await getBrandById(brandId);
   if (!brand) return null;
@@ -14,7 +16,7 @@ export const createOutlet = async (brandId: string, dto: OutletCreateDTO) => {
     brandId: new Types.ObjectId(brandId),
     basicInfo: dto.basicInfo,
     contact: dto.contact,
-    settings: dto.settings
+    settings: dto.settings,
   });
 };
 
@@ -26,21 +28,34 @@ export const getOutletById = async (brandId: string, outletId: string) => {
   return OutletEntity.findOne({
     _id: new Types.ObjectId(outletId),
     brandId: new Types.ObjectId(brandId),
-    isDelete: false
+    isDelete: false,
   })
     .select('basicInfo contact settings isActive createdAt updatedAt')
     .lean();
 };
 
 export const updateOutlet = async (brandId: string, outletId: string, dto: OutletUpdateDTO) => {
+  if (dto.basicInfo && dto.basicInfo.logo !== undefined) {
+    const existing = await OutletEntity.findOne({
+      _id: new Types.ObjectId(outletId),
+      brandId: new Types.ObjectId(brandId),
+      isDelete: false,
+    });
+    if (existing && existing.basicInfo?.logo && existing.basicInfo.logo !== dto.basicInfo.logo) {
+      deleteFromS3(existing.basicInfo.logo).catch(err => {
+        console.error('Failed to delete old outlet logo from S3:', err);
+      });
+    }
+  }
+
   return OutletEntity.findOneAndUpdate(
     {
       _id: new Types.ObjectId(outletId),
       brandId: new Types.ObjectId(brandId),
-      isDelete: false
+      isDelete: false,
     },
     { $set: dto },
-    { new: true }
+    { new: true },
   );
 };
 
@@ -48,5 +63,5 @@ export default {
   createOutlet,
   listOutlets,
   getOutletById,
-  updateOutlet
+  updateOutlet,
 };

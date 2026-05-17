@@ -14,12 +14,12 @@ export const createAddonSchema = Joi.object({
         dietary: Joi.string()
           .valid(...DIETARIES)
           .optional(),
-        available: Joi.boolean().default(true)
-      })
+        available: Joi.boolean().default(true),
+      }),
     )
     .required(),
   isActive: Joi.boolean().default(true),
-  taxGroupId: objectId.optional().allow('')
+  taxGroupId: objectId.optional().allow(''),
 });
 
 export const updateAddonSchema = Joi.object({
@@ -33,11 +33,11 @@ export const updateAddonSchema = Joi.object({
       dietary: Joi.string()
         .valid(...DIETARIES)
         .optional(),
-      available: Joi.boolean().default(true)
-    })
+      available: Joi.boolean().default(true),
+    }),
   ),
   isActive: Joi.boolean(),
-  taxGroupId: objectId.optional().allow('')
+  taxGroupId: objectId.optional().allow(''),
 });
 
 export const addonListQuerySchema = Joi.object({
@@ -45,9 +45,9 @@ export const addonListQuerySchema = Joi.object({
   limit: Joi.number().integer().min(1).max(100).default(20),
   searchText: Joi.string().trim().optional(),
   column: Joi.string().valid('name', 'createdAt', 'updatedAt', 'isActive').default('name'),
-  order: Joi.string().valid('ASC', 'DESC').default('ASC')
+  order: Joi.string().valid('ASC', 'DESC').default('ASC'),
 });
 
 export const addonIdQuerySchema = Joi.object({
-  addonId: objectId.required()
+  addonId: objectId.required(),
 });

@@ -12,8 +12,8 @@ export const updateKOTStatusSchema = Joi.object({
     .required()
     .messages({
       'any.required': 'status is required',
-      'any.only': 'status must be: 1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED'
-    })
+      'any.only': 'status must be: 1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED',
+    }),
 });
 
 // ─── KOT Item Status Update ───────────────────────────────────────────────────
@@ -25,8 +25,8 @@ export const updateKOTItemStatusSchema = Joi.object({
     .required()
     .messages({
       'any.required': 'status is required',
-      'any.only': 'status must be: 1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED'
-    })
+      'any.only': 'status must be: 1=PENDING, 2=PREPARING, 3=READY, 4=SERVED, 5=CANCELLED',
+    }),
 });
 
 // ─── KOT List Query ───────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ export const kotListQuerySchema = Joi.object({
     .valid(...Object.values(KOT_STATUS).filter(v => !isNaN(Number(v))))
     .optional(),
   page: Joi.number().integer().min(1).optional().default(1),
-  limit: Joi.number().integer().min(1).max(100).optional().default(50)
+  limit: Joi.number().integer().min(1).max(100).optional().default(50),
 });
 
 // ─── Kitchen Display Query ────────────────────────────────────────────────────
@@ -45,5 +45,5 @@ export const kotListQuerySchema = Joi.object({
 export const kitchenDisplayQuerySchema = Joi.object({
   status: Joi.number()
     .valid(...Object.values(KOT_STATUS).filter(v => !isNaN(Number(v))))
-    .optional()
+    .optional(),
 });

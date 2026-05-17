@@ -6,6 +6,7 @@ import type { CategoryCreateDTO, CategoryUpdateDTO } from '@modules/menu/categor
 import { getOutletById } from '@modules/outlet/outlet.service';
 
 import type { PaginationQuery } from '@shared/interfaces/pagination';
+import { deleteFromS3 } from '@shared/utils/s3.util';
 
 export const createCategory = async (brandId: string, outletId: string, dto: CategoryCreateDTO) => {
   const brand = await getBrandById(brandId);
@@ -15,7 +16,7 @@ export const createCategory = async (brandId: string, outletId: string, dto: Cat
   const existing = await CategoryEntity.findOne({
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    name: dto.name
+    name: dto.name,
   });
   if (existing) {
     if (existing.isDelete) {
@@ -27,10 +28,10 @@ export const createCategory = async (brandId: string, outletId: string, dto: Cat
             logo: dto.logo,
             isActive: dto.isActive ?? true,
             taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
-            isDelete: false
-          }
+            isDelete: false,
+          },
         },
-        { new: true }
+        { new: true },
       )
         .select('name onlineName logo isActive createdAt updatedAt')
         .lean();
@@ -46,7 +47,7 @@ export const createCategory = async (brandId: string, outletId: string, dto: Cat
       logo: dto.logo,
       isActive: dto.isActive ?? true,
       taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : null,
-      isDelete: false
+      isDelete: false,
     });
     return CategoryEntity.findById(created._id)
       .select('name onlineName logo isActive taxGroupId createdAt updatedAt')
@@ -63,7 +64,7 @@ export const createCategory = async (brandId: string, outletId: string, dto: Cat
 export const listCategories = async (
   brandId: string,
   outletId: string,
-  pagination: PaginationQuery
+  pagination: PaginationQuery,
 ) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;
@@ -71,7 +72,7 @@ export const listCategories = async (
   const filter: Record<string, unknown> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   };
   if (pagination.searchText) {
     const regex = new RegExp(pagination.searchText, 'i');
@@ -79,7 +80,7 @@ export const listCategories = async (
       filter[pagination.column] = { $regex: regex };
     } else {
       Object.assign(filter, {
-        $or: [{ name: { $regex: regex } }, { onlineName: { $regex: regex } }]
+        $or: [{ name: { $regex: regex } }, { onlineName: { $regex: regex } }],
       });
     }
   }
@@ -92,7 +93,7 @@ export const listCategories = async (
       .sort({ [sortColumn]: sortOrder })
       .skip(skip)
       .limit(limit),
-    CategoryEntity.countDocuments(filter)
+    CategoryEntity.countDocuments(filter),
   ]);
   return { items, total };
 };
@@ -102,7 +103,7 @@ export const listActiveCategories = async (brandId: string, outletId: string) =>
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    isActive: true
+    isActive: true,
   })
     .select('name')
     .lean()
@@ -114,7 +115,7 @@ export const getCategory = async (brandId: string, categoryId: string) => {
   return CategoryEntity.findOne({
     _id: new Types.ObjectId(categoryId),
     brandId: new Types.ObjectId(brandId),
-    isDelete: false
+    isDelete: false,
   })
     .select('name onlineName logo isActive taxGroupId createdAt updatedAt')
     .lean();
@@ -123,18 +124,31 @@ export const getCategory = async (brandId: string, categoryId: string) => {
 export const updateCategory = async (
   brandId: string,
   categoryId: string,
-  dto: CategoryUpdateDTO
+  dto: CategoryUpdateDTO,
 ) => {
   try {
+    if (dto.logo !== undefined) {
+      const existing = await CategoryEntity.findOne({
+        _id: new Types.ObjectId(categoryId),
+        brandId: new Types.ObjectId(brandId),
+        isDelete: false,
+      });
+      if (existing && existing.logo && existing.logo !== dto.logo) {
+        deleteFromS3(existing.logo).catch(err => {
+          console.error('Failed to delete old category logo from S3:', err);
+        });
+      }
+    }
+
     return await CategoryEntity.findOneAndUpdate(
       { _id: new Types.ObjectId(categoryId), brandId: new Types.ObjectId(brandId) },
       {
         $set: {
           ...dto,
-          taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : undefined
-        }
+          taxGroupId: dto.taxGroupId ? new Types.ObjectId(dto.taxGroupId) : undefined,
+        },
       },
-      { new: true }
+      { new: true },
     )
       .select('name onlineName logo isActive taxGroupId createdAt updatedAt')
       .lean();
@@ -151,7 +165,7 @@ export const deleteCategory = async (brandId: string, categoryId: string) => {
   return CategoryEntity.findOneAndUpdate(
     { _id: new Types.ObjectId(categoryId), brandId: new Types.ObjectId(brandId) },
     { $set: { isDelete: true } },
-    { new: true }
+    { new: true },
   );
 };
 
@@ -161,5 +175,5 @@ export default {
   listActiveCategories,
   getCategory,
   updateCategory,
-  deleteCategory
+  deleteCategory,
 };

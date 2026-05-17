@@ -15,12 +15,12 @@ import type {
   MenuItemAddonFilterQuery,
   MenuItemAddonSyncDTO,
   MenuItemAddonSyncVariationDTO,
-  MenuItemAddonSyncItemDTO
+  MenuItemAddonSyncItemDTO,
 } from './menu-item-addon.types';
 import type {
   MenuItemAddonCreateDTO,
   MenuItemAddonUpdateDTO,
-  BulkMenuItemAddonCreateDTO
+  BulkMenuItemAddonCreateDTO,
 } from './menu-item-addon.types';
 
 type ResolvedAddonItem = {
@@ -35,7 +35,7 @@ type ResolvedAddonItem = {
 export const createMenuItemAddon = async (
   brandId: string,
   outletId: string,
-  dto: MenuItemAddonCreateDTO
+  dto: MenuItemAddonCreateDTO,
 ) => {
   const brand = await getBrandById(brandId);
   if (!brand) return null;
@@ -75,7 +75,7 @@ export const createMenuItemAddon = async (
       min: dto.min,
       max: dto.max,
       isActive: dto.isActive ?? true,
-      isDelete: false
+      isDelete: false,
     });
   } catch (err) {
     const e = err as { code?: number };
@@ -89,7 +89,7 @@ export const createMenuItemAddon = async (
 export const createBulkMenuItemAddons = async (
   brandId: string,
   outletId: string,
-  dto: BulkMenuItemAddonCreateDTO
+  dto: BulkMenuItemAddonCreateDTO,
 ) => {
   const results = [];
   const errors = [];
@@ -104,7 +104,7 @@ export const createBulkMenuItemAddons = async (
         isSingleSelect: dto.isSingleSelect,
         min: dto.min,
         max: dto.max,
-        isActive: dto.isActive
+        isActive: dto.isActive,
       };
 
       const result = await createMenuItemAddon(brandId, outletId, createDto);
@@ -117,7 +117,7 @@ export const createBulkMenuItemAddons = async (
       errors.push({
         item,
         error: e.message || 'Unknown error',
-        code: e.code
+        code: e.code,
       });
     }
   }
@@ -129,7 +129,7 @@ export const listMenuItemAddons = async (
   brandId: string,
   outletId: string,
   pagination: MenuItemAddonListQuery,
-  filterInput: MenuItemAddonFilterQuery
+  filterInput: MenuItemAddonFilterQuery,
 ) => {
   const page = pagination.page && pagination.page > 0 ? pagination.page : 1;
   const limit = pagination.limit && pagination.limit > 0 ? pagination.limit : 20;
@@ -137,7 +137,7 @@ export const listMenuItemAddons = async (
   const filter: Record<string, unknown> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   };
   if (filterInput.menuItemId) filter.menuItemId = new Types.ObjectId(filterInput.menuItemId);
   if (filterInput.addonId) filter.addonId = new Types.ObjectId(filterInput.addonId);
@@ -151,7 +151,7 @@ export const listMenuItemAddons = async (
       .sort({ [sortColumn]: sortOrder })
       .skip(skip)
       .limit(limit),
-    MenuItemAddonEntity.countDocuments(filter)
+    MenuItemAddonEntity.countDocuments(filter),
   ]);
   const enriched = await Promise.all(
     items.map(async m => {
@@ -164,7 +164,7 @@ export const listMenuItemAddons = async (
       const idSet = new Set((m.allowedItemIds || []).map(id => String(id)));
       const filtered = addonItems.filter(ai => idSet.has(String(ai._id)));
       return { ...m.toObject(), allowedItems: filtered };
-    })
+    }),
   );
   return { items: enriched, total };
 };
@@ -172,13 +172,13 @@ export const listMenuItemAddons = async (
 export const getMenuItemAddon = async (
   brandId: string,
   outletId: string,
-  menuItemAddonId: string
+  menuItemAddonId: string,
 ) => {
   const doc = await MenuItemAddonEntity.findOne({
     _id: new Types.ObjectId(menuItemAddonId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   });
   if (!doc) return null;
   const addon = await getAddon(brandId, outletId, String(doc.addonId));
@@ -195,7 +195,7 @@ export const updateMenuItemAddon = async (
   brandId: string,
   outletId: string,
   menuItemAddonId: string,
-  dto: MenuItemAddonUpdateDTO
+  dto: MenuItemAddonUpdateDTO,
 ) => {
   try {
     let patch: Record<string, unknown> = { ...dto };
@@ -205,20 +205,20 @@ export const updateMenuItemAddon = async (
         _id: new Types.ObjectId(menuItemAddonId),
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
-        isDelete: false
+        isDelete: false,
       });
       if (current) {
         const addon = await getAddon(brandId, outletId, String(current.addonId));
         if (addon) {
           const allowedIds = new Set(
-            (addon.items || []).map(i => String(i._id || '')).filter(Boolean)
+            (addon.items || []).map(i => String(i._id || '')).filter(Boolean),
           );
           const allowedItemIds =
             (dto.allowedItemIds || [])
               .map(s => (s ?? '').trim())
               .filter(Boolean)
               .filter(
-                (id, idx, arr) => arr.findIndex(n => n.toLowerCase() === id.toLowerCase()) === idx
+                (id, idx, arr) => arr.findIndex(n => n.toLowerCase() === id.toLowerCase()) === idx,
               )
               .filter(id => allowedIds.has(id)) || [];
           patch.allowedItemIds = allowedItemIds.map(id => new Types.ObjectId(id));
@@ -229,10 +229,10 @@ export const updateMenuItemAddon = async (
       {
         _id: new Types.ObjectId(menuItemAddonId),
         brandId: new Types.ObjectId(brandId),
-        outletId: new Types.ObjectId(outletId)
+        outletId: new Types.ObjectId(outletId),
       },
       { $set: patch },
-      { new: true }
+      { new: true },
     );
     if (!updated) return updated;
     const addon = await getAddon(brandId, outletId, String(updated.addonId));
@@ -255,16 +255,16 @@ export const updateMenuItemAddon = async (
 export const deleteMenuItemAddon = async (
   brandId: string,
   outletId: string,
-  menuItemAddonId: string
+  menuItemAddonId: string,
 ) => {
   return MenuItemAddonEntity.findOneAndUpdate(
     {
       _id: new Types.ObjectId(menuItemAddonId),
       brandId: new Types.ObjectId(brandId),
-      outletId: new Types.ObjectId(outletId)
+      outletId: new Types.ObjectId(outletId),
     },
     { $set: { isDelete: true } },
-    { new: true }
+    { new: true },
   );
 };
 
@@ -279,7 +279,7 @@ export const updateMenuItemAddonsSoft = async ({
   brandId,
   outletId,
   menuItemId,
-  addons
+  addons,
 }: UpdateMenuItemAddonsSoftInput) => {
   const brandObjectId = new Types.ObjectId(brandId);
   const outletObjectId = new Types.ObjectId(outletId);
@@ -305,7 +305,7 @@ export const updateMenuItemAddonsSoft = async ({
         allowedItemsId: a.allowedItemsId,
         isSingleSelect: a.isSingleSelect,
         min: a.min,
-        max: a.max
+        max: a.max,
       });
       incomingIds.add(key);
     }
@@ -319,10 +319,10 @@ export const updateMenuItemAddonsSoft = async ({
           outletId: outletObjectId,
           menuItemId: menuItemObjectId,
           menuItemVariantId: { $exists: false },
-          isDelete: false
+          isDelete: false,
         },
-        update: { $set: { isDelete: true } }
-      }
+        update: { $set: { isDelete: true } },
+      },
     });
   } else {
     const existing = await MenuItemAddonEntity.find({
@@ -330,12 +330,10 @@ export const updateMenuItemAddonsSoft = async ({
       outletId: outletObjectId,
       menuItemId: menuItemObjectId,
       menuItemVariantId: { $exists: false },
-      isDelete: false
+      isDelete: false,
     }).lean();
 
-    const existingIds = new Set(
-      existing.map(doc => String(doc.addonId).toLowerCase())
-    );
+    const existingIds = new Set(existing.map(doc => String(doc.addonId).toLowerCase()));
 
     const toAdd = [...incomingIds].filter(id => !existingIds.has(id));
     const toDelete = [...existingIds].filter(id => !incomingIds.has(id));
@@ -349,7 +347,7 @@ export const updateMenuItemAddonsSoft = async ({
       let allowedItemIds: Types.ObjectId[] = [];
       if (addon) {
         const allowedIds = new Set(
-          (addon.items || []).map(i => String(i._id || '')).filter(Boolean)
+          (addon.items || []).map(i => String(i._id || '')).filter(Boolean),
         );
         const filtered =
           (src.allowedItemsId || [])
@@ -357,9 +355,7 @@ export const updateMenuItemAddonsSoft = async ({
             .filter((value: string) => Boolean(value))
             .filter((val: string, idx: number, arr: string[]) => {
               const lowerVal = val.toLowerCase();
-              return (
-                arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx
-              );
+              return arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx;
             })
             .filter((val: string) => allowedIds.has(val)) || [];
         allowedItemIds = filtered.map(val => new Types.ObjectId(val));
@@ -377,9 +373,9 @@ export const updateMenuItemAddonsSoft = async ({
             min: src.min ?? null,
             max: src.max ?? null,
             isActive: true,
-            isDelete: false
-          }
-        }
+            isDelete: false,
+          },
+        },
       });
     }
 
@@ -391,7 +387,7 @@ export const updateMenuItemAddonsSoft = async ({
       let allowedItemIds: Types.ObjectId[] = [];
       if (addon) {
         const allowedIds = new Set(
-          (addon.items || []).map(i => String(i._id || '')).filter(Boolean)
+          (addon.items || []).map(i => String(i._id || '')).filter(Boolean),
         );
         const filtered =
           (src.allowedItemsId || [])
@@ -399,9 +395,7 @@ export const updateMenuItemAddonsSoft = async ({
             .filter((value: string) => Boolean(value))
             .filter((val: string, idx: number, arr: string[]) => {
               const lowerVal = val.toLowerCase();
-              return (
-                arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx
-              );
+              return arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx;
             })
             .filter((val: string) => allowedIds.has(val)) || [];
         allowedItemIds = filtered.map(val => new Types.ObjectId(val));
@@ -415,17 +409,17 @@ export const updateMenuItemAddonsSoft = async ({
             menuItemId: menuItemObjectId,
             menuItemVariantId: { $exists: false },
             addonId: new Types.ObjectId(src.addonId),
-            isDelete: false
+            isDelete: false,
           },
           update: {
             $set: {
               allowedItemIds,
               isSingleSelect: src.isSingleSelect ?? false,
               min: src.min ?? null,
-              max: src.max ?? null
-            }
-          }
-        }
+              max: src.max ?? null,
+            },
+          },
+        },
       });
     }
 
@@ -438,10 +432,10 @@ export const updateMenuItemAddonsSoft = async ({
             menuItemId: menuItemObjectId,
             menuItemVariantId: { $exists: false },
             addonId: { $in: toDelete.map(id => new Types.ObjectId(id)) },
-            isDelete: false
+            isDelete: false,
           },
-          update: { $set: { isDelete: true } }
-        }
+          update: { $set: { isDelete: true } },
+        },
       });
     }
   }
@@ -465,7 +459,7 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
       brandId: input.brandId,
       outletId: input.outletId,
       menuItemId: input.menuItemId,
-      addons: input.addons
+      addons: input.addons,
     });
   } else {
     const variations = input.variations || [];
@@ -478,16 +472,14 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
       return null;
     }
 
-    const variantObjectIds = variationsToProcess.map(
-      v => new Types.ObjectId(v.menuItemVariantId)
-    );
+    const variantObjectIds = variationsToProcess.map(v => new Types.ObjectId(v.menuItemVariantId));
 
     const existing = await MenuItemAddonEntity.find({
       brandId: brandObjectId,
       outletId: outletObjectId,
       menuItemId: menuItemObjectId,
       menuItemVariantId: { $in: variantObjectIds },
-      isDelete: false
+      isDelete: false,
     }).lean();
 
     const existingByVariant = new Map<string, string[]>();
@@ -516,7 +508,7 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
             allowedItemsId: a.allowedItemsId,
             isSingleSelect: a.isSingleSelect,
             min: a.min,
-            max: a.max
+            max: a.max,
           });
           incomingIds.add(key);
         }
@@ -530,10 +522,10 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
               outletId: outletObjectId,
               menuItemId: menuItemObjectId,
               menuItemVariantId: variantObjectId,
-              isDelete: false
+              isDelete: false,
             },
-            update: { $set: { isDelete: true } }
-          }
+            update: { $set: { isDelete: true } },
+          },
         });
         continue;
       }
@@ -552,7 +544,7 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
         let allowedItemIds: Types.ObjectId[] = [];
         if (addon) {
           const allowedIds = new Set(
-            (addon.items || []).map(i => String(i._id || '')).filter(Boolean)
+            (addon.items || []).map(i => String(i._id || '')).filter(Boolean),
           );
           const filtered =
             (src.allowedItemsId || [])
@@ -560,9 +552,7 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
               .filter((value: string) => Boolean(value))
               .filter((val: string, idx: number, arr: string[]) => {
                 const lowerVal = val.toLowerCase();
-                return (
-                  arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx
-                );
+                return arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx;
               })
               .filter((val: string) => allowedIds.has(val)) || [];
           allowedItemIds = filtered.map(val => new Types.ObjectId(val));
@@ -581,9 +571,9 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
               min: src.min ?? null,
               max: src.max ?? null,
               isActive: true,
-              isDelete: false
-            }
-          }
+              isDelete: false,
+            },
+          },
         });
       }
 
@@ -595,7 +585,7 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
         let allowedItemIds: Types.ObjectId[] = [];
         if (addon) {
           const allowedIds = new Set(
-            (addon.items || []).map(i => String(i._id || '')).filter(Boolean)
+            (addon.items || []).map(i => String(i._id || '')).filter(Boolean),
           );
           const filtered =
             (src.allowedItemsId || [])
@@ -603,9 +593,7 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
               .filter((value: string) => Boolean(value))
               .filter((val: string, idx: number, arr: string[]) => {
                 const lowerVal = val.toLowerCase();
-                return (
-                  arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx
-                );
+                return arr.findIndex((n: string) => n.toLowerCase() === lowerVal) === idx;
               })
               .filter((val: string) => allowedIds.has(val)) || [];
           allowedItemIds = filtered.map(val => new Types.ObjectId(val));
@@ -619,17 +607,17 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
               menuItemId: menuItemObjectId,
               menuItemVariantId: variantObjectId,
               addonId: new Types.ObjectId(src.addonId),
-              isDelete: false
+              isDelete: false,
             },
             update: {
               $set: {
                 allowedItemIds,
                 isSingleSelect: src.isSingleSelect ?? false,
                 min: src.min ?? null,
-                max: src.max ?? null
-              }
-            }
-          }
+                max: src.max ?? null,
+              },
+            },
+          },
         });
       }
 
@@ -642,10 +630,10 @@ export const updateMenuItemAddons = async (input: MenuItemAddonSyncDTO) => {
               menuItemId: menuItemObjectId,
               menuItemVariantId: variantObjectId,
               addonId: { $in: toDelete.map(id => new Types.ObjectId(id)) },
-              isDelete: false
+              isDelete: false,
             },
-            update: { $set: { isDelete: true } }
-          }
+            update: { $set: { isDelete: true } },
+          },
         });
       }
     }
@@ -665,5 +653,5 @@ export default {
   updateMenuItemAddon,
   deleteMenuItemAddon,
   updateMenuItemAddonsSoft,
-  updateMenuItemAddons
+  updateMenuItemAddons,
 };

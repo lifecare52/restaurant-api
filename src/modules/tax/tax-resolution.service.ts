@@ -19,7 +19,7 @@ export interface ResolvedMenuItemTaxData {
 export const resolveEffectiveTaxesForMenuItems = async (
   brandId: string,
   outletId: string,
-  menuItems: TaxResolutionMenuItemInput[]
+  menuItems: TaxResolutionMenuItemInput[],
 ) => {
   const uniqueCategoryIds = [...new Set(menuItems.map(item => String(item.categoryId)))];
 
@@ -28,14 +28,14 @@ export const resolveEffectiveTaxesForMenuItems = async (
         _id: { $in: uniqueCategoryIds.map(id => new Types.ObjectId(id)) },
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
-        isDelete: false
+        isDelete: false,
       })
         .select('_id taxGroupId')
         .lean()
     : [];
 
   const categoryTaxGroupMap = new Map(
-    categories.map(category => [String(category._id), category.taxGroupId ?? null])
+    categories.map(category => [String(category._id), category.taxGroupId ?? null]),
   );
 
   const effectiveTaxGroupIds = [
@@ -43,8 +43,8 @@ export const resolveEffectiveTaxesForMenuItems = async (
       menuItems
         .map(item => item.taxGroupId ?? categoryTaxGroupMap.get(String(item.categoryId)) ?? null)
         .filter(Boolean)
-        .map(id => String(id))
-    )
+        .map(id => String(id)),
+    ),
   ];
 
   const taxGroups = effectiveTaxGroupIds.length
@@ -53,14 +53,16 @@ export const resolveEffectiveTaxesForMenuItems = async (
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
         isDelete: false,
-        isActive: true
+        isActive: true,
       })
         .select('_id taxes')
         .lean()
     : [];
 
   const groupMap = new Map(taxGroups.map(group => [String(group._id), group]));
-  const uniqueTaxIds = [...new Set(taxGroups.flatMap(group => (group.taxes ?? []).map(taxId => String(taxId))))];
+  const uniqueTaxIds = [
+    ...new Set(taxGroups.flatMap(group => (group.taxes ?? []).map(taxId => String(taxId)))),
+  ];
 
   const taxes = uniqueTaxIds.length
     ? await TaxEntity.find({
@@ -68,7 +70,7 @@ export const resolveEffectiveTaxesForMenuItems = async (
         brandId: new Types.ObjectId(brandId),
         outletId: new Types.ObjectId(outletId),
         isDelete: false,
-        isActive: true
+        isActive: true,
       })
         .select('_id name rate type isInclusive calculationMethod applicableOrderTypes')
         .lean()
@@ -84,9 +86,9 @@ export const resolveEffectiveTaxesForMenuItems = async (
         type: tax.type,
         isInclusive: tax.isInclusive,
         calculationMethod: tax.calculationMethod,
-        applicableOrderTypes: tax.applicableOrderTypes
-      }
-    ])
+        applicableOrderTypes: tax.applicableOrderTypes,
+      },
+    ]),
   );
 
   const resolvedMap = new Map<string, ResolvedMenuItemTaxData>();
@@ -114,7 +116,7 @@ export const resolveEffectiveTaxesForMenuItems = async (
           acc.push(resolvedTax);
         }
         return acc;
-      }, [])
+      }, []),
     });
   }
 
@@ -122,5 +124,5 @@ export const resolveEffectiveTaxesForMenuItems = async (
 };
 
 export default {
-  resolveEffectiveTaxesForMenuItems
+  resolveEffectiveTaxesForMenuItems,
 };

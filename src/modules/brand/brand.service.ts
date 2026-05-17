@@ -4,7 +4,7 @@ import type { BrandCreateDTO, BrandUpdateDTO } from '@modules/brand/brand.types'
 export const createBrand = async (dto: BrandCreateDTO) => {
   const brand = await BrandEntity.create({
     name: dto.name,
-    plan: dto.plan
+    plan: dto.plan,
   });
   return brand;
 };
@@ -14,14 +14,14 @@ export const getBrandById = async (brandId: string) => {
 };
 
 export const updateBrand = async (brandId: string, dto: BrandUpdateDTO) => {
-  return BrandEntity.findOneAndUpdate({ _id: brandId, isDelete: false }, { $set: dto }, { new: true });
+  return BrandEntity.findOneAndUpdate(
+    { _id: brandId, isDelete: false },
+    { $set: dto },
+    { new: true },
+  );
 };
 
-export const listBrands = async (options: {
-  searchText?: string;
-  page: number;
-  limit: number;
-}) => {
+export const listBrands = async (options: { searchText?: string; page: number; limit: number }) => {
   const query: any = { isDelete: false };
   if (options.searchText) {
     query.name = { $regex: options.searchText, $options: 'i' };
@@ -38,5 +38,5 @@ export default {
   createBrand,
   getBrandById,
   updateBrand,
-  listBrands
+  listBrands,
 };

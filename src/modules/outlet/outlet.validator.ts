@@ -8,13 +8,13 @@ export const createOutletSchema = Joi.object({
   brandId: Joi.string().optional(), // Now accepted in body
   basicInfo: Joi.object({
     name: Joi.string().trim().min(2).required(),
-    logo: Joi.string().uri().allow('').optional(),
+    logo: Joi.string().allow('').optional(),
     cuisineType: Joi.array()
       .items(Joi.string().valid(...CUISINE_TYPES))
       .optional(),
     outletType: Joi.string()
       .valid(...OUTLET_TYPES)
-      .required()
+      .required(),
   }).required(),
   contact: Joi.object({
     email: Joi.string().email().required(),
@@ -22,7 +22,7 @@ export const createOutletSchema = Joi.object({
     country: Joi.string().trim().required(),
     state: Joi.string().trim().required(),
     city: Joi.string().trim().required(),
-    address: Joi.string().trim().required()
+    address: Joi.string().trim().required(),
   }).required(),
   settings: Joi.object({
     gstEnabled: Joi.boolean().default(false),
@@ -31,14 +31,14 @@ export const createOutletSchema = Joi.object({
       .when('gstEnabled', {
         is: true,
         then: Joi.required(),
-        otherwise: Joi.optional().allow('')
+        otherwise: Joi.optional().allow(''),
       }),
     gstScheme: Joi.string()
       .valid(...Object.values(GstScheme))
       .when('gstEnabled', {
         is: true,
         then: Joi.invalid(GstScheme.NONE).required(),
-        otherwise: Joi.optional()
+        otherwise: Joi.optional(),
       })
       .default(GstScheme.NONE),
     currency: Joi.string().trim().allow('').optional(),
@@ -46,9 +46,9 @@ export const createOutletSchema = Joi.object({
       isKotEnabled: Joi.boolean().default(true),
       generationMode: Joi.number()
         .valid(...Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number'))
-        .default(KOT_GENERATION_MODE.AUTO)
-    }).optional()
-  }).optional()
+        .default(KOT_GENERATION_MODE.AUTO),
+    }).optional(),
+  }).optional(),
 });
 
 export const updateOutletSchema = Joi.object({
@@ -56,9 +56,9 @@ export const updateOutletSchema = Joi.object({
   outletId: Joi.string().optional(),
   basicInfo: Joi.object({
     name: Joi.string().trim().min(2).allow(''),
-    logo: Joi.string().uri().allow(''),
+    logo: Joi.string().allow(''),
     cuisineType: Joi.array().items(Joi.string().valid(...CUISINE_TYPES)),
-    outletType: Joi.string().valid(...OUTLET_TYPES)
+    outletType: Joi.string().valid(...OUTLET_TYPES),
   }),
   contact: Joi.object({
     email: Joi.string().email(),
@@ -66,7 +66,7 @@ export const updateOutletSchema = Joi.object({
     country: Joi.string().trim(),
     state: Joi.string().trim(),
     city: Joi.string().trim(),
-    address: Joi.string().trim()
+    address: Joi.string().trim(),
   }),
   settings: Joi.object({
     gstEnabled: Joi.boolean(),
@@ -76,9 +76,9 @@ export const updateOutletSchema = Joi.object({
     kotSettings: Joi.object({
       isKotEnabled: Joi.boolean(),
       generationMode: Joi.number().valid(
-        ...Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number')
-      )
-    }).optional()
+        ...Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number'),
+      ),
+    }).optional(),
   }).when('.gstEnabled', {
     is: true,
     then: Joi.object({
@@ -86,26 +86,26 @@ export const updateOutletSchema = Joi.object({
       gstScheme: Joi.string()
         .valid(...Object.values(GstScheme))
         .invalid(GstScheme.NONE)
-        .required()
-    })
+        .required(),
+    }),
   }),
-  isActive: Joi.boolean()
+  isActive: Joi.boolean(),
 });
 
 export const outletBrandQuerySchema = Joi.object({
-  brandId: Joi.string().optional()
+  brandId: Joi.string().optional(),
 });
 
 export const outletUpdateQuerySchema = Joi.object({
   brandId: Joi.string().optional(),
-  outletId: Joi.string().optional()
+  outletId: Joi.string().optional(),
 });
 
 export const outletDetailHeaderSchema = Joi.object({
   'brand-id': Joi.string().optional(),
-  'outlet-id': Joi.string().optional()
+  'outlet-id': Joi.string().optional(),
 });
 
 export const outletBrandHeaderSchema = Joi.object({
-  'brand-id': Joi.string().optional()
+  'brand-id': Joi.string().optional(),
 });

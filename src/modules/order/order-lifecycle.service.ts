@@ -1,17 +1,19 @@
 import { Types } from 'mongoose';
+
+import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
+import { logOrderAction } from '@modules/order/order-audit.service';
 import { OrderEntity, OrderItemEntity } from '@modules/order/order.model';
-import { 
-  ORDER_STATUS, 
-  SETTLEMENT_STATUS, 
+import {
+  ORDER_STATUS,
+  SETTLEMENT_STATUS,
   ITEM_STATUS,
-  ORDER_TYPE 
+  ORDER_TYPE,
 } from '@modules/order/order.types';
+import OutletEntity from '@modules/outlet/outlet.model';
 import TableEntity from '@modules/table/table.model';
 import { TABLE_STATUS } from '@modules/table/table.types';
-import { logOrderAction } from '@modules/order/order-audit.service';
-import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
+
 import { orderEvents } from '@shared/events/order.events';
-import OutletEntity from '@modules/outlet/outlet.model';
 
 /**
  * Validates if an order meets conditions to be automatically closed:
@@ -22,13 +24,13 @@ export const checkAndAutoCloseOrder = async (
   brandId: string,
   outletId: string,
   orderId: string,
-  performedBy?: string
+  performedBy?: string,
 ) => {
   const order = await OrderEntity.findOne({
     _id: new Types.ObjectId(orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!order || ![ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS].includes(order.status)) {
@@ -43,9 +45,9 @@ export const checkAndAutoCloseOrder = async (
   // Check outlet settings for KOT
   const outlet = await OutletEntity.findOne({
     _id: new Types.ObjectId(outletId),
-    brandId: new Types.ObjectId(brandId)
+    brandId: new Types.ObjectId(brandId),
   }).lean();
-  
+
   const isKotEnabled = outlet?.settings?.kotSettings?.isKotEnabled ?? true;
 
   if (isKotEnabled) {
@@ -53,7 +55,7 @@ export const checkAndAutoCloseOrder = async (
     const pendingItemsCount = await OrderItemEntity.countDocuments({
       orderId: order._id,
       itemStatus: { $nin: [ITEM_STATUS.SERVED, ITEM_STATUS.CANCELLED] },
-      isDelete: false
+      isDelete: false,
     });
 
     if (pendingItemsCount > 0) {
@@ -67,9 +69,9 @@ export const checkAndAutoCloseOrder = async (
     {
       $set: {
         status: ORDER_STATUS.COMPLETED,
-        closedAt: new Date()
-      }
-    }
+        closedAt: new Date(),
+      },
+    },
   );
 
   // Update table status to CLEANING
@@ -80,7 +82,7 @@ export const checkAndAutoCloseOrder = async (
   if (!isKotEnabled) {
     await OrderItemEntity.updateMany(
       { orderId: order._id, itemStatus: { $ne: ITEM_STATUS.CANCELLED }, isDelete: false },
-      { $set: { itemStatus: ITEM_STATUS.SERVED } }
+      { $set: { itemStatus: ITEM_STATUS.SERVED } },
     );
   }
 
@@ -91,7 +93,7 @@ export const checkAndAutoCloseOrder = async (
     orderId: String(order._id),
     action: ORDER_AUDIT_ACTION.ORDER_CLOSED,
     performedBy: userIdStr,
-    metadata: { reason: 'auto_closed', isKotEnabled }
+    metadata: { reason: 'auto_closed', isKotEnabled },
   });
   orderEvents.emit('order.closed', { orderId: String(order._id), brandId, outletId });
 

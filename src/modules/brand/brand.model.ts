@@ -19,12 +19,12 @@ const BrandSchema = new Schema<Brand>(
     ownerId: { type: Schema.Types.ObjectId, required: false, index: true },
     plan: {
       name: { type: String },
-      outletLimit: { type: Number, default: 10 }
+      outletLimit: { type: Number, default: 10 },
     },
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false }
+    isDelete: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const BrandEntity = model<Brand, BrandModel>('Brand', BrandSchema);

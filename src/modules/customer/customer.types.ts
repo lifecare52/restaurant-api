@@ -1,8 +1,8 @@
+import type { CustomerTag } from '@modules/tag/tag.types';
+
 import type { PaginationQuery } from '@shared/interfaces/pagination';
 
 import type { Types } from 'mongoose';
-
-import type { CustomerTag } from '@modules/tag/tag.types';
 
 export interface CustomerOutletStats {
   outletId: Types.ObjectId;

@@ -16,7 +16,7 @@ const KOTSchema = new Schema<KOT>(
     kotType: {
       type: Number,
       enum: Object.values(KOT_TYPE).filter(v => !isNaN(Number(v))),
-      default: KOT_TYPE.REGULAR
+      default: KOT_TYPE.REGULAR,
     },
     waiterId: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     tokenNo: { type: String, default: '' },
@@ -25,18 +25,18 @@ const KOTSchema = new Schema<KOT>(
       type: String,
       trim: true,
       default: '',
-      maxlength: 500
+      maxlength: 500,
     },
     status: {
       type: Number,
       enum: Object.values(KOT_STATUS).filter(v => !isNaN(Number(v))),
-      default: KOT_STATUS.PENDING
+      default: KOT_STATUS.PENDING,
     },
     isPrinted: { type: Boolean, default: false },
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false }
+    isDelete: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Unique KOT number per outlet + kitchen display queries
@@ -60,20 +60,20 @@ const KOTItemSchema = new Schema<KOTItem>(
       type: String,
       trim: true,
       default: '',
-      maxlength: 300
+      maxlength: 300,
     },
     // Per-item kitchen status
     itemStatus: {
       type: Number,
       enum: Object.values(ITEM_STATUS).filter(v => !isNaN(Number(v))),
-      default: ITEM_STATUS.PENDING
+      default: ITEM_STATUS.PENDING,
     },
     preparedAt: { type: Date, default: null },
     servedAt: { type: Date, default: null },
     isActive: { type: Boolean, default: true },
-    isDelete: { type: Boolean, default: false }
+    isDelete: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Lookup KOT items by status for kitchen display
@@ -84,5 +84,5 @@ export const KOTItemEntity = model<KOTItem, KOTItemModel>('KOTItem', KOTItemSche
 
 export default {
   KOTEntity,
-  KOTItemEntity
+  KOTItemEntity,
 };

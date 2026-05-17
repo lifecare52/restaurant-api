@@ -1,9 +1,12 @@
 import { Router } from 'express';
-import { getDashboardSummaryController } from './dashboard.controller';
+
+import { commonHeaderSchema } from '@shared/utils/common.validation';
+import { validateRequest } from '@shared/utils/validateRequest';
+
 import { auth } from '@middlewares/auth.middleware';
 import { requireBrandAccess, requireOutletAccess } from '@middlewares/guard.middleware';
-import { validateRequest } from '@shared/utils/validateRequest';
-import { commonHeaderSchema } from '@shared/utils/common.validation';
+
+import { getDashboardSummaryController } from './dashboard.controller';
 
 const router = Router();
 
@@ -11,7 +14,7 @@ const tenantMiddleware = [
   auth,
   validateRequest(commonHeaderSchema, 'headers'),
   requireBrandAccess,
-  requireOutletAccess
+  requireOutletAccess,
 ];
 
 /**

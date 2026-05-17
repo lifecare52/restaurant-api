@@ -1,5 +1,5 @@
-import { Order } from '../order.types';
 import { IPrintSetting } from '../../print-setting/print-setting.types';
+import { Order } from '../order.types';
 
 /**
  * Generates a Base64 encoded SVG string of a KOT (Kitchen Order Token).
@@ -8,7 +8,7 @@ export const generateKOTSvg = async (
   order: any,
   items: any[],
   settings: IPrintSetting['kotPrinting'],
-  isVoid: boolean = false
+  isVoid: boolean = false,
 ): Promise<string[]> => {
   const paperWidth = settings.paperSize === '58mm' ? 300 : 400;
   const padding = 20;
@@ -22,12 +22,22 @@ export const generateKOTSvg = async (
     let currentY = 40;
     const lines: string[] = [];
 
-    const addText = (text: string, x: number, align: 'start' | 'middle' | 'end' = 'start', isBold = false, customSize?: number) => {
-      lines.push(`<text x="${x}" y="${currentY}" font-family="${fontFamily}" font-size="${customSize || fontSize}" fill="black" text-anchor="${align}" ${isBold ? 'font-weight="bold"' : ''}>${escapeHtml(text)}</text>`);
+    const addText = (
+      text: string,
+      x: number,
+      align: 'start' | 'middle' | 'end' = 'start',
+      isBold = false,
+      customSize?: number,
+    ) => {
+      lines.push(
+        `<text x="${x}" y="${currentY}" font-family="${fontFamily}" font-size="${customSize || fontSize}" fill="black" text-anchor="${align}" ${isBold ? 'font-weight="bold"' : ''}>${escapeHtml(text)}</text>`,
+      );
     };
 
     const addLine = () => {
-      lines.push(`<line x1="${padding}" y1="${currentY - 5}" x2="${paperWidth - padding}" y2="${currentY - 5}" stroke="black" stroke-dasharray="4" />`);
+      lines.push(
+        `<line x1="${padding}" y1="${currentY - 5}" x2="${paperWidth - padding}" y2="${currentY - 5}" stroke="black" stroke-dasharray="4" />`,
+      );
       currentY += 10;
     };
 
@@ -53,7 +63,8 @@ export const generateKOTSvg = async (
     }
 
     if (settings.showOrderType) {
-      const typeStr = order.orderType === 1 ? 'DINE IN' : order.orderType === 2 ? 'TAKEAWAY' : 'DELIVERY';
+      const typeStr =
+        order.orderType === 1 ? 'DINE IN' : order.orderType === 2 ? 'TAKEAWAY' : 'DELIVERY';
       addText(`Type: ${typeStr}`, padding, 'start');
       currentY += lineHeight;
     }

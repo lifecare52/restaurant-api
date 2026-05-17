@@ -13,6 +13,7 @@ import MenuItemEntity from '@modules/menu/menu-items/menu-item.model';
 import DailySequenceEntity from '@modules/order/daily-sequence.model';
 import { ORDER_AUDIT_ACTION } from '@modules/order/order-audit.model';
 import { logOrderAction } from '@modules/order/order-audit.service';
+import { checkAndAutoCloseOrder } from '@modules/order/order-lifecycle.service';
 import { OrderEntity, OrderItemEntity, OrderItemAddonEntity } from '@modules/order/order.model';
 import {
   ORDER_STATUS,
@@ -39,21 +40,25 @@ import {
   type MeasurementSelectionDTO,
   type OrderGroupResponse,
   type OrderGroupBatch,
-  ORDER_GROUP_TYPE
+  ORDER_GROUP_TYPE,
 } from '@modules/order/order.types';
 import OutletEntity, { type Outlet } from '@modules/outlet/outlet.model';
+import { PrintSetting } from '@modules/print-setting/print-setting.model';
 import TableEntity from '@modules/table/table.model';
-import { allocateDiscountAcrossLines, calculateLineTax, summarizeOrderTaxes } from '@modules/tax/tax-calculation.service';
-import { resolveEffectiveTaxesForMenuItems } from '@modules/tax/tax-resolution.service';
-import { checkAndAutoCloseOrder } from '@modules/order/order-lifecycle.service';
-import { CUSTOMER_TAG_DISCOUNT_TYPE } from '@modules/tag/tag.types';
 import { TABLE_STATUS } from '@modules/table/table.types';
+import { CUSTOMER_TAG_DISCOUNT_TYPE } from '@modules/tag/tag.types';
+import {
+  allocateDiscountAcrossLines,
+  calculateLineTax,
+  summarizeOrderTaxes,
+} from '@modules/tax/tax-calculation.service';
+import { resolveEffectiveTaxesForMenuItems } from '@modules/tax/tax-resolution.service';
 
 import { orderEvents } from '@shared/events/order.events';
 import type { TokenDisplayItem, TokenDisplayResponse } from '@shared/interfaces';
-import { PrintSetting } from '@modules/print-setting/print-setting.model';
-import { generateReceiptSvg } from './helpers/receipt-svg-generator';
+
 import { generateKOTSvg } from './helpers/kot-svg-generator';
+import { generateReceiptSvg } from './helpers/receipt-svg-generator';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -76,14 +81,14 @@ const recalculateOrderPricing = async (
   outletId: string,
   customerId: Types.ObjectId | null | undefined,
   subtotal: number,
-  manualTagId?: Types.ObjectId | null
+  manualTagId?: Types.ObjectId | null,
 ) => {
   if (!customerId && !manualTagId) {
     return {
       discountAmount: 0,
       discountType: null,
       discountValue: null,
-      totalAmount: subtotal
+      totalAmount: subtotal,
     };
   }
 
@@ -92,15 +97,14 @@ const recalculateOrderPricing = async (
     subtotal,
     brandId,
     outletId,
-    manualTagId ? String(manualTagId) : null
+    manualTagId ? String(manualTagId) : null,
   );
-
 
   return {
     discountAmount: discount,
     discountType: mapDiscountTypeToOrderValue(appliedTag?.discountType ?? null),
     discountValue: appliedTag?.discountValue ?? null,
-    totalAmount: Math.max(0, subtotal - discount)
+    totalAmount: Math.max(0, subtotal - discount),
   };
 };
 
@@ -108,17 +112,17 @@ const recalculateOrderPricing = async (
 const getNextSequence = async (
   brandId: string,
   outletId: string,
-  type: 'ORDER' | 'KOT' | 'TOKEN'
+  type: 'ORDER' | 'KOT' | 'TOKEN',
 ): Promise<number> => {
   const doc = await DailySequenceEntity.findOneAndUpdate(
     {
       brandId: new Types.ObjectId(brandId),
       outletId: new Types.ObjectId(outletId),
       date: getTodayStr(),
-      type
+      type,
     },
     { $inc: { seq: 1 } },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
   return doc.seq;
 };
@@ -136,12 +140,12 @@ const batchFetchMenuData = async (items: AddItemToOrderDTO[]) => {
     MenuItemEntity.find({ _id: { $in: menuItemIds }, isDelete: false }).lean(),
     variantIds.length
       ? MenuItemVariantEntity.find({
-        $or: [{ _id: { $in: variantIds } }, { variationId: { $in: variantIds } }]
-      })
-        .populate('variationId', 'name')
-        .lean()
+          $or: [{ _id: { $in: variantIds } }, { variationId: { $in: variantIds } }],
+        })
+          .populate('variationId', 'name')
+          .lean()
       : [],
-    addonIds.length ? AddonEntity.find({ _id: { $in: addonIds } }).lean() : []
+    addonIds.length ? AddonEntity.find({ _id: { $in: addonIds } }).lean() : [],
   ]);
 
   // Collect measurement IDs
@@ -164,7 +168,7 @@ const batchFetchMenuData = async (items: AddItemToOrderDTO[]) => {
     variants, // Return raw array for secondary lookup
     variantMap: new Map(variants.map((v: any) => [String(v._id), v])),
     addonMap: new Map(addons.map((a: any) => [String(a._id), a])),
-    measurementMap: new Map(measurements.map((m: any) => [String(m._id), m]))
+    measurementMap: new Map(measurements.map((m: any) => [String(m._id), m])),
   };
 };
 
@@ -179,7 +183,7 @@ const processItems = (
   variantMap: Map<string, any>,
   variants: any[],
   addonMap: Map<string, any>,
-  measurementMap: Map<string, any>
+  measurementMap: Map<string, any>,
 ): {
   processedItems: ProcessedOrderItem[];
   processedAddons: ProcessedOrderItemAddon[];
@@ -219,7 +223,7 @@ const processItems = (
         variant = variants.find(
           v =>
             String(v.variationId?._id || v.variationId) === String(item.variationId) &&
-            String(v.menuItemId) === String(item.menuItemId)
+            String(v.menuItemId) === String(item.menuItemId),
         );
       }
 
@@ -275,7 +279,7 @@ const processItems = (
         } else {
           throw {
             status: 400,
-            message: `Invalid unit '${item.measurement.unit}' for ${menuItem.name}. Expected ${measurementDoc.unit} or ${measurementDoc.baseUnit}`
+            message: `Invalid unit '${item.measurement.unit}' for ${menuItem.name}. Expected ${measurementDoc.unit} or ${measurementDoc.baseUnit}`,
           };
         }
 
@@ -286,14 +290,14 @@ const processItems = (
         if (typeof minValue === 'number' && quantityInPrimaryUnit < minValue - epsilon) {
           throw {
             status: 400,
-            message: `Measurement for ${menuItem.name} must be at least ${minValue} ${measurementDoc.unit}`
+            message: `Measurement for ${menuItem.name} must be at least ${minValue} ${measurementDoc.unit}`,
           };
         }
 
         if (typeof maxValue === 'number' && quantityInPrimaryUnit > maxValue + epsilon) {
           throw {
             status: 400,
-            message: `Measurement for ${menuItem.name} must be at most ${maxValue} ${measurementDoc.unit}`
+            message: `Measurement for ${menuItem.name} must be at most ${maxValue} ${measurementDoc.unit}`,
           };
         }
       }
@@ -305,7 +309,7 @@ const processItems = (
         if (diff > 1.0) {
           throw {
             status: 400,
-            message: `Price mismatch for ${menuItem.name}. Calculated: ${priceForOneUnit}, Provided: ${item.measurement.totalPrice}`
+            message: `Price mismatch for ${menuItem.name}. Calculated: ${priceForOneUnit}, Provided: ${item.measurement.totalPrice}`,
           };
         }
       }
@@ -325,7 +329,7 @@ const processItems = (
         baseUnitQuantity: baseUnitQuantity, // Correctly calculated for inventory
         baseValue: baseValue,
         basePrice: basePrice,
-        totalPrice: priceForOneUnit
+        totalPrice: priceForOneUnit,
       };
     } else {
       // Quantity Based
@@ -346,12 +350,12 @@ const processItems = (
         if (!addonDoc) throw { status: 404, message: `Addon ${addonDto.addonId} not found` };
 
         const addonItemDoc = addonDoc.items?.find(
-          (i: AddonItem) => String(i._id) === String(addonDto.addonItemId)
+          (i: AddonItem) => String(i._id) === String(addonDto.addonItemId),
         );
         if (!addonItemDoc)
           throw {
             status: 404,
-            message: `AddonItem ${addonDto.addonItemId} not found in addon ${addonDto.addonId}`
+            message: `AddonItem ${addonDto.addonItemId} not found in addon ${addonDto.addonId}`,
           };
 
         const addonPrice = addonItemDoc.price || 0;
@@ -372,7 +376,7 @@ const processItems = (
           price: addonPrice,
           quantity: addonDto.quantity,
           isActive: true,
-          isDelete: false
+          isDelete: false,
         });
       }
     }
@@ -404,7 +408,7 @@ const processItems = (
       itemStatus: ITEM_STATUS.PENDING,
       kotSentAt: null,
       isActive: true,
-      isDelete: false
+      isDelete: false,
     });
   }
 
@@ -419,7 +423,7 @@ const buildTaxAwareOrderPreview = async (
   orderType: ORDER_TYPE,
   requestedItems: AddItemToOrderDTO[],
   processedItems: ProcessedOrderItem[],
-  menuItemMap: Map<string, any>
+  menuItemMap: Map<string, any>,
 ) => {
   const resolvedTaxesMap = await resolveEffectiveTaxesForMenuItems(
     brandId,
@@ -433,15 +437,15 @@ const buildTaxAwareOrderPreview = async (
       return {
         _id: menuItem._id,
         categoryId: menuItem.categoryId,
-        taxGroupId: menuItem.taxGroupId ?? null
+        taxGroupId: menuItem.taxGroupId ?? null,
       };
-    })
+    }),
   );
 
   const previewItems = processedItems.map(processedItem => {
     const resolvedTaxes = resolvedTaxesMap.get(String(processedItem.menuItemId)) ?? {
       taxGroupId: null,
-      taxes: []
+      taxes: [],
     };
 
     const calculatedLine = calculateLineTax({
@@ -450,9 +454,8 @@ const buildTaxAwareOrderPreview = async (
       baseAmount: processedItem.basePrice,
       addonAmount: processedItem.addonTotal ?? 0,
       discountAmount: processedItem.discountAmount ?? 0,
-      taxes: resolvedTaxes.taxes
+      taxes: resolvedTaxes.taxes,
     });
-
 
     return {
       menuItemId: String(processedItem.menuItemId),
@@ -466,7 +469,7 @@ const buildTaxAwareOrderPreview = async (
       taxAmount: calculatedLine.taxAmount,
       grossLineAmount: calculatedLine.grossLineAmount,
       netLineAmount: calculatedLine.netLineAmount,
-      appliedTaxes: calculatedLine.appliedTaxes
+      appliedTaxes: calculatedLine.appliedTaxes,
     };
   });
 
@@ -480,13 +483,13 @@ const buildTaxAwareOrderPreview = async (
       taxableAmount: item.taxableAmount,
       taxAmount: item.taxAmount,
       netLineAmount: item.netLineAmount,
-      appliedTaxes: item.appliedTaxes
-    }))
+      appliedTaxes: item.appliedTaxes,
+    })),
   });
 
   return {
     ...summary,
-    items: previewItems
+    items: previewItems,
   };
 };
 
@@ -494,12 +497,13 @@ const mapPreviewItemToStoredOrderItem = (
   orderId: Types.ObjectId,
   processedItem: ProcessedOrderItem,
   previewItem: Awaited<ReturnType<typeof buildTaxAwareOrderPreview>>['items'][number],
-  now?: Date | null
+  now?: Date | null,
 ) => ({
   ...processedItem,
   orderId,
   taxGroupId: previewItem?.taxGroupId ? new Types.ObjectId(previewItem.taxGroupId) : null,
-  baseLineAmount: previewItem?.baseLineAmount ?? processedItem.baseLineAmount ?? processedItem.totalPrice,
+  baseLineAmount:
+    previewItem?.baseLineAmount ?? processedItem.baseLineAmount ?? processedItem.totalPrice,
   addonTotal: previewItem?.addonTotal ?? processedItem.addonTotal ?? 0,
   discountAmount: previewItem?.discountAmount ?? 0,
   taxableAmount: previewItem?.taxableAmount ?? processedItem.totalPrice,
@@ -509,9 +513,9 @@ const mapPreviewItemToStoredOrderItem = (
   appliedTaxes:
     previewItem?.appliedTaxes?.map(tax => ({
       ...tax,
-      taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
+      taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null,
     })) ?? [],
-  kotSentAt: now || null
+  kotSentAt: now || null,
 });
 
 const recalculateStoredLinePricing = (orderItem: any, quantity: number, orderType: ORDER_TYPE) => {
@@ -529,7 +533,7 @@ const recalculateStoredLinePricing = (orderItem: any, quantity: number, orderTyp
     type: tax.type,
     isInclusive: tax.isInclusive,
     calculationMethod: tax.calculationMethod,
-    applicableOrderTypes: undefined
+    applicableOrderTypes: undefined,
   }));
 
   const calculatedLine = calculateLineTax({
@@ -538,7 +542,7 @@ const recalculateStoredLinePricing = (orderItem: any, quantity: number, orderTyp
     baseAmount: basePerUnit,
     addonAmount: addonPerUnit * quantity,
     discountAmount: 0,
-    taxes
+    taxes,
   });
 
   return {
@@ -553,24 +557,26 @@ const recalculateStoredLinePricing = (orderItem: any, quantity: number, orderTyp
     netLineAmount: calculatedLine.netLineAmount,
     appliedTaxes: calculatedLine.appliedTaxes.map(tax => ({
       ...tax,
-      taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
-    }))
+      taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null,
+    })),
   };
 };
 
 const recalculatePersistedOrderTotals = async (
   orderId: Types.ObjectId,
-  session?: mongoose.ClientSession
+  session?: mongoose.ClientSession,
 ) => {
   // 1. Fetch order to get tenant context and global settings
-  const order = await OrderEntity.findById(orderId).session(session || null).lean();
+  const order = await OrderEntity.findById(orderId)
+    .session(session || null)
+    .lean();
   if (!order) return;
 
   // 2. Fetch all active items
   const itemQuery = OrderItemEntity.find({
     orderId,
     isDelete: false,
-    itemStatus: { $ne: ITEM_STATUS.CANCELLED }
+    itemStatus: { $ne: ITEM_STATUS.CANCELLED },
   });
   if (session) itemQuery.session(session);
   const items = await itemQuery.lean();
@@ -587,16 +593,19 @@ const recalculatePersistedOrderTotals = async (
           roundOffAmount: 0,
           discountAmount: 0,
           totalAmount: 0,
-          taxBreakup: []
-        }
+          taxBreakup: [],
+        },
       },
-      { session }
+      { session },
     );
     return;
   }
 
   // 3. Calculate total gross before global discount
-  const totalGross = items.reduce((sum, item) => sum + (item.grossLineAmount || item.totalPrice || 0), 0);
+  const totalGross = items.reduce(
+    (sum, item) => sum + (item.grossLineAmount || item.totalPrice || 0),
+    0,
+  );
 
   // 4. Calculate global pricing (discount)
   const pricing = await recalculateOrderPricing(
@@ -604,14 +613,14 @@ const recalculatePersistedOrderTotals = async (
     String(order.outletId),
     order.customerId,
     totalGross,
-    order.manualTagId
+    order.manualTagId,
   );
 
   // 5. Allocate global discount across all items
   const lineGrossAmounts = items.map(item => item.grossLineAmount || item.totalPrice || 0);
   const allocatedDiscounts = allocateDiscountAcrossLines({
     lineAmounts: lineGrossAmounts,
-    totalDiscount: pricing.discountAmount
+    totalDiscount: pricing.discountAmount,
   });
 
   // 6. Recalculate each item's financial state and update DB
@@ -628,7 +637,7 @@ const recalculatePersistedOrderTotals = async (
       rate: t.rate,
       type: t.type,
       isInclusive: t.isInclusive,
-      calculationMethod: t.calculationMethod
+      calculationMethod: t.calculationMethod,
     }));
 
     const linePricing = calculateLineTax({
@@ -637,7 +646,7 @@ const recalculatePersistedOrderTotals = async (
       baseAmount: (item.baseLineAmount || 0) / (item.quantity || 1),
       addonAmount: item.addonTotal || 0,
       discountAmount: newDiscount,
-      taxes
+      taxes,
     });
 
     // Atomic update for each item
@@ -651,11 +660,11 @@ const recalculatePersistedOrderTotals = async (
           netLineAmount: linePricing.netLineAmount,
           appliedTaxes: linePricing.appliedTaxes.map(tax => ({
             ...tax,
-            taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
-          }))
-        }
+            taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null,
+          })),
+        },
       },
-      { session }
+      { session },
     );
 
     recalculatedLines.push(linePricing);
@@ -675,15 +684,15 @@ const recalculatePersistedOrderTotals = async (
         roundOffAmount: summary.roundOffAmount,
         taxBreakup: summary.taxBreakup.map(tax => ({
           ...tax,
-          taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
+          taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null,
         })),
         discountAmount: pricing.discountAmount,
         discountType: pricing.discountType,
         discountValue: pricing.discountValue,
-        totalAmount: summary.totalAmount
-      }
+        totalAmount: summary.totalAmount,
+      },
     },
-    { session }
+    { session },
   );
 
   return summary;
@@ -692,16 +701,21 @@ const recalculatePersistedOrderTotals = async (
 export const previewOrderPricing = async (
   brandId: string,
   outletId: string,
-  dto: PreviewOrderDTO
+  dto: PreviewOrderDTO,
 ) => {
-  console.log('[PreviewOrder] Starting preview calculation', { brandId, outletId, orderType: dto.orderType, itemCount: dto.items?.length });
+  console.log('[PreviewOrder] Starting preview calculation', {
+    brandId,
+    outletId,
+    orderType: dto.orderType,
+    itemCount: dto.items?.length,
+  });
 
   if (!dto.items || dto.items.length === 0) {
     throw { status: 400, message: 'At least one item is required' };
   }
 
   const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(
-    dto.items
+    dto.items,
   );
 
   const { processedItems, subtotal } = processItems(
@@ -712,7 +726,7 @@ export const previewOrderPricing = async (
     variantMap,
     variants,
     addonMap,
-    measurementMap
+    measurementMap,
   );
 
   const pricing = await recalculateOrderPricing(
@@ -720,14 +734,14 @@ export const previewOrderPricing = async (
     outletId,
     dto.customerId ? new Types.ObjectId(dto.customerId) : null,
     subtotal,
-    dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null
+    dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null,
   );
 
   if (pricing.discountAmount > 0 && subtotal > 0) {
     const lineAmounts = processedItems.map(item => item.totalPrice);
     const allocatedDiscounts = allocateDiscountAcrossLines({
       lineAmounts,
-      totalDiscount: pricing.discountAmount
+      totalDiscount: pricing.discountAmount,
     });
 
     processedItems.forEach((item, index) => {
@@ -735,21 +749,20 @@ export const previewOrderPricing = async (
     });
   }
 
-
   const pricingPreview = await buildTaxAwareOrderPreview(
     brandId,
     outletId,
     dto.orderType,
     dto.items,
     processedItems,
-    menuItemMap
+    menuItemMap,
   );
 
   return {
     ...pricingPreview,
     discountAmount: pricing.discountAmount,
     discountType: pricing.discountType,
-    discountValue: pricing.discountValue
+    discountValue: pricing.discountValue,
   };
 };
 
@@ -757,7 +770,7 @@ export const createOrder = async (
   brandId: string,
   outletId: string,
   userId: string,
-  dto: CreateOrderDTO
+  dto: CreateOrderDTO,
 ) => {
   // Validation
   if (dto.orderType === ORDER_TYPE.DINE_IN && !dto.tableId) {
@@ -784,7 +797,7 @@ export const createOrder = async (
 
   // Batch-fetch menu data (no N+1)
   const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(
-    dto.items
+    dto.items,
   );
 
   // Process items
@@ -796,7 +809,7 @@ export const createOrder = async (
     variantMap,
     variants,
     addonMap,
-    measurementMap
+    measurementMap,
   );
 
   const pricing = await recalculateOrderPricing(
@@ -804,14 +817,14 @@ export const createOrder = async (
     outletId,
     dto.customerId ? new Types.ObjectId(dto.customerId) : null,
     subtotal,
-    dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null
+    dto.manualTagId ? new Types.ObjectId(dto.manualTagId) : null,
   );
 
   if (pricing.discountAmount > 0 && subtotal > 0) {
     const lineAmounts = processedItems.map(item => item.totalPrice);
     const allocatedDiscounts = allocateDiscountAcrossLines({
       lineAmounts,
-      totalDiscount: pricing.discountAmount
+      totalDiscount: pricing.discountAmount,
     });
 
     processedItems.forEach((item, index) => {
@@ -825,7 +838,7 @@ export const createOrder = async (
     dto.orderType,
     dto.items,
     processedItems,
-    menuItemMap
+    menuItemMap,
   );
   const totalAmount = pricingPreview.totalAmount;
 
@@ -872,7 +885,7 @@ export const createOrder = async (
       roundOffAmount: pricingPreview.roundOffAmount,
       taxBreakup: pricingPreview.taxBreakup.map(tax => ({
         ...tax,
-        taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
+        taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null,
       })),
       discountAmount: pricing.discountAmount,
       discountType: pricing.discountType,
@@ -880,7 +893,7 @@ export const createOrder = async (
       totalAmount,
       notes: dto.notes && dto.notes.trim().length > 0 ? dto.notes.trim() : undefined,
       isActive: true,
-      isDelete: false
+      isDelete: false,
     };
 
     await OrderEntity.create([orderDoc], { session });
@@ -904,10 +917,10 @@ export const createOrder = async (
       appliedTaxes:
         pricingPreview.items[index]?.appliedTaxes?.map(tax => ({
           ...tax,
-          taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null
+          taxId: tax.taxId ? new Types.ObjectId(String(tax.taxId)) : null,
         })) ?? [],
-      kotSentAt: (isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) ? now : null,
-      batchId
+      kotSentAt: isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO ? now : null,
+      batchId,
     }));
     await OrderItemEntity.insertMany(finalItems, { session });
 
@@ -921,7 +934,7 @@ export const createOrder = async (
       await TableEntity.findByIdAndUpdate(
         dto.tableId,
         { status: TABLE_STATUS.OCCUPIED },
-        { session }
+        { session },
       );
     }
 
@@ -938,7 +951,7 @@ export const createOrder = async (
   if (isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) {
     const kotItemsData = processedItems.map(fi => ({
       orderItemId: String(fi._id),
-      quantity: fi.quantity
+      quantity: fi.quantity,
     }));
     await generateKOT(
       brandId,
@@ -948,7 +961,7 @@ export const createOrder = async (
       tokenNo,
       tableName,
       userId,
-      KOT_TYPE.REGULAR
+      KOT_TYPE.REGULAR,
     );
   }
 
@@ -959,25 +972,36 @@ export const createOrder = async (
     orderId: String(orderId),
     action: ORDER_AUDIT_ACTION.ORDER_CREATED,
     performedBy: userId,
-    metadata: { orderType: dto.orderType, itemCount: processedItems.length }
+    metadata: { orderType: dto.orderType, itemCount: processedItems.length },
   });
   orderEvents.emit('order.created', { orderId: String(orderId), brandId, outletId, orderNumber });
 
   // Generate KOT SVGs for the NEW items
   const printSettings = await PrintSetting.findOne({ brandId, outletId, isDelete: false }).lean();
   let kotImages: string[] = [];
-  
-  if (printSettings?.kotPrinting?.isEnabled && isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) {
-    const updatedOrder = await OrderEntity.findById(orderId).populate('tableId').populate('waiterId').lean();
+
+  if (
+    printSettings?.kotPrinting?.isEnabled &&
+    isKotEnabled &&
+    generationMode === KOT_GENERATION_MODE.AUTO
+  ) {
+    const updatedOrder = await OrderEntity.findById(orderId)
+      .populate('tableId')
+      .populate('waiterId')
+      .lean();
     if (updatedOrder) {
-      kotImages = await generateKOTSvg(updatedOrder, processedItems as any, printSettings.kotPrinting);
+      kotImages = await generateKOTSvg(
+        updatedOrder,
+        processedItems as any,
+        printSettings.kotPrinting,
+      );
     }
   }
 
   const result = await getOrderById(brandId, outletId, String(orderId));
   return {
     ...result,
-    kotImages
+    kotImages,
   };
 };
 
@@ -986,14 +1010,14 @@ export const createOrder = async (
 export const addItemsToOrder = async (
   brandId: string,
   outletId: string,
-  dto: AddItemsToOrderDTO
+  dto: AddItemsToOrderDTO,
 ) => {
   const order = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] }
+    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
   }).lean();
 
   if (!order) throw { status: 404, message: 'Active order not found' };
@@ -1014,12 +1038,9 @@ export const addItemsToOrder = async (
   const generationMode = kotSettings?.generationMode ?? KOT_GENERATION_MODE.AUTO;
 
   const { menuItemMap, variantMap, variants, addonMap, measurementMap } = await batchFetchMenuData(
-    dto.items || []
+    dto.items || [],
   );
-  const {
-    processedItems,
-    processedAddons
-  } = processItems(
+  const { processedItems, processedAddons } = processItems(
     dto.items || [],
     brandId,
     outletId,
@@ -1027,7 +1048,7 @@ export const addItemsToOrder = async (
     variantMap,
     variants,
     addonMap,
-    measurementMap
+    measurementMap,
   );
   const pricingPreview = await buildTaxAwareOrderPreview(
     brandId,
@@ -1035,7 +1056,7 @@ export const addItemsToOrder = async (
     order.orderType,
     dto.items || [],
     processedItems,
-    menuItemMap
+    menuItemMap,
   );
 
   const now = new Date();
@@ -1050,7 +1071,7 @@ export const addItemsToOrder = async (
         order._id,
         pi,
         pricingPreview.items[index],
-        (isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) ? now : null
+        isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO ? now : null,
       );
       return { ...storedItem, batchId };
     });
@@ -1061,7 +1082,7 @@ export const addItemsToOrder = async (
     if (processedAddons.length > 0) {
       await OrderItemAddonEntity.insertMany(
         processedAddons.map(pa => ({ ...pa, orderId: order._id })),
-        { session }
+        { session },
       );
     }
 
@@ -1095,7 +1116,12 @@ export const addItemsToOrder = async (
   }
 
   // Generate supplemental KOT
-  if (dto.items && dto.items.length > 0 && isKotEnabled && generationMode === KOT_GENERATION_MODE.AUTO) {
+  if (
+    dto.items &&
+    dto.items.length > 0 &&
+    isKotEnabled &&
+    generationMode === KOT_GENERATION_MODE.AUTO
+  ) {
     let tableName: string | undefined = undefined;
     if (order.tableId) {
       const table = await TableEntity.findById(order.tableId).lean();
@@ -1104,7 +1130,7 @@ export const addItemsToOrder = async (
 
     const kotItemsData = processedItems.map(fi => ({
       orderItemId: String(fi._id),
-      quantity: fi.quantity
+      quantity: fi.quantity,
     }));
     await generateKOT(
       brandId,
@@ -1114,7 +1140,7 @@ export const addItemsToOrder = async (
       order.tokenNo,
       tableName,
       order.waiterId ? String(order.waiterId) : undefined,
-      KOT_TYPE.REGULAR
+      KOT_TYPE.REGULAR,
     );
   }
 
@@ -1124,26 +1150,33 @@ export const addItemsToOrder = async (
     orderId: dto.orderId,
     action: ORDER_AUDIT_ACTION.ITEMS_ADDED,
     performedBy: order.waiterId ? String(order.waiterId) : null,
-    metadata: { addedCount: processedItems.length }
+    metadata: { addedCount: processedItems.length },
   });
   orderEvents.emit('order.items.added', { orderId: dto.orderId, brandId, outletId });
 
   // Generate KOT SVGs for the NEW items
   const printSettings = await PrintSetting.findOne({ brandId, outletId, isDelete: false }).lean();
   let kotImages: string[] = [];
-  
+
   if (printSettings?.kotPrinting?.isEnabled) {
     // We need the full order object for the generator
-    const updatedOrder = await OrderEntity.findById(dto.orderId).populate('tableId').populate('waiterId').lean();
+    const updatedOrder = await OrderEntity.findById(dto.orderId)
+      .populate('tableId')
+      .populate('waiterId')
+      .lean();
     if (updatedOrder) {
-      kotImages = await generateKOTSvg(updatedOrder, processedItems as any, printSettings.kotPrinting);
+      kotImages = await generateKOTSvg(
+        updatedOrder,
+        processedItems as any,
+        printSettings.kotPrinting,
+      );
     }
   }
 
   const result = await getOrderById(brandId, outletId, dto.orderId);
   return {
     ...result,
-    kotImages
+    kotImages,
   };
 };
 
@@ -1153,21 +1186,21 @@ export const removeItemFromOrder = async (
   brandId: string,
   outletId: string,
   dto: RemoveOrderItemDTO,
-  performedBy?: string
+  performedBy?: string,
 ) => {
   const order = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] }
+    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
   }).lean();
   if (!order) throw { status: 404, message: 'Active order not found' };
 
   const orderItem = await OrderItemEntity.findOne({
     _id: new Types.ObjectId(dto.orderItemId),
     orderId: order._id,
-    isDelete: false
+    isDelete: false,
   }).lean();
   if (!orderItem) throw { status: 404, message: 'Order item not found' };
   if (orderItem.itemStatus === ITEM_STATUS.CANCELLED) {
@@ -1188,10 +1221,10 @@ export const removeItemFromOrder = async (
           itemStatus: ITEM_STATUS.CANCELLED,
           cancelReason: dto.cancelReason || undefined,
           cancelledAt: now,
-          cancelledBy: performedBy ? new Types.ObjectId(performedBy) : null
-        }
+          cancelledBy: performedBy ? new Types.ObjectId(performedBy) : null,
+        },
       },
-      { session }
+      { session },
     );
 
     await recalculatePersistedOrderTotals(order._id, session);
@@ -1213,7 +1246,7 @@ export const removeItemFromOrder = async (
     order.tokenNo,
     null,
     performedBy,
-    KOT_TYPE.VOID
+    KOT_TYPE.VOID,
   );
 
   logOrderAction({
@@ -1225,14 +1258,14 @@ export const removeItemFromOrder = async (
     metadata: {
       orderItemId: dto.orderItemId,
       reason: dto.cancelReason,
-      itemName: orderItem.itemName
-    }
+      itemName: orderItem.itemName,
+    },
   });
   orderEvents.emit('order.item.cancelled', {
     orderId: dto.orderId,
     orderItemId: dto.orderItemId,
     brandId,
-    outletId
+    outletId,
   });
 
   return getOrderById(brandId, outletId, dto.orderId);
@@ -1244,21 +1277,21 @@ export const updateOrderItem = async (
   brandId: string,
   outletId: string,
   dto: UpdateOrderItemDTO,
-  performedBy?: string
+  performedBy?: string,
 ) => {
   const order = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
     isDelete: false,
-    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] }
+    status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
   }).lean();
   if (!order) throw { status: 404, message: 'Active order not found' };
 
   const orderItem = await OrderItemEntity.findOne({
     _id: new Types.ObjectId(dto.orderItemId),
     orderId: order._id,
-    isDelete: false
+    isDelete: false,
   }).lean();
   if (!orderItem) throw { status: 404, message: 'Order item not found' };
   if (orderItem.itemStatus !== ITEM_STATUS.PENDING) {
@@ -1319,7 +1352,7 @@ export const updateOrderItem = async (
       order.tokenNo,
       tableName,
       performedBy,
-      kotType
+      kotType,
     );
   }
 
@@ -1329,14 +1362,14 @@ export const updateOrderItem = async (
     orderId: dto.orderId,
     action: ORDER_AUDIT_ACTION.ITEM_UPDATED,
     performedBy: performedBy || null,
-    metadata: { orderItemId: dto.orderItemId, changes: dto, quantityDelta }
+    metadata: { orderItemId: dto.orderItemId, changes: dto, quantityDelta },
   });
   orderEvents.emit('order.item.updated', {
     orderId: dto.orderId,
     orderItemId: dto.orderItemId,
     brandId,
     outletId,
-    quantityDelta
+    quantityDelta,
   });
 
   return getOrderById(brandId, outletId, dto.orderId);
@@ -1349,11 +1382,14 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
     _id: new Types.ObjectId(orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   })
     .populate('tableId', 'name')
     .populate('waiterId', 'name role')
-    .populate('customerId', 'name mobile email tags loyaltyPoints totalSpent totalOrders lastVisitAt creditBalance isActive')
+    .populate(
+      'customerId',
+      'name mobile email tags loyaltyPoints totalSpent totalOrders lastVisitAt creditBalance isActive',
+    )
     .populate('manualTagId', 'name discountType discountValue')
     .populate('cancelledBy', 'name')
     .lean();
@@ -1362,19 +1398,19 @@ export const getOrderById = async (brandId: string, outletId: string, orderId: s
 
   const [items, addons] = await Promise.all([
     OrderItemEntity.find({ orderId: order._id, isDelete: false }).lean(),
-    OrderItemAddonEntity.find({ orderId: order._id, isDelete: false }).lean()
+    OrderItemAddonEntity.find({ orderId: order._id, isDelete: false }).lean(),
   ]);
 
   const formattedItems = items.map(item => ({
     ...item,
     instruction: item.instruction ?? null,
-    addons: addons.filter(addon => String(addon.orderItemId) === String(item._id))
+    addons: addons.filter(addon => String(addon.orderItemId) === String(item._id)),
   }));
 
   const result: any = {
     ...order,
     notes: (order as any).notes ?? null,
-    items: formattedItems
+    items: formattedItems,
   };
 
   // Requirement: Do NOT include tokenNumber in the API response for DINE_IN
@@ -1399,13 +1435,13 @@ export const closeOrder = async (
   brandId: string,
   outletId: string,
   dto: CloseOrderDTO,
-  performedBy?: string
+  performedBy?: string,
 ) => {
   const currentOrder = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!currentOrder) throw { status: 404, message: 'Order not found' };
@@ -1414,7 +1450,7 @@ export const closeOrder = async (
   if (![ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS].includes(currentOrder.status)) {
     throw {
       status: 400,
-      message: `Cannot close an order with status: ${ORDER_STATUS[currentOrder.status]}`
+      message: `Cannot close an order with status: ${ORDER_STATUS[currentOrder.status]}`,
     };
   }
 
@@ -1422,20 +1458,20 @@ export const closeOrder = async (
   if (currentOrder.paymentStatus === 1 /* UNPAID */) {
     throw {
       status: 400,
-      message: 'Order cannot be closed without payment. Record payment first.'
+      message: 'Order cannot be closed without payment. Record payment first.',
     };
   }
 
   const updateFields: Record<string, unknown> = {
     status: ORDER_STATUS.COMPLETED,
-    closedAt: new Date()
+    closedAt: new Date(),
   };
   if (dto.paymentMethod !== undefined) updateFields.paymentMethod = dto.paymentMethod;
 
   const order = await OrderEntity.findOneAndUpdate(
     { _id: new Types.ObjectId(dto.orderId) },
     { $set: updateFields },
-    { new: true }
+    { new: true },
   ).lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
@@ -1445,7 +1481,7 @@ export const closeOrder = async (
     const openOrdersCount = await OrderEntity.countDocuments({
       tableId: order.tableId,
       status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
-      isDelete: false
+      isDelete: false,
     });
     if (openOrdersCount === 0) {
       await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.CLEANING });
@@ -1457,7 +1493,7 @@ export const closeOrder = async (
     outletId,
     orderId: dto.orderId,
     action: ORDER_AUDIT_ACTION.ORDER_CLOSED,
-    performedBy: performedBy || null
+    performedBy: performedBy || null,
   });
   orderEvents.emit('order.closed', { orderId: dto.orderId, brandId, outletId });
 
@@ -1470,13 +1506,13 @@ export const cancelOrder = async (
   brandId: string,
   outletId: string,
   dto: CancelOrderDTO,
-  performedBy?: string
+  performedBy?: string,
 ) => {
   const currentOrder = await OrderEntity.findOne({
     _id: new Types.ObjectId(dto.orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!currentOrder) throw { status: 404, message: 'Order not found' };
@@ -1485,7 +1521,7 @@ export const cancelOrder = async (
   if (![ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS].includes(currentOrder.status)) {
     throw {
       status: 400,
-      message: `Cannot cancel an order with status: ${ORDER_STATUS[currentOrder.status]}`
+      message: `Cannot cancel an order with status: ${ORDER_STATUS[currentOrder.status]}`,
     };
   }
 
@@ -1496,10 +1532,10 @@ export const cancelOrder = async (
         status: ORDER_STATUS.CANCELLED,
         cancellationReason: dto.cancellationReason || null,
         cancelledBy: performedBy ? new Types.ObjectId(performedBy) : null,
-        closedAt: new Date()
-      }
+        closedAt: new Date(),
+      },
     },
-    { new: true }
+    { new: true },
   ).lean();
 
   if (!order) throw { status: 404, message: 'Order not found' };
@@ -1508,7 +1544,7 @@ export const cancelOrder = async (
     const openOrdersCount = await OrderEntity.countDocuments({
       tableId: order.tableId,
       status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
-      isDelete: false
+      isDelete: false,
     });
     if (openOrdersCount === 0) {
       await TableEntity.findByIdAndUpdate(order.tableId, { status: TABLE_STATUS.AVAILABLE });
@@ -1520,9 +1556,9 @@ export const cancelOrder = async (
     {
       orderId: new Types.ObjectId(dto.orderId),
       brandId: new Types.ObjectId(brandId),
-      status: { $in: [KOT_STATUS.PENDING, KOT_STATUS.PREPARING] }
+      status: { $in: [KOT_STATUS.PENDING, KOT_STATUS.PREPARING] },
     },
-    { $set: { status: KOT_STATUS.CANCELLED } }
+    { $set: { status: KOT_STATUS.CANCELLED } },
   );
 
   logOrderAction({
@@ -1531,7 +1567,7 @@ export const cancelOrder = async (
     orderId: dto.orderId,
     action: ORDER_AUDIT_ACTION.ORDER_CANCELLED,
     performedBy: performedBy || null,
-    metadata: { reason: dto.cancellationReason }
+    metadata: { reason: dto.cancellationReason },
   });
   orderEvents.emit('order.cancelled', { orderId: dto.orderId, brandId, outletId });
 
@@ -1543,12 +1579,12 @@ export const cancelOrder = async (
 export const listOrders = async (
   brandId: string,
   outletId: string,
-  query: OrderListQuery | Record<string, never> = {}
+  query: OrderListQuery | Record<string, never> = {},
 ) => {
   const filter: FilterQuery<Order> = {
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   };
 
   if (query.status) filter.status = Number(query.status);
@@ -1572,17 +1608,20 @@ export const listOrders = async (
     OrderEntity.find(filter)
       .populate('tableId', 'name')
       .populate('waiterId', 'name role')
-      .populate('customerId', 'name mobile email tags loyaltyPoints totalSpent totalOrders lastVisitAt creditBalance isActive')
+      .populate(
+        'customerId',
+        'name mobile email tags loyaltyPoints totalSpent totalOrders lastVisitAt creditBalance isActive',
+      )
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean(),
-    OrderEntity.countDocuments(filter)
+    OrderEntity.countDocuments(filter),
   ]);
 
   const normalizedItems = items.map(item => ({
     ...item,
-    notes: (item as any).notes ?? null
+    notes: (item as any).notes ?? null,
   }));
 
   return { items: normalizedItems, total };
@@ -1596,7 +1635,7 @@ export const getTokenDisplay = async (brandId: string, outletId: string) => {
     outletId: new Types.ObjectId(outletId),
     orderType: ORDER_TYPE.TAKEAWAY,
     status: { $in: [ORDER_STATUS.OPEN, ORDER_STATUS.IN_PROGRESS] },
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   if (!activeOrders.length) return { preparing: [], ready: [] };
@@ -1604,7 +1643,7 @@ export const getTokenDisplay = async (brandId: string, outletId: string) => {
   const orderIds = activeOrders.map(o => o._id);
   const kots = await KOTEntity.find({
     orderId: { $in: orderIds },
-    isDelete: false
+    isDelete: false,
   }).lean();
 
   const preparing: TokenDisplayItem[] = [];
@@ -1615,14 +1654,14 @@ export const getTokenDisplay = async (brandId: string, outletId: string) => {
     if (orderKots.length === 0) continue;
 
     const isPreparing = orderKots.some(
-      (k: KOT) => k.status === KOT_STATUS.PENDING || k.status === KOT_STATUS.PREPARING
+      (k: KOT) => k.status === KOT_STATUS.PENDING || k.status === KOT_STATUS.PREPARING,
     );
 
     if (isPreparing) {
       preparing.push({
         tokenNo: order.tokenNo,
         orderId: order._id,
-        orderNumber: order.orderNumber
+        orderNumber: order.orderNumber,
       });
     } else {
       ready.push({ tokenNo: order.tokenNo, orderId: order._id, orderNumber: order.orderNumber });
@@ -1634,7 +1673,6 @@ export const getTokenDisplay = async (brandId: string, outletId: string) => {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const removeUnwantedFields = <T>(obj: T): unknown => {
   if (!obj || typeof obj !== 'object') return obj;
 
@@ -1662,7 +1700,7 @@ const removeUnwantedFields = <T>(obj: T): unknown => {
 
 export const transformOrderToGroupFormat = (
   order: Order & { items?: OrderItem[] },
-  isKotEnabled: boolean
+  isKotEnabled: boolean,
 ): OrderGroupResponse => {
   const cleanedOrder = removeUnwantedFields(order) as Record<string, unknown>;
   const groupsMap = new Map<string, OrderItem[]>();
@@ -1707,14 +1745,17 @@ export const transformOrderToGroupFormat = (
     } else {
       groupType = ORDER_GROUP_TYPE.BATCH;
       groupLabel = `Batch-${index + 1}`;
-      createdAt = key === 'UNSENT' ? null : new Date(groupsMap.get(key)![0]?.createdAt || Date.now()).toISOString();
+      createdAt =
+        key === 'UNSENT'
+          ? null
+          : new Date(groupsMap.get(key)![0]?.createdAt || Date.now()).toISOString();
     }
 
     return {
       groupType,
       groupLabel,
       createdAt,
-      items: groupsMap.get(key) as unknown as OrderGroupBatch['items']
+      items: groupsMap.get(key) as unknown as OrderGroupBatch['items'],
     };
   });
 
@@ -1728,7 +1769,7 @@ export const generateKotForOrder = async (
   brandId: string,
   outletId: string,
   userId: string,
-  dto: GenerateKotDTO
+  dto: GenerateKotDTO,
 ) => {
   let orderId = dto.orderId;
 
@@ -1751,7 +1792,7 @@ export const generateKotForOrder = async (
     if (!dto.orderType) {
       throw { status: 400, message: 'orderType is required to create a new order' };
     }
-    
+
     const result = await createOrder(brandId, outletId, userId, {
       orderType: dto.orderType,
       tableId: dto.tableId,
@@ -1759,7 +1800,7 @@ export const generateKotForOrder = async (
       items: dto.items || [],
       manualTagId: dto.manualTagId,
       notes: dto.notes,
-      shippingAddress: dto.shippingAddress
+      shippingAddress: dto.shippingAddress,
     });
     orderId = String(result._id);
     actionKotImages = result.kotImages || [];
@@ -1768,7 +1809,7 @@ export const generateKotForOrder = async (
     if ((dto.items && dto.items.length > 0) || hasMetadataUpdate) {
       const result = await addItemsToOrder(brandId, outletId, {
         orderId,
-        items: dto.items
+        items: dto.items,
       });
       actionKotImages = result.kotImages || [];
     }
@@ -1779,7 +1820,7 @@ export const generateKotForOrder = async (
     _id: new Types.ObjectId(orderId),
     brandId: new Types.ObjectId(brandId),
     outletId: new Types.ObjectId(outletId),
-    isDelete: false
+    isDelete: false,
   })
     .populate('tableId', 'name')
     .populate('waiterId', 'name')
@@ -1787,19 +1828,18 @@ export const generateKotForOrder = async (
 
   if (!order) throw { status: 404, message: 'Order not found' };
 
-
   const unsentItems = await OrderItemEntity.find({
     orderId: order._id,
     kotSentAt: null,
     isDelete: false,
-    itemStatus: ITEM_STATUS.PENDING
+    itemStatus: ITEM_STATUS.PENDING,
   }).lean();
 
   if (unsentItems.length === 0) {
     const orderData = await getOrderById(brandId, outletId, orderId);
     return {
       ...orderData,
-      kotImages: actionKotImages
+      kotImages: actionKotImages,
     };
   }
 
@@ -1812,7 +1852,7 @@ export const generateKotForOrder = async (
 
   const kotItemsData = unsentItems.map(item => ({
     orderItemId: String(item._id),
-    quantity: item.quantity
+    quantity: item.quantity,
   }));
 
   const now = new Date();
@@ -1824,19 +1864,19 @@ export const generateKotForOrder = async (
     order.tokenNo,
     tableName,
     userId,
-    KOT_TYPE.REGULAR
+    KOT_TYPE.REGULAR,
   );
 
   // 4. Update kotSentAt for these items
   await OrderItemEntity.updateMany(
     { _id: { $in: unsentItems.map(i => i._id) } },
-    { $set: { kotSentAt: now } }
+    { $set: { kotSentAt: now } },
   );
 
   // 5. Generate Print Data if enabled
   const printSettings = await PrintSetting.findOne({ brandId, outletId, isDelete: false }).lean();
   let kotImages: string[] = [];
-  
+
   if (printSettings?.kotPrinting?.isEnabled) {
     kotImages = await generateKOTSvg(order, unsentItems, printSettings.kotPrinting);
   }
@@ -1844,7 +1884,7 @@ export const generateKotForOrder = async (
   const orderData = await getOrderById(brandId, outletId, orderId);
   return {
     ...orderData,
-    kotImages: [...actionKotImages, ...kotImages] // Array of Base64 SVG strings
+    kotImages: [...actionKotImages, ...kotImages], // Array of Base64 SVG strings
   };
 };
 
@@ -1852,7 +1892,7 @@ export const getKOTOrderDetails = async (
   brandId: string,
   outletId: string,
   orderId: string,
-  isKotEnabled: boolean
+  isKotEnabled: boolean,
 ): Promise<OrderGroupResponse | null> => {
   const order = await getOrderById(brandId, outletId, orderId);
   if (!order) return null;
@@ -1864,7 +1904,7 @@ export const printOrderBill = async (
   brandId: string,
   outletId: string,
   orderId: string,
-  userId: string
+  userId: string,
 ) => {
   // 1. Fetch the full order
   const order = await getOrderById(brandId, outletId, orderId);
@@ -1881,8 +1921,8 @@ export const printOrderBill = async (
     performedBy: userId || null,
     metadata: {
       totalAmount: order.totalAmount,
-      itemCount: order.items?.length || 0
-    }
+      itemCount: order.items?.length || 0,
+    },
   });
 
   // 3. Check Print Mode from Settings
@@ -1893,18 +1933,14 @@ export const printOrderBill = async (
     const receiptImage = await generateReceiptSvg(order, billSettings);
     return {
       ...order,
-      receiptImage // Base64 SVG
+      receiptImage, // Base64 SVG
     };
   }
 
   return order;
 };
 
-export const reprintKOT = async (
-  brandId: string,
-  outletId: string,
-  orderId: string
-) => {
+export const reprintKOT = async (brandId: string, outletId: string, orderId: string) => {
   const order = await getOrderById(brandId, outletId, orderId);
   if (!order) throw { status: 404, message: 'Order not found' };
 
@@ -1917,7 +1953,6 @@ export const reprintKOT = async (
 
   return {
     ...order,
-    kotImages
+    kotImages,
   };
 };
-

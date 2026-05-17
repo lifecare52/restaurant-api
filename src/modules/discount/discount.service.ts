@@ -1,8 +1,8 @@
 import { Types } from 'mongoose';
 
 import { customerRepository } from '@modules/customer/customer.repository';
-import { CUSTOMER_TAG_DISCOUNT_TYPE, type CustomerTag } from '@modules/tag/tag.types';
 import { tagRepository } from '@modules/tag/tag.repository';
+import { CUSTOMER_TAG_DISCOUNT_TYPE, type CustomerTag } from '@modules/tag/tag.types';
 
 export interface DiscountCalculationResult {
   discount: number;
@@ -15,7 +15,7 @@ export class DiscountService {
     orderAmount: number,
     brandId: string,
     outletId: string,
-    manualTagId?: string | null
+    manualTagId?: string | null,
   ): Promise<DiscountCalculationResult> {
     let tagIds: any[] = [];
 
@@ -44,17 +44,18 @@ export class DiscountService {
       return { discount: 0, appliedTag: null };
     }
 
-    const applicableTags = tags
-      .filter(tag => tag.isActive && orderAmount >= (tag.minOrderAmount ?? 0));
+    const applicableTags = tags.filter(
+      tag => tag.isActive && orderAmount >= (tag.minOrderAmount ?? 0),
+    );
 
-    const applicableTag = applicableTags
-        .sort((a, b) => {
-          if (b.priority !== a.priority) {
-            return b.priority - a.priority;
-          }
+    const applicableTag =
+      applicableTags.sort((a, b) => {
+        if (b.priority !== a.priority) {
+          return b.priority - a.priority;
+        }
 
-          return a.name.localeCompare(b.name);
-        })[0] ?? null;
+        return a.name.localeCompare(b.name);
+      })[0] ?? null;
 
     if (!applicableTag || applicableTag.discountType === CUSTOMER_TAG_DISCOUNT_TYPE.NONE) {
       return { discount: 0, appliedTag: applicableTag };
@@ -64,13 +65,13 @@ export class DiscountService {
       const discount = Number(((orderAmount * applicableTag.discountValue) / 100).toFixed(2));
       return {
         discount: Math.min(orderAmount, discount),
-        appliedTag: applicableTag
+        appliedTag: applicableTag,
       };
     }
 
     return {
       discount: Math.min(orderAmount, applicableTag.discountValue),
-      appliedTag: applicableTag
+      appliedTag: applicableTag,
     };
   }
 }

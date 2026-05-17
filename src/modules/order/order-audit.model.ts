@@ -18,7 +18,7 @@ export const ORDER_AUDIT_ACTION = {
   WRITE_OFF_APPROVED: 'WRITE_OFF_APPROVED',
   REFUND_PROCESSED: 'REFUND_PROCESSED',
   CREDIT_REVERSED: 'CREDIT_REVERSED',
-  BILL_PRINTED: 'BILL_PRINTED'
+  BILL_PRINTED: 'BILL_PRINTED',
 } as const;
 
 export type OrderAuditAction = (typeof ORDER_AUDIT_ACTION)[keyof typeof ORDER_AUDIT_ACTION];
@@ -48,16 +48,16 @@ const OrderAuditLogSchema = new Schema<OrderAuditLog>(
     action: {
       type: String,
       enum: Object.values(ORDER_AUDIT_ACTION),
-      required: true
+      required: true,
     },
     performedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     metadata: { type: Schema.Types.Mixed, default: {} },
-    timestamp: { type: Date, required: true, default: () => new Date() }
+    timestamp: { type: Date, required: true, default: () => new Date() },
   },
   {
     timestamps: false, // using custom `timestamp` field
-    versionKey: false
-  }
+    versionKey: false,
+  },
 );
 
 // Quick lookup by order; TTL cleanup after 90 days
@@ -67,7 +67,7 @@ OrderAuditLogSchema.index({ timestamp: 1 }, { expireAfterSeconds: 60 * 60 * 24 *
 export const OrderAuditLogEntity = model<OrderAuditLog, OrderAuditLogModel>(
   'OrderAuditLog',
   OrderAuditLogSchema,
-  'order_audit_logs'
+  'order_audit_logs',
 );
 
 export default OrderAuditLogEntity;

@@ -6,14 +6,14 @@ import { objectId } from '@shared/utils/common.validation';
 const addonSchema = Joi.object({
   addonId: objectId.required(),
   addonItemId: objectId.required(),
-  quantity: Joi.number().integer().min(1).required()
+  quantity: Joi.number().integer().min(1).required(),
 });
 
 const measurementSchema = Joi.object({
   measurementId: Joi.string().optional(),
   unit: Joi.string().required(),
   enteredQuantity: Joi.number().positive().required(),
-  totalPrice: Joi.number().positive().allow(null).optional()
+  totalPrice: Joi.number().positive().allow(null).optional(),
 });
 
 const orderItemSchema = Joi.object({
@@ -22,7 +22,7 @@ const orderItemSchema = Joi.object({
   measurement: measurementSchema.optional(),
   variationId: objectId.optional(),
   instruction: Joi.string().trim().max(300).optional().allow('', null),
-  addons: Joi.array().items(addonSchema).optional().default([])
+  addons: Joi.array().items(addonSchema).optional().default([]),
 }).or('quantity', 'measurement');
 
 export const createOrderSchema = Joi.object({
@@ -33,12 +33,12 @@ export const createOrderSchema = Joi.object({
   tableId: objectId.when('orderType', {
     is: ORDER_TYPE.DINE_IN,
     then: Joi.required().messages({ 'any.required': 'tableId is required for DINE_IN orders' }),
-    otherwise: Joi.optional().allow(null, '')
+    otherwise: Joi.optional().allow(null, ''),
   }),
   customerId: objectId.optional().allow(null, ''),
   manualTagId: objectId.optional().allow(null, ''),
   items: Joi.array().items(orderItemSchema).optional().allow(null).messages({
-    'any.required': 'items array is required'
+    'any.required': 'items array is required',
   }),
   notes: Joi.string().trim().max(500).optional().allow('', null),
   shippingAddress: Joi.when('orderType', {
@@ -47,8 +47,8 @@ export const createOrderSchema = Joi.object({
       .min(5)
       .required()
       .messages({ 'any.required': 'shippingAddress is required for DELIVERY orders' }),
-  otherwise: Joi.string().optional().allow('', null)
-  })
+    otherwise: Joi.string().optional().allow('', null),
+  }),
 }).or('items', 'customerId', 'manualTagId', 'notes');
 
 export const previewOrderSchema = Joi.object({
@@ -59,10 +59,10 @@ export const previewOrderSchema = Joi.object({
   customerId: objectId.optional().allow(null, ''),
   manualTagId: objectId.optional().allow(null, ''),
   items: Joi.array().items(orderItemSchema).optional().allow(null).messages({
-    'any.required': 'At least one item is required'
+    'any.required': 'At least one item is required',
   }),
   notes: Joi.string().trim().max(500).optional().allow('', null),
-  shippingAddress: Joi.string().optional().allow('', null)
+  shippingAddress: Joi.string().optional().allow('', null),
 });
 
 export const addItemsToOrderSchema = Joi.object({
@@ -71,20 +71,20 @@ export const addItemsToOrderSchema = Joi.object({
   manualTagId: objectId.optional().allow(null, ''),
   customerId: objectId.optional().allow(null, ''),
   notes: Joi.string().trim().max(500).optional().allow('', null),
-  shippingAddress: Joi.string().optional().allow('', null)
+  shippingAddress: Joi.string().optional().allow('', null),
 }).or('items', 'manualTagId', 'customerId', 'notes', 'shippingAddress');
 
 export const removeOrderItemSchema = Joi.object({
   orderId: objectId.required(),
   orderItemId: objectId.required(),
-  cancelReason: Joi.string().max(300).optional().allow('', null)
+  cancelReason: Joi.string().max(300).optional().allow('', null),
 });
 
 export const updateOrderItemSchema = Joi.object({
   orderId: objectId.required(),
   orderItemId: objectId.required(),
   quantity: Joi.number().integer().min(1).optional(),
-  instruction: Joi.string().trim().max(300).optional().allow('', null)
+  instruction: Joi.string().trim().max(300).optional().allow('', null),
 }).or('quantity', 'instruction');
 
 export const closeOrderSchema = Joi.object({
@@ -92,12 +92,12 @@ export const closeOrderSchema = Joi.object({
   paymentMethod: Joi.number()
     .valid(...Object.values(PAYMENT_METHOD).filter(v => !isNaN(Number(v))))
     .optional()
-    .messages({ 'any.only': 'paymentMethod must be: 1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE' })
+    .messages({ 'any.only': 'paymentMethod must be: 1=CASH, 2=CARD, 3=UPI, 4=WALLET, 5=ONLINE' }),
 });
 
 export const cancelOrderSchema = Joi.object({
   orderId: objectId.required(),
-  cancellationReason: Joi.string().max(500).optional().allow('', null)
+  cancellationReason: Joi.string().max(500).optional().allow('', null),
 });
 
 export const listOrdersQuerySchema = Joi.object({
@@ -109,11 +109,11 @@ export const listOrdersQuerySchema = Joi.object({
   waiterId: objectId.optional(),
   orderNumber: Joi.string().allow('').optional(),
   fromDate: Joi.string().isoDate().optional(),
-  toDate: Joi.string().isoDate().optional()
+  toDate: Joi.string().isoDate().optional(),
 });
 
 export const getOrderQuerySchema = Joi.object({
-  orderId: objectId.required()
+  orderId: objectId.required(),
 });
 
 export const generateKotSchema = Joi.object({
@@ -123,16 +123,18 @@ export const generateKotSchema = Joi.object({
     .when('orderId', {
       is: Joi.alternatives().try(Joi.valid('', null), Joi.not(Joi.exist())),
       then: Joi.required(),
-      otherwise: Joi.optional().allow(null)
+      otherwise: Joi.optional().allow(null),
     }),
   tableId: objectId.optional().allow(null, ''),
   customerId: objectId.optional().allow(null, ''),
-  items: Joi.array().items(orderItemSchema).when('orderId', {
-    is: Joi.alternatives().try(Joi.valid('', null), Joi.not(Joi.exist())),
-    then: Joi.array().items(orderItemSchema).optional().allow(null),
-    otherwise: Joi.array().items(orderItemSchema).optional().allow(null)
-  }),
+  items: Joi.array()
+    .items(orderItemSchema)
+    .when('orderId', {
+      is: Joi.alternatives().try(Joi.valid('', null), Joi.not(Joi.exist())),
+      then: Joi.array().items(orderItemSchema).optional().allow(null),
+      otherwise: Joi.array().items(orderItemSchema).optional().allow(null),
+    }),
   manualTagId: objectId.optional().allow(null, ''),
   notes: Joi.string().trim().max(500).optional().allow('', null),
-  shippingAddress: Joi.string().optional().allow('', null)
+  shippingAddress: Joi.string().optional().allow('', null),
 }).or('items', 'customerId', 'manualTagId', 'notes', 'shippingAddress');

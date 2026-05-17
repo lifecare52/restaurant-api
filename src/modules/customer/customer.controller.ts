@@ -4,7 +4,7 @@ import type { Request, Response, NextFunction } from 'express';
 
 const getTenant = (req: Request) => ({
   brandId: (req.headers['brand-id'] as string | undefined) || '',
-  outletId: (req.headers['outlet-id'] as string | undefined) || ''
+  outletId: (req.headers['outlet-id'] as string | undefined) || '',
 });
 
 export class CustomerController {
@@ -17,7 +17,7 @@ export class CustomerController {
         status: true,
         code: 201,
         message: 'Customer created successfully',
-        data: customer
+        data: customer,
       };
       next();
     } catch (error) {
@@ -32,14 +32,14 @@ export class CustomerController {
         brandId,
         outletId,
         req.params.id,
-        req.body
+        req.body,
       );
 
       res.locals.response = {
         status: true,
         code: 200,
         message: 'Customer updated successfully',
-        data: customer
+        data: customer,
       };
       next();
     } catch (error) {
@@ -58,8 +58,8 @@ export class CustomerController {
         message: 'Customers retrieved successfully',
         data: {
           data: result.items,
-          pagination: result.pagination
-        }
+          pagination: result.pagination,
+        },
       };
       next();
     } catch (error) {
@@ -76,7 +76,7 @@ export class CustomerController {
         status: true,
         code: 200,
         message: 'Customer retrieved successfully',
-        data: customer
+        data: customer,
       };
       next();
     } catch (error) {
@@ -93,7 +93,7 @@ export class CustomerController {
         status: true,
         code: 200,
         message: 'Customer deleted successfully',
-        data: customer
+        data: customer,
       };
       next();
     } catch (error) {
@@ -104,18 +104,13 @@ export class CustomerController {
   assignTags = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { brandId, outletId } = getTenant(req);
-      const customer = await customerService.assignTags(
-        brandId,
-        outletId,
-        req.params.id,
-        req.body
-      );
+      const customer = await customerService.assignTags(brandId, outletId, req.params.id, req.body);
 
       res.locals.response = {
         status: true,
         code: 200,
         message: 'Tags assigned successfully',
-        data: customer
+        data: customer,
       };
       next();
     } catch (error) {
@@ -130,14 +125,14 @@ export class CustomerController {
         brandId,
         outletId,
         req.params.id,
-        req.params.tagId
+        req.params.tagId,
       );
 
       res.locals.response = {
         status: true,
         code: 200,
         message: 'Tag removed successfully',
-        data: customer
+        data: customer,
       };
       next();
     } catch (error) {

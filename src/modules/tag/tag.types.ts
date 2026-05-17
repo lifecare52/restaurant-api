@@ -5,7 +5,7 @@ import type { Types } from 'mongoose';
 export const CUSTOMER_TAG_DISCOUNT_TYPE = {
   PERCENTAGE: 'PERCENTAGE',
   FLAT: 'FLAT',
-  NONE: 'NONE'
+  NONE: 'NONE',
 } as const;
 
 export type CustomerTagDiscountType =
