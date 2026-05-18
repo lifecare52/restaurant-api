@@ -1016,6 +1016,7 @@ export const getOpenApiSpec = () => {
               description: 'Up to 2 codes; unique per brand+outlet (case-insensitive)',
             },
             categoryId: { type: 'string' },
+            category: { type: 'string', description: 'Category name of the menu item' },
             image: { type: 'string', nullable: true },
             dietary: { type: 'string', enum: ['VEG', 'NON_VEG', 'EGG'] },
             dietaryShort: { type: 'string', enum: ['V', 'NV', 'E'] },
@@ -1636,6 +1637,7 @@ export const getOpenApiSpec = () => {
           properties: {
             categoryId: { type: 'string' },
             category: { type: 'string' },
+            image: { type: 'string', description: 'Category image/logo URL' },
             items: {
               type: 'array',
               items: {

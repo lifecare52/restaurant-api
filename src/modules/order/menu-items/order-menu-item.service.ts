@@ -47,32 +47,32 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
 
     ...(isGstEnabled
       ? [
-          /* ─── 2.0.1 RESOLVE EFFECTIVE TAX GROUP ID ─── */
-          {
-            $addFields: {
-              effectiveTaxGroupId: { $ifNull: ['$taxGroupId', '$categoryDoc.taxGroupId'] },
-            },
+        /* ─── 2.0.1 RESOLVE EFFECTIVE TAX GROUP ID ─── */
+        {
+          $addFields: {
+            effectiveTaxGroupId: { $ifNull: ['$taxGroupId', '$categoryDoc.taxGroupId'] },
           },
+        },
 
-          /* ─── 2.1 TAX GROUP & TAXES ─── */
-          {
-            $lookup: {
-              from: 'tax_groups',
-              localField: 'effectiveTaxGroupId',
-              foreignField: '_id',
-              as: 'taxGroupDoc',
-            },
+        /* ─── 2.1 TAX GROUP & TAXES ─── */
+        {
+          $lookup: {
+            from: 'tax_groups',
+            localField: 'effectiveTaxGroupId',
+            foreignField: '_id',
+            as: 'taxGroupDoc',
           },
-          { $unwind: { path: '$taxGroupDoc', preserveNullAndEmptyArrays: true } },
-          {
-            $lookup: {
-              from: 'taxes',
-              localField: 'taxGroupDoc.taxes',
-              foreignField: '_id',
-              as: 'taxDocs',
-            },
+        },
+        { $unwind: { path: '$taxGroupDoc', preserveNullAndEmptyArrays: true } },
+        {
+          $lookup: {
+            from: 'taxes',
+            localField: 'taxGroupDoc.taxes',
+            foreignField: '_id',
+            as: 'taxDocs',
           },
-        ]
+        },
+      ]
       : []),
 
     /* ─── 3. VARIANTS (active, non-deleted) ─── */
@@ -440,10 +440,12 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         /* category fields */
         categoryId: '$categoryDoc._id',
         category: '$categoryDoc.name',
+        categoryImage: '$categoryDoc.logo',
 
         /* item fields — explicit whitelist (no brandId, outletId, isDelete) */
         _id: 1,
         name: 1,
+        image: 1,
         shortCodes: 1,
         dietary: 1,
         dietaryShort: 1,
@@ -469,6 +471,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
       $group: {
         _id: '$categoryId',
         category: { $first: '$category' },
+        categoryImage: { $first: '$categoryImage' },
         items: { $push: '$$ROOT' },
       },
     },
@@ -479,6 +482,7 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
         _id: 0,
         categoryId: '$_id',
         category: 1,
+        image: '$categoryImage',
         items: {
           $map: {
             input: '$items',
@@ -486,6 +490,9 @@ export const getPosMenuCategoryWise = async (brandId: string, outletId: string) 
             in: {
               _id: '$$it._id',
               name: '$$it.name',
+              image: '$$it.image',
+              categoryId: '$$it.categoryId',
+              category: '$$it.category',
               shortCodes: '$$it.shortCodes',
               dietary: '$$it.dietary',
               dietaryShort: '$$it.dietaryShort',

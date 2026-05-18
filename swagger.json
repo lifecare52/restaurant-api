@@ -2665,6 +2665,10 @@
                 }
               ]
             }
+          },
+          "image": {
+            "type": "string",
+            "description": "Category image/logo URL"
           }
         },
         "required": [
