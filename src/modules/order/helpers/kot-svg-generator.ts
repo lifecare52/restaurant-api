@@ -11,12 +11,16 @@ export const generateKOTSvg = async (
   isVoid: boolean = false,
 ): Promise<string[]> => {
   const paperWidth = settings.paperSize === '58mm' ? 300 : 400;
-  const padding = 20;
-  const fontSize = 14;
-  const lineHeight = 22;
-  const fontFamily = "'Poppins', sans-serif";
-  const charWidth = fontSize * 0.6;
+  const padding = 15;
+  const fontSize = 12;
+  const lineHeight = 18;
+  const fontFamily = "'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif";
+  const charWidth = fontSize * 0.55;
   const maxCharsPerLine = Math.floor((paperWidth - padding * 2) / charWidth);
+  
+  const colQty = paperWidth - padding;
+  const itemNameWidth = colQty - padding - 40;
+  const itemNameMaxChars = Math.floor(itemNameWidth / charWidth);
 
   const generateSingleSvg = (kotItems: any[], kotLabel?: string) => {
     let currentY = 40;
@@ -30,13 +34,46 @@ export const generateKOTSvg = async (
       customSize?: number,
     ) => {
       lines.push(
-        `<text x="${x}" y="${currentY}" font-family="${fontFamily}" font-size="${customSize || fontSize}" fill="black" text-anchor="${align}" ${isBold ? 'font-weight="bold"' : ''}>${escapeHtml(text)}</text>`,
+        `<text x="${x}" y="${currentY}" font-family="${fontFamily}" font-size="${customSize || fontSize}" fill="#111" text-anchor="${align}" ${isBold ? 'font-weight="bold"' : ''}>${escapeHtml(text)}</text>`,
       );
+    };
+
+    const addMultiLineText = (
+      text: string,
+      x: number,
+      align: 'start' | 'middle' | 'end' = 'start',
+      isBold = false,
+      size = fontSize,
+      maxWidthChars = maxCharsPerLine
+    ) => {
+      if (!text) return;
+      const explicitLines = text.split(/\r?\n/);
+      explicitLines.forEach((line: string) => {
+        if (!line.trim()) {
+          currentY += lineHeight;
+          return;
+        }
+        const words = line.split(' ');
+        let currentLine = '';
+        words.forEach((word: string) => {
+          if ((currentLine + word).length > maxWidthChars) {
+            addText(currentLine.trim(), x, align, isBold, size);
+            currentY += lineHeight;
+            currentLine = word + ' ';
+          } else {
+            currentLine += word + ' ';
+          }
+        });
+        if (currentLine.trim()) {
+          addText(currentLine.trim(), x, align, isBold, size);
+          currentY += lineHeight;
+        }
+      });
     };
 
     const addLine = () => {
       lines.push(
-        `<line x1="${padding}" y1="${currentY - 5}" x2="${paperWidth - padding}" y2="${currentY - 5}" stroke="black" stroke-dasharray="4" />`,
+        `<line x1="${padding}" y1="${currentY - 5}" x2="${paperWidth - padding}" y2="${currentY - 5}" stroke="#555" stroke-width="1" />`,
       );
       currentY += 10;
     };
@@ -77,6 +114,13 @@ export const generateKOTSvg = async (
     addText(`Date: ${new Date().toLocaleString()}`, padding, 'start');
     currentY += lineHeight;
 
+    if (order.notes) {
+      addLine();
+      const notesSize = fontSize + 2;
+      const notesMaxChars = Math.floor((paperWidth - padding * 2) / (notesSize * 0.55));
+      addMultiLineText(`Notes: ${order.notes}`, padding, 'start', true, notesSize, notesMaxChars);
+    }
+
     addLine();
 
     // 3. Items
@@ -87,25 +131,46 @@ export const generateKOTSvg = async (
 
     kotItems.forEach((item: any) => {
       const name = item.itemName || item.name;
-      addText(name, padding, 'start', true);
-      addText(item.quantity.toString(), paperWidth - padding, 'end', true, 18);
+      const words = name.split(' ');
+      let firstLine = '';
+      let remainingLines: string[] = [];
+
+      words.forEach((word: string) => {
+        if (!remainingLines.length && (firstLine + word).length <= itemNameMaxChars) {
+          firstLine += word + ' ';
+        } else {
+          if (
+            !remainingLines.length ||
+            (remainingLines[remainingLines.length - 1] + word).length > itemNameMaxChars
+          ) {
+            remainingLines.push(word + ' ');
+          } else {
+            remainingLines[remainingLines.length - 1] += word + ' ';
+          }
+        }
+      });
+
+      addText(firstLine.trim(), padding, 'start', true, fontSize + 2);
+      addText(item.quantity.toString() + 'x', colQty, 'end', true, fontSize + 4);
       currentY += lineHeight;
 
-      if (item.variationName) {
-        addText(`  (${item.variationName})`, padding, 'start');
+      remainingLines.forEach((line: string) => {
+        addText(line.trim(), padding, 'start', true, fontSize + 2);
         currentY += lineHeight;
+      });
+
+      if (item.variationName) {
+        addMultiLineText(`  (${item.variationName})`, padding, 'start');
       }
 
       if (settings.showModifiers && item.addons && item.addons.length > 0) {
         item.addons.forEach((addon: any) => {
-          addText(`  + ${addon.addonItemName || addon.addonName}`, padding, 'start');
-          currentY += lineHeight;
+          addMultiLineText(`  + ${addon.addonItemName || addon.addonName}`, padding, 'start');
         });
       }
 
       if (settings.showModifiers && item.instruction) {
-        addText(`  Note: ${item.instruction}`, padding, 'start');
-        currentY += lineHeight;
+        addMultiLineText(`  Note: ${item.instruction}`, padding, 'start');
       }
 
       currentY += 5; // spacing between items
@@ -119,7 +184,7 @@ export const generateKOTSvg = async (
 <svg width="${paperWidth}" height="${currentY + 20}" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <style type="text/css">
-      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&amp;display=swap');
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap');
     </style>
   </defs>
   <rect width="100%" height="100%" fill="white" />

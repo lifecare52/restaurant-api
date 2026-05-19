@@ -22,6 +22,7 @@ export interface IPrintSetting {
     showCoverCount: boolean;
     showItemHsnCode: boolean;
     showDiscountDetails: boolean;
+    showTax: boolean;
 
     showPaymentQrCode: boolean;
     merchantUpiId?: string;

@@ -38,6 +38,7 @@ const printSettingSchema = new Schema<PrintSettingDocument>(
       showCoverCount: { type: Boolean, default: false },
       showItemHsnCode: { type: Boolean, default: false },
       showDiscountDetails: { type: Boolean, default: true },
+      showTax: { type: Boolean, default: true },
 
       showPaymentQrCode: { type: Boolean, default: false },
       merchantUpiId: { type: String, default: '' },

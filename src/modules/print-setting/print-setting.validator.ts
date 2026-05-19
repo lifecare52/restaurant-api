@@ -20,6 +20,7 @@ export const printSettingValidator = {
       showCoverCount: Joi.boolean(),
       showItemHsnCode: Joi.boolean(),
       showDiscountDetails: Joi.boolean(),
+      showTax: Joi.boolean(),
 
       showPaymentQrCode: Joi.boolean(),
       merchantUpiId: Joi.string().allow('', null),
