@@ -20,10 +20,6 @@ export interface RegisterPrinterServicePayload {
   platform?: string;
 }
 
-export interface GetPrinterServicePayload {
-  outletId: string;
-}
-
 export interface PrinterServiceSocketContext {
   socket: Socket;
   payload: RegisterPrinterServicePayload;

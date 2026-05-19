@@ -1,9 +1,6 @@
 import Joi from 'joi';
 
-import type {
-  GetPrinterServicePayload,
-  RegisterPrinterServicePayload,
-} from './printer-service.types';
+import type { RegisterPrinterServicePayload } from './printer-service.types';
 
 type ValidationResult<T> = { success: true; value: T } | { success: false; errorMessage: string };
 
@@ -17,10 +14,6 @@ export const printerServiceValidator = {
     hostname: systemDetail.optional(),
     platform: systemDetail.optional(),
   }).unknown(true),
-
-  get: Joi.object<GetPrinterServicePayload>({
-    outletId,
-  }).unknown(false),
 };
 
 export const validateSocketPayload = <T>(

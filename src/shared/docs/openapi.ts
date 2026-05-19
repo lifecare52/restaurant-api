@@ -2250,13 +2250,6 @@ export const getOpenApiSpec = () => {
           },
           required: ['outletId'],
         },
-        GetPrinterServicePayload: {
-          type: 'object',
-          properties: {
-            outletId: { type: 'string', description: 'Valid outlet ID' },
-          },
-          required: ['outletId'],
-        },
         SocketAckResponse: {
           type: 'object',
           properties: {
@@ -7270,7 +7263,7 @@ export const getOpenApiSpec = () => {
           tags: ['WebSockets'],
           summary: 'Client Event: register-printer-service',
           description:
-            '**[VIRTUAL DOCUMENTATION ENDPOINT - DO NOT CALL DIRECTLY VIA HTTP]**\n\nSent by the local print agent client to register itself as the printing provider for an active outlet. Emit this event over an established Socket.io connection using: `socket.emit("register-printer-service", payload, callback)`. This client will join the room corresponding to the `outletId`. Any previous agent connected for this outlet is automatically disconnected.',
+            '**[VIRTUAL DOCUMENTATION ENDPOINT - DO NOT CALL DIRECTLY VIA HTTP]**\n\nSent by the local print agent client to register itself as the printing provider for an active outlet. Emit this event over an established Socket.io connection using: `socket.emit("register-printer-service", payload, callback)`. Any previous agent connected for this outlet is automatically disconnected.',
           requestBody: {
             required: true,
             content: {
@@ -7285,60 +7278,6 @@ export const getOpenApiSpec = () => {
               content: {
                 'application/json': {
                   schema: { $ref: '#/components/schemas/SocketAckResponsePrinterServiceRecords' },
-                },
-              },
-            },
-          },
-        },
-      },
-      '/socket.io/events/get-printer-service': {
-        post: {
-          tags: ['WebSockets'],
-          summary: 'Client Event: get-printer-service',
-          description:
-            '**[VIRTUAL DOCUMENTATION ENDPOINT - DO NOT CALL DIRECTLY VIA HTTP]**\n\nSent by any connected client (e.g. POS UI) to retrieve the currently active printer service agents for the specified outlet. Emit this event over an established Socket.io connection using: `socket.emit("get-printer-service", payload, callback)`. The client will also join the room corresponding to the `outletId` to receive updates.',
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': {
-                schema: { $ref: '#/components/schemas/GetPrinterServicePayload' },
-              },
-            },
-          },
-          responses: {
-            200: {
-              description: 'Acknowledgement callback response',
-              content: {
-                'application/json': {
-                  schema: { $ref: '#/components/schemas/SocketAckResponsePrinterServiceRecords' },
-                },
-              },
-            },
-          },
-        },
-      },
-      '/socket.io/events/printer-service-updated': {
-        get: {
-          tags: ['WebSockets'],
-          summary: 'Server Event: printer-service-updated',
-          description:
-            '**[VIRTUAL DOCUMENTATION ENDPOINT - DO NOT CALL DIRECTLY VIA HTTP]**\n\nBroadcasted to all sockets in the outlet room when a new printer service registers or an active printer service disconnects. Listen on the client using: `socket.on("printer-service-updated", (data) => { ... })`.',
-          responses: {
-            200: {
-              description: 'Broadcast Payload',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'object',
-                    properties: {
-                      outletId: { type: 'string' },
-                      data: {
-                        type: 'array',
-                        items: { $ref: '#/components/schemas/PrinterServiceRecord' },
-                      },
-                    },
-                    required: ['outletId', 'data'],
-                  },
                 },
               },
             },
