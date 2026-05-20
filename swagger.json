@@ -985,6 +985,22 @@
                     }
                   }
                 }
+              },
+              "paymentSettings": {
+                "type": "object",
+                "properties": {
+                  "allowedMethods": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "default": [1, 2, 3, 4, 5]
+                  },
+                  "isSplitPaymentEnabled": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                }
               }
             }
           }
@@ -1103,6 +1119,20 @@
                         "type": "boolean"
                       }
                     }
+                  }
+                }
+              },
+              "paymentSettings": {
+                "type": "object",
+                "properties": {
+                  "allowedMethods": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "isSplitPaymentEnabled": {
+                    "type": "boolean"
                   }
                 }
               }
@@ -1224,6 +1254,20 @@
                         "type": "boolean"
                       }
                     }
+                  }
+                }
+              },
+              "paymentSettings": {
+                "type": "object",
+                "properties": {
+                  "allowedMethods": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "isSplitPaymentEnabled": {
+                    "type": "boolean"
                   }
                 }
               }

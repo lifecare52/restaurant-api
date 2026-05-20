@@ -1,7 +1,7 @@
 import { Schema, model, type Model, Types } from 'mongoose';
 
 import { GstScheme } from '@shared/enum';
-import { KOT_GENERATION_MODE } from '@shared/enum/order.enum';
+import { KOT_GENERATION_MODE, PAYMENT_METHOD } from '@shared/enum/order.enum';
 
 export interface Outlet {
   brandId: Types.ObjectId;
@@ -32,6 +32,10 @@ export interface Outlet {
       dineIn: { isEnabled: boolean };
       takeaway: { isEnabled: boolean };
       delivery: { isEnabled: boolean };
+    };
+    paymentSettings?: {
+      allowedMethods: number[];
+      isSplitPaymentEnabled: boolean;
     };
   };
   isActive: boolean;
@@ -83,6 +87,23 @@ const OutletSchema = new Schema<Outlet>(
         },
         delivery: {
           isEnabled: { type: Boolean, default: true },
+        },
+      },
+      paymentSettings: {
+        allowedMethods: {
+          type: [Number],
+          enum: Object.values(PAYMENT_METHOD).filter(v => typeof v === 'number'),
+          default: [
+            PAYMENT_METHOD.CASH,
+            PAYMENT_METHOD.CARD,
+            PAYMENT_METHOD.UPI,
+            PAYMENT_METHOD.WALLET,
+            PAYMENT_METHOD.ONLINE,
+          ],
+        },
+        isSplitPaymentEnabled: {
+          type: Boolean,
+          default: true,
         },
       },
     },

@@ -5,6 +5,7 @@ import OutletEntity from '@modules/outlet/outlet.model';
 import type { OutletCreateDTO, OutletUpdateDTO } from '@modules/outlet/outlet.types';
 
 import { deleteFromS3 } from '@shared/utils/s3.util';
+import { flattenObject } from '@shared/utils/object.util';
 
 export const createOutlet = async (brandId: string, dto: OutletCreateDTO) => {
   const brand = await getBrandById(brandId);
@@ -48,13 +49,15 @@ export const updateOutlet = async (brandId: string, outletId: string, dto: Outle
     }
   }
 
+  const flattenedUpdate = flattenObject(dto);
+
   return OutletEntity.findOneAndUpdate(
     {
       _id: new Types.ObjectId(outletId),
       brandId: new Types.ObjectId(brandId),
       isDelete: false,
     },
-    { $set: dto },
+    { $set: flattenedUpdate },
     { new: true },
   );
 };

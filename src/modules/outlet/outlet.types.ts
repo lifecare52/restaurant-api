@@ -30,6 +30,10 @@ export interface OutletCreateDTO {
       takeaway: { isEnabled: boolean };
       delivery: { isEnabled: boolean };
     };
+    paymentSettings?: {
+      allowedMethods: number[];
+      isSplitPaymentEnabled: boolean;
+    };
   };
 }
 
@@ -61,6 +65,10 @@ export interface OutletUpdateDTO {
       dineIn?: { isEnabled?: boolean };
       takeaway?: { isEnabled?: boolean };
       delivery?: { isEnabled?: boolean };
+    };
+    paymentSettings?: {
+      allowedMethods?: number[];
+      isSplitPaymentEnabled?: boolean;
     };
   };
   isActive?: boolean;
