@@ -19,7 +19,7 @@ export const createAddonSchema = Joi.object({
     )
     .required(),
   isActive: Joi.boolean().default(true),
-  taxGroupId: objectId.optional().allow(''),
+  taxGroupId: objectId.optional().allow('', null),
 });
 
 export const updateAddonSchema = Joi.object({
@@ -37,7 +37,7 @@ export const updateAddonSchema = Joi.object({
     }),
   ),
   isActive: Joi.boolean(),
-  taxGroupId: objectId.optional().allow(''),
+  taxGroupId: objectId.optional().allow('', null),
 });
 
 export const addonListQuerySchema = Joi.object({
