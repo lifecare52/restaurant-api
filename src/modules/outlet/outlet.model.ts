@@ -28,6 +28,11 @@ export interface Outlet {
       isKotEnabled: boolean;
       generationMode: KOT_GENERATION_MODE;
     };
+    orderTypes?: {
+      dineIn: { isEnabled: boolean };
+      takeaway: { isEnabled: boolean };
+      delivery: { isEnabled: boolean };
+    };
   };
   isActive: boolean;
   isDelete: boolean;
@@ -67,6 +72,17 @@ const OutletSchema = new Schema<Outlet>(
           type: Number,
           enum: Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number'),
           default: KOT_GENERATION_MODE.AUTO,
+        },
+      },
+      orderTypes: {
+        dineIn: {
+          isEnabled: { type: Boolean, default: true },
+        },
+        takeaway: {
+          isEnabled: { type: Boolean, default: true },
+        },
+        delivery: {
+          isEnabled: { type: Boolean, default: true },
         },
       },
     },

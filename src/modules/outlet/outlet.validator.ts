@@ -4,6 +4,18 @@ import { CUISINE_TYPES, OUTLET_TYPES } from '@shared/constants';
 import { GstScheme } from '@shared/enum';
 import { KOT_GENERATION_MODE } from '@shared/enum/order.enum';
 
+const validateOrderTypes = (value: any, helpers: any) => {
+  if (value) {
+    const dineIn = value.dineIn?.isEnabled !== false;
+    const takeaway = value.takeaway?.isEnabled !== false;
+    const delivery = value.delivery?.isEnabled !== false;
+    if (!dineIn && !takeaway && !delivery) {
+      return helpers.message('At least one order type must be enabled');
+    }
+  }
+  return value;
+};
+
 export const createOutletSchema = Joi.object({
   brandId: Joi.string().optional(), // Now accepted in body
   basicInfo: Joi.object({
@@ -48,6 +60,17 @@ export const createOutletSchema = Joi.object({
         .valid(...Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number'))
         .default(KOT_GENERATION_MODE.AUTO),
     }).optional(),
+    orderTypes: Joi.object({
+      dineIn: Joi.object({
+        isEnabled: Joi.boolean().default(true),
+      }).default({ isEnabled: true }),
+      takeaway: Joi.object({
+        isEnabled: Joi.boolean().default(true),
+      }).default({ isEnabled: true }),
+      delivery: Joi.object({
+        isEnabled: Joi.boolean().default(true),
+      }).default({ isEnabled: true }),
+    }).custom(validateOrderTypes).optional(),
   }).optional(),
 });
 
@@ -79,6 +102,17 @@ export const updateOutletSchema = Joi.object({
         ...Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number'),
       ),
     }).optional(),
+    orderTypes: Joi.object({
+      dineIn: Joi.object({
+        isEnabled: Joi.boolean(),
+      }).optional(),
+      takeaway: Joi.object({
+        isEnabled: Joi.boolean(),
+      }).optional(),
+      delivery: Joi.object({
+        isEnabled: Joi.boolean(),
+      }).optional(),
+    }).custom(validateOrderTypes).optional(),
   }).when('.gstEnabled', {
     is: true,
     then: Joi.object({
