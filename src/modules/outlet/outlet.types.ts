@@ -25,6 +25,15 @@ export interface OutletCreateDTO {
       isKotEnabled: boolean;
       generationMode: KOT_GENERATION_MODE;
     };
+    orderTypes?: {
+      dineIn: { isEnabled: boolean };
+      takeaway: { isEnabled: boolean };
+      delivery: { isEnabled: boolean };
+    };
+    paymentSettings?: {
+      allowedMethods: number[];
+      isSplitPaymentEnabled: boolean;
+    };
   };
 }
 
@@ -51,6 +60,15 @@ export interface OutletUpdateDTO {
     kotSettings?: {
       isKotEnabled?: boolean;
       generationMode?: KOT_GENERATION_MODE;
+    };
+    orderTypes?: {
+      dineIn?: { isEnabled?: boolean };
+      takeaway?: { isEnabled?: boolean };
+      delivery?: { isEnabled?: boolean };
+    };
+    paymentSettings?: {
+      allowedMethods?: number[];
+      isSplitPaymentEnabled?: boolean;
     };
   };
   isActive?: boolean;

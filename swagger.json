@@ -953,6 +953,54 @@
               },
               "currency": {
                 "type": "string"
+              },
+              "orderTypes": {
+                "type": "object",
+                "properties": {
+                  "dineIn": {
+                    "type": "object",
+                    "properties": {
+                      "isEnabled": {
+                        "type": "boolean",
+                        "default": true
+                      }
+                    }
+                  },
+                  "takeaway": {
+                    "type": "object",
+                    "properties": {
+                      "isEnabled": {
+                        "type": "boolean",
+                        "default": true
+                      }
+                    }
+                  },
+                  "delivery": {
+                    "type": "object",
+                    "properties": {
+                      "isEnabled": {
+                        "type": "boolean",
+                        "default": true
+                      }
+                    }
+                  }
+                }
+              },
+              "paymentSettings": {
+                "type": "object",
+                "properties": {
+                  "allowedMethods": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "default": [1, 2, 3, 4, 5]
+                  },
+                  "isSplitPaymentEnabled": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                }
               }
             }
           }
@@ -1044,6 +1092,49 @@
               },
               "currency": {
                 "type": "string"
+              },
+              "orderTypes": {
+                "type": "object",
+                "properties": {
+                  "dineIn": {
+                    "type": "object",
+                    "properties": {
+                      "isEnabled": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "takeaway": {
+                    "type": "object",
+                    "properties": {
+                      "isEnabled": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "delivery": {
+                    "type": "object",
+                    "properties": {
+                      "isEnabled": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              },
+              "paymentSettings": {
+                "type": "object",
+                "properties": {
+                  "allowedMethods": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "isSplitPaymentEnabled": {
+                    "type": "boolean"
+                  }
+                }
               }
             }
           }
@@ -1136,6 +1227,49 @@
               },
               "currency": {
                 "type": "string"
+              },
+              "orderTypes": {
+                "type": "object",
+                "properties": {
+                  "dineIn": {
+                    "type": "object",
+                    "properties": {
+                      "isEnabled": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "takeaway": {
+                    "type": "object",
+                    "properties": {
+                      "isEnabled": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "delivery": {
+                    "type": "object",
+                    "properties": {
+                      "isEnabled": {
+                        "type": "boolean"
+                      }
+                    }
+                  }
+                }
+              },
+              "paymentSettings": {
+                "type": "object",
+                "properties": {
+                  "allowedMethods": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "isSplitPaymentEnabled": {
+                    "type": "boolean"
+                  }
+                }
               }
             }
           },

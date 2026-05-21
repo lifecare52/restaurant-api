@@ -2,7 +2,19 @@ import Joi from 'joi';
 
 import { CUISINE_TYPES, OUTLET_TYPES } from '@shared/constants';
 import { GstScheme } from '@shared/enum';
-import { KOT_GENERATION_MODE } from '@shared/enum/order.enum';
+import { KOT_GENERATION_MODE, PAYMENT_METHOD } from '@shared/enum/order.enum';
+
+const validateOrderTypes = (value: any, helpers: any) => {
+  if (value) {
+    const dineIn = value.dineIn?.isEnabled !== false;
+    const takeaway = value.takeaway?.isEnabled !== false;
+    const delivery = value.delivery?.isEnabled !== false;
+    if (!dineIn && !takeaway && !delivery) {
+      return helpers.message('At least one order type must be enabled');
+    }
+  }
+  return value;
+};
 
 export const createOutletSchema = Joi.object({
   brandId: Joi.string().optional(), // Now accepted in body
@@ -48,6 +60,30 @@ export const createOutletSchema = Joi.object({
         .valid(...Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number'))
         .default(KOT_GENERATION_MODE.AUTO),
     }).optional(),
+    orderTypes: Joi.object({
+      dineIn: Joi.object({
+        isEnabled: Joi.boolean().default(true),
+      }).default({ isEnabled: true }),
+      takeaway: Joi.object({
+        isEnabled: Joi.boolean().default(true),
+      }).default({ isEnabled: true }),
+      delivery: Joi.object({
+        isEnabled: Joi.boolean().default(true),
+      }).default({ isEnabled: true }),
+    }).custom(validateOrderTypes).optional(),
+    paymentSettings: Joi.object({
+      allowedMethods: Joi.array()
+        .items(Joi.number().valid(...Object.values(PAYMENT_METHOD).filter(v => typeof v === 'number')))
+        .min(1)
+        .default([
+          PAYMENT_METHOD.CASH,
+          PAYMENT_METHOD.CARD,
+          PAYMENT_METHOD.UPI,
+          PAYMENT_METHOD.WALLET,
+          PAYMENT_METHOD.ONLINE,
+        ]),
+      isSplitPaymentEnabled: Joi.boolean().default(true),
+    }).optional(),
   }).optional(),
 });
 
@@ -78,6 +114,26 @@ export const updateOutletSchema = Joi.object({
       generationMode: Joi.number().valid(
         ...Object.values(KOT_GENERATION_MODE).filter(v => typeof v === 'number'),
       ),
+    }).optional(),
+    orderTypes: Joi.object({
+      dineIn: Joi.object({
+        isEnabled: Joi.boolean(),
+      }).optional(),
+      takeaway: Joi.object({
+        isEnabled: Joi.boolean(),
+      }).optional(),
+      delivery: Joi.object({
+        isEnabled: Joi.boolean(),
+      }).optional(),
+    }).custom(validateOrderTypes).optional(),
+    paymentSettings: Joi.object({
+      allowedMethods: Joi.array()
+        .items(Joi.number().valid(...Object.values(PAYMENT_METHOD).filter(v => typeof v === 'number')))
+        .min(1)
+        .messages({
+          'array.min': 'At least one payment method must be enabled'
+        }),
+      isSplitPaymentEnabled: Joi.boolean(),
     }).optional(),
   }).when('.gstEnabled', {
     is: true,
