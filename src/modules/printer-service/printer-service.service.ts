@@ -41,18 +41,19 @@ class PrinterServiceRegistry {
     };
   }
 
-  removeBySocketId(socketId: string): { outletId: string } | null {
+  removeBySocketId(socketId: string): { outletId: string; removed: boolean } | null {
     const outletId = this.socketOutletIndex.get(socketId);
     if (!outletId) return null;
+
+    this.socketOutletIndex.delete(socketId);
 
     const outletService = this.servicesByOutlet.get(outletId);
     if (outletService?.socketId === socketId) {
       this.servicesByOutlet.delete(outletId);
+      return { outletId, removed: true };
     }
 
-    this.socketOutletIndex.delete(socketId);
-
-    return { outletId };
+    return { outletId, removed: false };
   }
 
   getByOutlet(outletId: string): PrinterServiceRecord[] {
@@ -62,6 +63,13 @@ class PrinterServiceRegistry {
 
   getPrimaryByOutlet(outletId: string): PrinterServiceRecord | null {
     return this.servicesByOutlet.get(outletId) || null;
+  }
+
+  touchByOutlet(outletId: string): void {
+    const service = this.servicesByOutlet.get(outletId);
+    if (service) {
+      service.lastSeenAt = new Date().toISOString();
+    }
   }
 
   async isActiveOutlet(outletId: string): Promise<boolean> {
